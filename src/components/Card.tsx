@@ -13,8 +13,7 @@ interface CardProps {
 }
 
 function getRotation(index: number): number {
-  const values = [-2.5, 1.8, -1.2, 3.0, -0.8, 2.2, -3.1, 1.4];
-  return values[index % values.length];
+  return ((index * 137.508) % 7) - 3.5;
 }
 
 export default function Card({ title, image, index }: CardProps) {
@@ -31,12 +30,15 @@ export default function Card({ title, image, index }: CardProps) {
       yPercent: 0,
       duration: 0.45,
       ease: "expo.out",
+    
+      yoyo:true,
+      repeat:-1
     });
   };
 
   const onLeave = () => {
     gsap.to(overlayRef.current, {
-      yPercent: 100,
+      yPercent: 80,
       duration: 0.35,
       ease: "power2.in",
     });
