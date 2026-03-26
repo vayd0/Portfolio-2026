@@ -37,7 +37,7 @@ export default function AnimatedTitle({ children, className }: Props) {
 
     split.chars.forEach((char, i) => {
       const el = char as HTMLElement;
-      const fromTop = -(el.getBoundingClientRect().top + el.offsetHeight + 10);
+      const fromTop = -(el.getBoundingClientRect().top + el.offsetHeight + window.innerHeight * 0.6);
 
       const personality: Personality = {
         rotAmp: 4 + Math.random() * 9,
