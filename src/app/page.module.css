@@ -13,35 +13,46 @@
 }
 
 @font-face {
-    font-family: Dudu;
-    src: url("/fonts/dudu/Dudu.ttf") format("truetype");
+  font-family: Dudu;
+  src: url("/fonts/dudu/Dudu.ttf") format("truetype");
 }
 
 .introCard {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  position: relative;
   min-width: 100dvw;
-  height: 100dvw;
+  height: 100dvh;
 }
 
 .bigText {
   font-size: clamp(2rem, 40vw, 70rem);
-  line-height: 90%;
+  line-height: 80%;
   font-family: "Fat", sans-serif;
-  
+  font-style: italic;
 }
 
+.introGroup {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100vw;
+  padding:1vw 2.5vw;
+}
+
+
 .introText {
-    font-family: "Dudu";
-    display:flex;
-    align-items:center;
+  font-family: "Dudu";
+  display: flex;
+  align-items: center;
+  margin: 0;
 
-    font-size: clamp(1rem, 5vw, 30rem);
-    svg {
-        width:4dvw;
-        margin-left: 2vw;
-    }
+  &:first-child {
+    margin-bottom: -1.2em;
+  }
 
-    
+  font-size: clamp(1rem, 5vw, 30rem);
+  svg {
+    width: 4dvw;
+    line-height: 0;
+  }
 }

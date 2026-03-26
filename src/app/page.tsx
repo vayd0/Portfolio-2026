@@ -2,11 +2,8 @@ import Card from "@/components/Card";
 import HorizontalScroll from "@/components/HorizontalScroll";
 import FallIn from "@/components/FallIn";
 import { Smile } from "@/components/icons";
-import { gsap } from "gsap";
-import { useGSAP } from "@gsap/react";
-import splitText from "gsap/SplitText";
+import AnimatedTitle from "@/components/AnimatedTitle";
 import styles from "./page.module.css";
-gsap.registerPlugin(splitText);
 
 const projects = [
   { title: "Projet Alpha" },
@@ -21,9 +18,9 @@ export default function Home() {
   return (
     <HorizontalScroll>
       <div className={styles.introCard}>
-        <div>
+        <div className={styles.introGroup}>
           <h3 className={styles.introText}>Bonjour <Smile />, je m'appelle </h3>
-          <h1 className={styles.bigText}>Théo</h1>
+          <AnimatedTitle className={styles.bigText}>Théo</AnimatedTitle>
           <h3 className={styles.introText}>Et j'aime crée des choses</h3>
         </div>
       </div>
