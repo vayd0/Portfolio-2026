@@ -1,6 +1,12 @@
 import Card from "@/components/Card";
 import HorizontalScroll from "@/components/HorizontalScroll";
 import FallIn from "@/components/FallIn";
+import { Smile } from "@/components/icons";
+import { gsap } from "gsap";
+import { useGSAP } from "@gsap/react";
+import splitText from "gsap/SplitText";
+import styles from "./page.module.css";
+gsap.registerPlugin(splitText);
 
 const projects = [
   { title: "Projet Alpha" },
@@ -14,7 +20,14 @@ const projects = [
 export default function Home() {
   return (
     <HorizontalScroll>
-      <div className="flex flex-row items-center gap-12 px-16 py-20">
+      <div className={styles.introCard}>
+        <div>
+          <h3 className={styles.introText}>Bonjour <Smile />, je m'appelle </h3>
+          <h1 className={styles.bigText}>Théo</h1>
+          <h3 className={styles.introText}>Et j'aime crée des choses</h3>
+        </div>
+      </div>
+      <section className="flex flex-row items-center gap-12 px-16 py-20">
         {projects.map((project, i) => (
           <FallIn key={i} delay={i * 0.05}>
             <div className="w-[380px] shrink-0">
@@ -22,7 +35,7 @@ export default function Home() {
             </div>
           </FallIn>
         ))}
-      </div>
+      </section>
     </HorizontalScroll>
   );
 }

@@ -1,0 +1,9 @@
+{"type":"server-started","port":51240,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:51240","screen_dir":"/Users/theo/Documents/Projets/Dev/Portfolios/portfolio-2026/front/.superpowers/brainstorm/35743-1774338590"}
+{"type":"screen-added","file":"/Users/theo/Documents/Projets/Dev/Portfolios/portfolio-2026/front/.superpowers/brainstorm/35743-1774338590/expansion-approach.html"}
+{"type":"screen-added","file":"/Users/theo/Documents/Projets/Dev/Portfolios/portfolio-2026/front/.superpowers/brainstorm/35743-1774338590/siblings-behavior.html"}
+{"source":"user-event","type":"click","text":"Restent normales\n      Seule la taille change. Les voisines gardent leur apparence. Effet organique, moins dramatique.","choice":"normal","id":null,"timestamp":1774338868961}
+{"type":"screen-added","file":"/Users/theo/Documents/Projets/Dev/Portfolios/portfolio-2026/front/.superpowers/brainstorm/35743-1774338590/expanded-layout.html"}
+{"type":"screen-added","file":"/Users/theo/Documents/Projets/Dev/Portfolios/portfolio-2026/front/.superpowers/brainstorm/35743-1774338590/approach-comparison.html"}
+{"source":"user-event","type":"click","text":"A\n    \n      GSAP morph — la card grandit sur place\n      La card existante se transforme via GSAP : elle change de dimensions (width → 80vh ratio), se repositionne au centre, et le contenu gauche/droite apparaît en parallèle. Un seul composant, des tweens GSAP.\n      \n        PourAnimation continue et fluide depuis la position d'origineCohérent avec le style GSAP déjà en place\n        ContrePlus complexe à orchestrer (layout GSAP vs CSS)","choice":"morph","id":null,"timestamp":1774340700411}
+{"type":"screen-added","file":"/Users/theo/Documents/Projets/Dev/Portfolios/portfolio-2026/front/.superpowers/brainstorm/35743-1774338590/design-final.html"}
+{"type":"server-stopped","reason":"owner process exited"}

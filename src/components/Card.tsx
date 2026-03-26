@@ -10,13 +10,23 @@ interface CardProps {
   title: string;
   image?: string;
   index: number;
+  color?: string;
+  noSquish?: boolean;
 }
 
 function getRotation(index: number): number {
   return ((index * 137.508) % 7) - 3.5;
 }
 
-export default function Card({ title, image, index }: CardProps) {
+function blobSquish(el: HTMLElement) {
+  gsap.timeline()
+    .to(el, { scaleY: 0.88, scaleX: 1.08, duration: 0.1, ease: "power2.in" })
+    .to(el, { scaleY: 1.05, scaleX: 0.97, duration: 0.16, ease: "power2.out" })
+    .to(el, { scaleY: 1, scaleX: 1, duration: 0.2, ease: "elastic.out(1, 0.4)" });
+}
+
+export default function Card({ title, image, index, color = "#e8e8e8", noSquish }: CardProps) {
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const rotation = getRotation(index);
@@ -26,35 +36,36 @@ export default function Card({ title, image, index }: CardProps) {
   }, { scope: innerRef });
 
   const onEnter = () => {
+    if (wrapperRef.current) blobSquish(wrapperRef.current);
+    gsap.killTweensOf(overlayRef.current);
     gsap.to(overlayRef.current, {
       yPercent: 0,
-      duration: 0.45,
+      duration: 0.5,
       ease: "expo.out",
-    
-      yoyo:true,
-      repeat:-1
     });
   };
 
   const onLeave = () => {
+    gsap.killTweensOf(overlayRef.current);
     gsap.to(overlayRef.current, {
-      yPercent: 80,
-      duration: 0.35,
-      ease: "power2.in",
+      yPercent: 100,
+      duration: 0.45,
+      ease: "power3.inOut",
     });
   };
 
   return (
     <div
+      ref={wrapperRef}
       className="cursor-pointer"
       style={{ rotate: `${rotation}deg` }}
-      onMouseEnter={onEnter}
-      onMouseLeave={onLeave}
+      onMouseEnter={noSquish ? undefined : onEnter}
+      onMouseLeave={noSquish ? undefined : onLeave}
     >
       <div
         ref={innerRef}
         className="relative overflow-hidden"
-        style={{ aspectRatio: "16/9", backgroundColor: "#e8e8e8" }}
+        style={{ aspectRatio: "16/9", backgroundColor: color }}
       >
         {image ? (
           <img src={image} alt={title} className="absolute inset-0 w-full h-full object-cover" />

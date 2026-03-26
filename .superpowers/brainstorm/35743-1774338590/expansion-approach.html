@@ -1,0 +1,61 @@
+<h2>Comment la card s'agrandit-elle au clic ?</h2>
+<p class="subtitle">3 comportements différents — lequel correspond à ta vision ?</p>
+
+<div class="cards">
+
+  <!-- Option A -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0d0d0d;padding:16px;overflow:hidden">
+      <div style="display:flex;gap:8px;align-items:flex-end;height:80px">
+        <div style="width:32px;height:50px;background:#333;border-radius:4px;flex-shrink:0"></div>
+        <div style="width:32px;height:50px;background:#333;border-radius:4px;flex-shrink:0"></div>
+        <div style="width:32px;height:50px;background:#333;border-radius:4px;flex-shrink:0"></div>
+        <div style="width:70px;height:70px;background:#CCDD59;border-radius:4px;flex-shrink:0;border:2px solid #CCDD59"></div>
+        <div style="width:32px;height:50px;background:#333;border-radius:4px;flex-shrink:0"></div>
+        <div style="width:32px;height:50px;background:#333;border-radius:4px;flex-shrink:0"></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Flex grow</h3>
+      <p>La card s'élargit dans le flux horizontal, poussant ses voisines. Elle reste à sa place dans le scroll. Effet <strong>naturel et fluide</strong>.</p>
+    </div>
+  </div>
+
+  <!-- Option B -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0d0d0d;padding:16px;overflow:hidden;position:relative">
+      <div style="display:flex;gap:8px;align-items:center;height:80px;filter:blur(1px)">
+        <div style="width:32px;height:50px;background:#333;border-radius:4px;flex-shrink:0"></div>
+        <div style="width:32px;height:50px;background:#333;border-radius:4px;flex-shrink:0"></div>
+        <div style="width:32px;height:50px;background:#333;border-radius:4px;flex-shrink:0"></div>
+        <div style="width:32px;height:50px;background:#333;border-radius:4px;flex-shrink:0"></div>
+        <div style="width:32px;height:50px;background:#333;border-radius:4px;flex-shrink:0"></div>
+      </div>
+      <div style="position:absolute;inset:6px;background:#CCDD59;border-radius:6px;display:flex;align-items:center;justify-content:center">
+        <span style="font-size:11px;font-weight:bold;color:#202020">PLEIN ÉCRAN</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Overlay/modale</h3>
+      <p>La card s'ouvre par-dessus tout le reste, centrée et grande. Le fond se flou/noircit. Effet <strong>focus total</strong>.</p>
+    </div>
+  </div>
+
+  <!-- Option C -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0d0d0d;padding:16px;overflow:hidden;position:relative">
+      <div style="display:flex;gap:8px;align-items:center;height:80px">
+        <div style="width:28px;height:40px;background:#444;border-radius:4px;flex-shrink:0;opacity:0.5"></div>
+        <div style="width:28px;height:40px;background:#444;border-radius:4px;flex-shrink:0;opacity:0.5"></div>
+        <div style="position:relative;width:60px;height:72px;background:#CCDD59;border-radius:4px;flex-shrink:0;z-index:2;box-shadow:0 4px 20px rgba(204,221,89,0.4)"></div>
+        <div style="width:28px;height:40px;background:#444;border-radius:4px;flex-shrink:0;opacity:0.5"></div>
+        <div style="width:28px;height:40px;background:#444;border-radius:4px;flex-shrink:0;opacity:0.5"></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Scale + overlap</h3>
+      <p>La card grossit par-dessus ses voisines (z-index), les voisines s'atténuent. Pas de déplacement. Effet <strong>spotlight</strong>.</p>
+    </div>
+  </div>
+
+</div>

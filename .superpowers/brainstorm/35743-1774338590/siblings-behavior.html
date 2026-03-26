@@ -1,0 +1,54 @@
+<h2>Quand une card est ouverte, les autres…</h2>
+<p class="subtitle">La card active fait 80vh, garde une légère rotation, pousse les voisines</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="fade" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0d0d0d;padding:12px;overflow:hidden">
+      <div style="display:flex;gap:6px;align-items:center;height:90px;justify-content:center">
+        <div style="width:28px;height:44px;background:#555;border-radius:3px;opacity:0.3;transform:rotate(-2deg)"></div>
+        <div style="width:28px;height:44px;background:#555;border-radius:3px;opacity:0.3;transform:rotate(1deg)"></div>
+        <div style="width:90px;height:80px;background:#CCDD59;border-radius:4px;transform:rotate(-1.5deg);box-shadow:0 6px 24px rgba(0,0,0,0.5)"></div>
+        <div style="width:28px;height:44px;background:#555;border-radius:3px;opacity:0.3;transform:rotate(-1deg)"></div>
+        <div style="width:28px;height:44px;background:#555;border-radius:3px;opacity:0.3;transform:rotate(2deg)"></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>S'atténuent (opacity)</h3>
+      <p>Les cards voisines passent en semi-transparent. Focus visuel sur la card active. Effet <strong>sélection claire</strong>.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="normal" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0d0d0d;padding:12px;overflow:hidden">
+      <div style="display:flex;gap:6px;align-items:center;height:90px;justify-content:center">
+        <div style="width:28px;height:44px;background:#555;border-radius:3px;transform:rotate(-2deg)"></div>
+        <div style="width:28px;height:44px;background:#555;border-radius:3px;transform:rotate(1deg)"></div>
+        <div style="width:90px;height:80px;background:#CCDD59;border-radius:4px;transform:rotate(-1.5deg);box-shadow:0 6px 24px rgba(0,0,0,0.5)"></div>
+        <div style="width:28px;height:44px;background:#555;border-radius:3px;transform:rotate(-1deg)"></div>
+        <div style="width:28px;height:44px;background:#555;border-radius:3px;transform:rotate(2deg)"></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Restent normales</h3>
+      <p>Seule la taille change. Les voisines gardent leur apparence. Effet <strong>organique</strong>, moins dramatique.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="shrink" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0d0d0d;padding:12px;overflow:hidden">
+      <div style="display:flex;gap:6px;align-items:center;height:90px;justify-content:center">
+        <div style="width:20px;height:32px;background:#555;border-radius:3px;transform:rotate(-2deg)"></div>
+        <div style="width:20px;height:32px;background:#555;border-radius:3px;transform:rotate(1deg)"></div>
+        <div style="width:90px;height:80px;background:#CCDD59;border-radius:4px;transform:rotate(-1.5deg);box-shadow:0 6px 24px rgba(0,0,0,0.5)"></div>
+        <div style="width:20px;height:32px;background:#555;border-radius:3px;transform:rotate(-1deg)"></div>
+        <div style="width:20px;height:32px;background:#555;border-radius:3px;transform:rotate(2deg)"></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Rétrécissent</h3>
+      <p>Les voisines se réduisent activement. Contraste fort. Effet <strong>accordéon</strong>.</p>
+    </div>
+  </div>
+
+</div>

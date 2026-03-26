@@ -1,0 +1,47 @@
+@font-face {
+  font-family: Fat;
+  src: url("/fonts/fat/FFF-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: Fat;
+  src: url("/fonts/fat/FFF-Slanted.otf") format("opentype");
+  font-weight: 400;
+  font-style: italic;
+}
+
+@font-face {
+    font-family: Dudu;
+    src: url("/fonts/dudu/Dudu.ttf") format("truetype");
+}
+
+.introCard {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 100dvw;
+  height: 100dvw;
+}
+
+.bigText {
+  font-size: clamp(2rem, 40vw, 70rem);
+  line-height: 90%;
+  font-family: "Fat", sans-serif;
+  
+}
+
+.introText {
+    font-family: "Dudu";
+    display:flex;
+    align-items:center;
+
+    font-size: clamp(1rem, 5vw, 30rem);
+    svg {
+        width:4dvw;
+        margin-left: 2vw;
+    }
+
+    
+}
