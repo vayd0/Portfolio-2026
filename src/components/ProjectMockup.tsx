@@ -7,14 +7,21 @@ interface ProjectMockupProps {
   image?: string;
   title: string;
   rotation: number;
+  freeze?: boolean;
 }
 
-export default function ProjectMockup({ image, title, rotation }: ProjectMockupProps) {
+export default function ProjectMockup({ image, title, rotation, freeze }: ProjectMockupProps) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+
+    if (freeze) {
+      gsap.killTweensOf(el);
+      gsap.set(el, { opacity: 1, y: 0, scaleY: 1, scaleX: 1, rotation });
+      return;
+    }
 
     gsap.set(el, { opacity: 0 });
 
@@ -54,7 +61,7 @@ export default function ProjectMockup({ image, title, rotation }: ProjectMockupP
 
     observer.observe(el);
     return () => observer.disconnect();
-  }, [rotation]);
+  }, [rotation, freeze]);
 
   return (
     <div
