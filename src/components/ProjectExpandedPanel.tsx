@@ -104,6 +104,7 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig }:
           alignItems: "center",
           justifyContent: "center",
           position: "relative",
+          zIndex: 3,
         }}
       >
         <div
