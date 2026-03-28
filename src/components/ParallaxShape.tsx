@@ -7,18 +7,34 @@ interface Props {
   children: React.ReactNode;
   depthX?: number;
   depthY?: number;
+  enterX?: number;
+  enterY?: number;
+  enterRotation?: number;
+  enterDelay?: number;
   className?: string;
   style?: React.CSSProperties;
 }
 
-export default function ParallaxShape({ children, depthX = 0.05, depthY = 0.04, className, style }: Props) {
-  const ref = useRef<HTMLDivElement>(null);
+export default function ParallaxShape({
+  children,
+  depthX = 0.05,
+  depthY = 0.04,
+  enterX = 0,
+  enterY = 0,
+  enterRotation = 0,
+  enterDelay = 0,
+  className,
+  style,
+}: Props) {
+  const parallaxRef = useRef<HTMLDivElement>(null);
+  const innerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
+    const outer = parallaxRef.current;
+    const inner = innerRef.current;
+    if (!outer || !inner) return;
 
-    let scrollEl: HTMLElement | null = el.parentElement;
+    let scrollEl: HTMLElement | null = outer.parentElement;
     while (scrollEl) {
       const s = getComputedStyle(scrollEl);
       if (s.overflowX === "auto" || s.overflowX === "scroll") break;
@@ -26,10 +42,35 @@ export default function ParallaxShape({ children, depthX = 0.05, depthY = 0.04, 
     }
     if (!scrollEl) return;
 
-    const qx = gsap.quickTo(el, "x", { duration: 1.0, ease: "power2.out" });
-    const qy = gsap.quickTo(el, "y", { duration: 1.0, ease: "power2.out" });
+    const qx = gsap.quickTo(outer, "x", { duration: 1.1, ease: "power3.out" });
+    const qy = gsap.quickTo(outer, "y", { duration: 1.1, ease: "power3.out" });
 
     let mx = 0, my = 0, sx = 0;
+
+    gsap.set(inner, { opacity: 0, x: enterX, y: enterY, rotation: enterRotation, scale: 0.7 });
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          gsap.to(inner, {
+            opacity: 1,
+            x: 0,
+            y: 0,
+            rotation: 0,
+            scale: 1,
+            duration: 1.5,
+            delay: enterDelay,
+            ease: "elastic.out(1, 0.45)",
+          });
+        } else {
+          gsap.killTweensOf(inner);
+          gsap.set(inner, { opacity: 0, x: enterX, y: enterY, rotation: enterRotation, scale: 0.7 });
+        }
+      },
+      { threshold: 0.05 }
+    );
+
+    observer.observe(outer);
 
     const onMouseMove = (e: MouseEvent) => {
       mx = -(e.clientX - window.innerWidth / 2) * depthX;
@@ -39,24 +80,28 @@ export default function ParallaxShape({ children, depthX = 0.05, depthY = 0.04, 
     };
 
     const onScroll = () => {
-      const panel = el.parentElement;
+      const panel = outer.parentElement;
       if (!panel) return;
       const panelCenterX = panel.getBoundingClientRect().left + panel.offsetWidth / 2;
-      sx = (panelCenterX - window.innerWidth / 2) * depthX * 1.5;
+      sx = (panelCenterX - window.innerWidth / 2) * depthX * 4;
       qx(mx + sx);
     };
 
     window.addEventListener("mousemove", onMouseMove);
     scrollEl.addEventListener("scroll", onScroll);
+
     return () => {
       window.removeEventListener("mousemove", onMouseMove);
       scrollEl!.removeEventListener("scroll", onScroll);
+      observer.disconnect();
     };
-  }, [depthX, depthY]);
+  }, [depthX, depthY, enterX, enterY, enterRotation, enterDelay]);
 
   return (
-    <div ref={ref} className={className} style={style}>
-      {children}
+    <div ref={parallaxRef} className={className} style={style}>
+      <div ref={innerRef}>
+        {children}
+      </div>
     </div>
   );
 }
