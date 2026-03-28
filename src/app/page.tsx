@@ -14,12 +14,20 @@ type Project = {
   _id: string;
   title: string;
   image?: string;
+  gallery?: string[];
+  description?: string;
+  url?: string;
+  github?: string;
 };
 
 const query = `*[_type == "project"] | order(_createdAt asc)[0...3] {
   _id,
   title,
-  "image": mainImage.asset->url
+  "image": mainImage.asset->url,
+  "gallery": gallery[].asset->url,
+  description,
+  url,
+  github
 }`;
 
 const rotations = [-6, 5, -4];
