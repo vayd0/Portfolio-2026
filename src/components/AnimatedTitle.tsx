@@ -41,18 +41,22 @@ export default function AnimatedTitle({ children, className, wheelStretch, gradi
 
     if (gradient) {
       const rects = split.chars.map((c) => (c as HTMLElement).getBoundingClientRect());
-      const top    = Math.min(...rects.map((r) => r.top));
-      const left   = Math.min(...rects.map((r) => r.left));
-      const width  = Math.max(...rects.map((r) => r.right)) - left;
-      const height = Math.max(...rects.map((r) => r.bottom)) - top;
+      const charsTop  = Math.min(...rects.map((r) => r.top));
+      const charsLeft = Math.min(...rects.map((r) => r.left));
+      const charsH    = Math.max(...rects.map((r) => r.bottom)) - charsTop;
+      const charsW    = Math.max(...rects.map((r) => r.right)) - charsLeft;
+
+      const topPad     = charsH * 0.45;
+      const gradTop    = charsTop - topPad;
+      const gradHeight = charsH + topPad;
 
       split.chars.forEach((char, i) => {
         const el = char as HTMLElement;
         Object.assign(el.style, {
           backgroundImage: gradient,
-          backgroundSize: `${width}px ${height}px`,
-          backgroundPositionX: `${-(rects[i].left - left)}px`,
-          backgroundPositionY: `${-(rects[i].top - top)}px`,
+          backgroundSize: `${charsW}px ${gradHeight}px`,
+          backgroundPositionX: `${-(rects[i].left - charsLeft)}px`,
+          backgroundPositionY: `${-(rects[i].top - gradTop)}px`,
           webkitBackgroundClip: "text",
           backgroundClip: "text",
           webkitTextFillColor: "transparent",
