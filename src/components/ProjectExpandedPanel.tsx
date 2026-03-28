@@ -28,168 +28,122 @@ interface Props {
 
 export default function ProjectExpandedPanel({ project, rotation, shapeConfig }: Props) {
   const [open, setOpen] = useState(false);
-  const mockupWrapRef = useRef<HTMLDivElement>(null);
+  const leftRef = useRef<HTMLDivElement>(null);
   const rightRef = useRef<HTMLDivElement>(null);
+  const mockupWrapRef = useRef<HTMLDivElement>(null);
   const galleryRefs = useRef<(HTMLDivElement | null)[]>([]);
   const descRef = useRef<HTMLDivElement>(null);
   const linksRef = useRef<HTMLDivElement>(null);
 
-  const openPanel = () => {
-    if (open) return;
-    setOpen(true);
-  };
-
   const closePanel = () => {
     if (!open) return;
+    const gallery = galleryRefs.current.filter(Boolean);
     const tl = gsap.timeline({ onComplete: () => setOpen(false) });
-
-    tl.to(linksRef.current, { opacity: 0, y: 30, duration: 0.2, ease: "power2.in" }, 0)
-      .to(descRef.current, { opacity: 0, y: 20, duration: 0.2, ease: "power2.in" }, 0)
-      .to(galleryRefs.current.filter(Boolean).reverse(), {
-        opacity: 0,
-        scale: 0.6,
-        y: -60,
-        stagger: 0.05,
-        duration: 0.25,
-        ease: "power3.in",
-      }, 0)
-      .to(rightRef.current, { opacity: 0, duration: 0.15 }, 0)
-      .to(mockupWrapRef.current, {
-        x: 0,
-        scaleX: 1,
-        scaleY: 1,
-        duration: 0.45,
-        ease: "back.out(1.4)",
-      }, 0.1);
+    tl
+      .to(linksRef.current, { opacity: 0, y: 20, duration: 0.15, ease: "power2.in" }, 0)
+      .to(descRef.current, { opacity: 0, y: 10, duration: 0.15, ease: "power2.in" }, 0)
+      .to([...gallery].reverse(), { opacity: 0, scale: 0.7, y: -40, stagger: 0.05, duration: 0.2, ease: "power3.in" }, 0)
+      .to(rightRef.current, { width: 0, duration: 0.4, ease: "power3.in" }, 0.1)
+      .to(leftRef.current, { width: "100dvw", duration: 0.65, ease: "elastic.out(1, 0.5)" }, 0.15)
+      .to(mockupWrapRef.current, { scaleX: 1.06, scaleY: 0.88, duration: 0.1, ease: "power3.in" }, 0.15)
+      .to(mockupWrapRef.current, { scaleX: 1, scaleY: 1, duration: 0.7, ease: "elastic.out(1, 0.45)" }, 0.25);
   };
 
   useEffect(() => {
     if (!open) return;
 
-    galleryRefs.current = [];
-
     const gallery = galleryRefs.current.filter(Boolean);
+    const galleryRotations = [-12, 6, -4];
 
-    gsap.set(rightRef.current, { opacity: 0 });
-    gsap.set(gallery, { opacity: 0, scale: 0.4, y: -120, rotation: 0 });
+    gsap.set(gallery, { opacity: 0, scale: 0.4, y: -100, rotation: 0 });
     gsap.set(descRef.current, { opacity: 0, y: 40 });
     gsap.set(linksRef.current, { opacity: 0, y: 30 });
 
-    const rotations = [-12, 6, -4];
-
     const tl = gsap.timeline();
-
-    tl.to(mockupWrapRef.current, {
-      x: "-28vw",
-      scaleY: 0.85,
-      scaleX: 1.08,
-      duration: 0.12,
-      ease: "power3.in",
-    })
-      .to(mockupWrapRef.current, {
-        scaleY: 1.12,
-        scaleX: 0.92,
-        duration: 0.14,
-        ease: "power2.out",
-      })
-      .to(mockupWrapRef.current, {
-        scaleY: 1,
-        scaleX: 1,
-        duration: 0.9,
-        ease: "elastic.out(1, 0.38)",
-      })
-      .to(rightRef.current, { opacity: 1, duration: 0.2 }, "-=0.6")
+    tl
+      .to(mockupWrapRef.current, { scaleY: 0.85, scaleX: 1.08, duration: 0.12, ease: "power3.in" })
+      .to(mockupWrapRef.current, { scaleY: 1.12, scaleX: 0.92, duration: 0.14, ease: "power2.out" })
+      .to(mockupWrapRef.current, { scaleY: 1, scaleX: 1, duration: 0.9, ease: "elastic.out(1, 0.38)" })
+      .to(leftRef.current, { width: "42vw", duration: 0.8, ease: "elastic.out(1, 0.45)" }, 0)
+      .to(rightRef.current, { width: "58vw", duration: 0.9, ease: "elastic.out(1, 0.42)" }, 0.1)
       .to(gallery, {
         opacity: 1,
         scale: 1,
         y: 0,
-        rotation: (i) => rotations[i] ?? 0,
+        rotation: (i) => galleryRotations[i] ?? 0,
         stagger: 0.1,
-        duration: 1.2,
+        duration: 1.0,
         ease: "elastic.out(1, 0.45)",
       }, "-=0.5")
       .to(descRef.current, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, "-=0.4")
-      .to(linksRef.current, {
-        opacity: 1,
-        y: 0,
-        duration: 0.7,
-        ease: "elastic.out(1, 0.5)",
-      }, "-=0.2");
-  }, [open]);
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && open) closePanel();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+      .to(linksRef.current, { opacity: 1, y: 0, duration: 0.7, ease: "elastic.out(1, 0.5)" }, "-=0.3");
   }, [open]);
 
   return (
     <div
-      className="relative shrink-0 bg-white flex items-center justify-center"
+      className="relative shrink-0 bg-white flex"
       style={{ width: "100dvw", height: "100dvh" }}
     >
-      {!open && (
-        <>
-          <ParallaxShape depthX={shapeConfig.circle.depthX} depthY={shapeConfig.circle.depthY} enterX={shapeConfig.circle.enterX} enterY={shapeConfig.circle.enterY} enterRotation={shapeConfig.circle.enterRotation} enterDelay={shapeConfig.circle.enterDelay} className="absolute top-1/2 -translate-y-1/2" style={{ left: -30, zIndex: 10 }}>
-            <Circle />
-          </ParallaxShape>
-          <ParallaxShape depthX={shapeConfig.triangle.depthX} depthY={shapeConfig.triangle.depthY} enterX={shapeConfig.triangle.enterX} enterY={shapeConfig.triangle.enterY} enterRotation={shapeConfig.triangle.enterRotation} enterDelay={shapeConfig.triangle.enterDelay} className="absolute top-0 right-0" style={{ marginTop: -60, marginRight: -60, zIndex: 10 }}>
-            <Triangle />
-          </ParallaxShape>
-          <ParallaxShape depthX={shapeConfig.arrow.depthX} depthY={shapeConfig.arrow.depthY} enterX={shapeConfig.arrow.enterX} enterY={shapeConfig.arrow.enterY} enterRotation={shapeConfig.arrow.enterRotation} enterDelay={shapeConfig.arrow.enterDelay} className="absolute bottom-0 right-0" style={{ marginBottom: -40, marginRight: -20, zIndex: 10 }}>
-            <Arrow />
-          </ParallaxShape>
-        </>
-      )}
-
-      {open && (
-        <button
-          onClick={closePanel}
-          style={{
-            position: "absolute",
-            top: 24,
-            right: 32,
-            zIndex: 20,
-            background: "none",
-            border: "2px solid #202020",
-            borderRadius: "50%",
-            width: 44,
-            height: 44,
-            cursor: "pointer",
-            fontSize: 20,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          ×
-        </button>
-      )}
-
       <div
-        ref={mockupWrapRef}
-        onClick={!open ? openPanel : undefined}
-        style={{ cursor: open ? "default" : "pointer" }}
+        ref={leftRef}
+        style={{
+          width: "100dvw",
+          height: "100%",
+          flexShrink: 0,
+          position: "relative",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
       >
-        <ProjectMockup image={project.image} title={project.title} rotation={rotation} />
+        {!open && (
+          <>
+            <ParallaxShape depthX={shapeConfig.circle.depthX} depthY={shapeConfig.circle.depthY} enterX={shapeConfig.circle.enterX} enterY={shapeConfig.circle.enterY} enterRotation={shapeConfig.circle.enterRotation} enterDelay={shapeConfig.circle.enterDelay} className="absolute top-1/2 -translate-y-1/2" style={{ left: -30, zIndex: 10 }}>
+              <Circle />
+            </ParallaxShape>
+            <ParallaxShape depthX={shapeConfig.triangle.depthX} depthY={shapeConfig.triangle.depthY} enterX={shapeConfig.triangle.enterX} enterY={shapeConfig.triangle.enterY} enterRotation={shapeConfig.triangle.enterRotation} enterDelay={shapeConfig.triangle.enterDelay} className="absolute top-0 right-0" style={{ marginTop: -60, marginRight: -60, zIndex: 10 }}>
+              <Triangle />
+            </ParallaxShape>
+            <ParallaxShape depthX={shapeConfig.arrow.depthX} depthY={shapeConfig.arrow.depthY} enterX={shapeConfig.arrow.enterX} enterY={shapeConfig.arrow.enterY} enterRotation={shapeConfig.arrow.enterRotation} enterDelay={shapeConfig.arrow.enterDelay} className="absolute bottom-0 right-0" style={{ marginBottom: -40, marginRight: -20, zIndex: 10 }}>
+              <Arrow />
+            </ParallaxShape>
+          </>
+        )}
+
+        <div
+          ref={mockupWrapRef}
+          onClick={open ? closePanel : () => setOpen(true)}
+          style={{ cursor: "pointer" }}
+        >
+          <ProjectMockup image={project.image} title={project.title} rotation={rotation} />
+        </div>
+
+        <div
+          className="absolute bottom-8 left-12"
+          style={{ zIndex: 10 }}
+          onClick={open ? closePanel : () => setOpen(true)}
+        >
+          <ProjectTitle title={project.title} className={styles.projectTitle} />
+        </div>
       </div>
 
-      {open && (
+      <div
+        ref={rightRef}
+        style={{
+          width: 0,
+          height: "100%",
+          flexShrink: 0,
+          overflow: "hidden",
+        }}
+      >
         <div
-          ref={rightRef}
           style={{
-            position: "absolute",
-            right: 0,
-            top: 0,
-            width: "55%",
+            width: "58vw",
             height: "100%",
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
             padding: "0 4vw",
-            zIndex: 5,
           }}
         >
           <div style={{ display: "flex", gap: 16, marginBottom: 40, flexWrap: "wrap" }}>
@@ -244,13 +198,7 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig }:
             )}
           </div>
         </div>
-      )}
-
-      {!open && (
-        <div className="absolute bottom-8 left-12" style={{ zIndex: 10 }} onClick={openPanel}>
-          <ProjectTitle title={project.title} className={styles.projectTitle} />
-        </div>
-      )}
+      </div>
     </div>
   );
 }
