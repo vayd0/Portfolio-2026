@@ -37,7 +37,7 @@ export default async function Home() {
       {projects.map((project, i) => (
         <div
           key={project._id}
-          className="relative shrink-0 overflow-hidden bg-white flex items-center justify-center"
+          className="relative shrink-0 bg-white flex items-center justify-center"
           style={{ width: "100dvw", height: "100dvh" }}
         >
           <div className="absolute top-1/2 -translate-y-1/2" style={{ left: -30 }}>
