@@ -40,6 +40,14 @@
 }
 
 
+.projectTitle {
+  font-family: "Fat", sans-serif;
+  font-style: normal;
+  font-size: clamp(3rem, 9vw, 13rem);
+  line-height: 1;
+  text-transform: uppercase;
+}
+
 .introText {
   font-family: "Dudu";
   display: flex;
