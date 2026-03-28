@@ -16,17 +16,24 @@ export default function ProjectMockup({ image, title, rotation }: ProjectMockupP
     const el = ref.current;
     if (!el) return;
 
-    gsap.set(el, { scaleY: 0, transformOrigin: "top center", rotation: 0 });
+    gsap.set(el, {
+      y: -(window.innerHeight * 0.6 + 200),
+      scaleY: 3.5,
+      scaleX: 0.3,
+      rotation: 0,
+    });
 
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (!entry.isIntersecting) return;
         observer.unobserve(el);
         gsap.to(el, {
+          y: 0,
           scaleY: 1,
+          scaleX: 1,
           rotation,
-          duration: 1.2,
-          ease: "elastic.out(1, 0.35)",
+          duration: 1.0,
+          ease: "elastic.out(1, 0.4)",
         });
       },
       { threshold: 0.3 }
