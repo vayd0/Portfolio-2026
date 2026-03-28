@@ -77,40 +77,48 @@ export default function AnimatedTitle({ children, className, wheelStretch }: Pro
   }, { scope: ref });
 
   useEffect(() => {
-    if (!wheelStretch) return;
+    if (!wheelStretch || !ref.current) return;
 
-    let snapTimer: ReturnType<typeof setTimeout>;
+    let el: HTMLElement | null = ref.current.parentElement;
+    while (el) {
+      const style = getComputedStyle(el);
+      if (style.overflowX === "auto" || style.overflowX === "scroll") break;
+      el = el.parentElement;
+    }
+    const scrollContainer = el;
+    if (!scrollContainer) return;
 
-    const onWheel = (e: WheelEvent) => {
+    let isReleased = false;
+    const maxStretch = 3.5;
+
+    const onScroll = () => {
       const lastChar = lastCharRef.current;
-      if (!lastChar || e.deltaY === 0) return;
+      if (!lastChar) return;
 
-      clearTimeout(snapTimer);
-      const stretch = Math.min(1 + Math.abs(e.deltaY) * 0.007, 3.0);
+      const scrollLeft = scrollContainer.scrollLeft;
+      const introWidth = window.innerWidth;
+      const releaseAt = introWidth * (1 + 1 / 3);
 
-      gsap.killTweensOf(lastChar);
-      gsap.to(lastChar, {
-        scaleX: stretch,
-        transformOrigin: "left center",
-        duration: 0.12,
-        ease: "power2.out",
-        overwrite: true,
-      });
-
-      snapTimer = setTimeout(() => {
+      if (scrollLeft >= releaseAt && !isReleased) {
+        isReleased = true;
         gsap.to(lastChar, {
           scaleX: 1,
           duration: 1.0,
           ease: "elastic.out(1, 0.3)",
         });
-      }, 150);
+      } else if (scrollLeft < releaseAt) {
+        isReleased = false;
+        const progress = Math.min(scrollLeft / introWidth, 1);
+        gsap.killTweensOf(lastChar);
+        gsap.set(lastChar, {
+          scaleX: 1 + progress * (maxStretch - 1),
+          transformOrigin: "left center",
+        });
+      }
     };
 
-    window.addEventListener("wheel", onWheel);
-    return () => {
-      window.removeEventListener("wheel", onWheel);
-      clearTimeout(snapTimer);
-    };
+    scrollContainer.addEventListener("scroll", onScroll);
+    return () => scrollContainer.removeEventListener("scroll", onScroll);
   }, [wheelStretch]);
 
   return (

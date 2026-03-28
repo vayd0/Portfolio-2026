@@ -34,11 +34,11 @@ export default function ProjectMockup({ image, title, rotation }: ProjectMockupP
           scaleY: 1,
           scaleX: 1,
           rotation,
-          duration: 1.0,
+          duration: 1.5,
           ease: "elastic.out(1, 0.4)",
         });
       },
-      { threshold: 0.1 }
+      { threshold: 0.1, rootMargin: "0px -30% 0px -30%" }
     );
 
     observer.observe(el);
