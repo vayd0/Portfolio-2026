@@ -2,10 +2,7 @@ import { sanity } from "@/lib/sanity";
 import HorizontalScroll from "@/components/HorizontalScroll";
 import { Smile } from "@/components/icons";
 import AnimatedTitle from "@/components/AnimatedTitle";
-import { Circle, Triangle, Arrow } from "@/components/shapes";
-import ParallaxShape from "@/components/ParallaxShape";
-import ProjectMockup from "@/components/ProjectMockup";
-import ProjectTitle from "@/components/ProjectTitle";
+import ProjectExpandedPanel from "@/components/ProjectExpandedPanel";
 import styles from "./page.module.css";
 
 export const revalidate = 60;
@@ -32,6 +29,24 @@ const query = `*[_type == "project"] | order(_createdAt asc)[0...3] {
 
 const rotations = [-6, 5, -4];
 
+const shapeConfigs = [
+  {
+    circle:   { depthX: 0.06, depthY: 0.05, enterX: -500, enterY:  80, enterRotation: -15, enterDelay: 0    },
+    triangle: { depthX: 0.18, depthY: 0.14, enterX:  350, enterY: -350, enterRotation:  25, enterDelay: 0.1  },
+    arrow:    { depthX: 0.12, depthY: 0.09, enterX:  280, enterY:  300, enterRotation: -20, enterDelay: 0.05 },
+  },
+  {
+    circle:   { depthX: 0.06, depthY: 0.05, enterX: -500, enterY:  80, enterRotation: -15, enterDelay: 0    },
+    triangle: { depthX: 0.18, depthY: 0.14, enterX:  350, enterY: -350, enterRotation:  25, enterDelay: 0.1  },
+    arrow:    { depthX: 0.12, depthY: 0.09, enterX:  280, enterY:  300, enterRotation: -20, enterDelay: 0.05 },
+  },
+  {
+    circle:   { depthX: 0.06, depthY: 0.05, enterX: -500, enterY:  80, enterRotation: -15, enterDelay: 0    },
+    triangle: { depthX: 0.18, depthY: 0.14, enterX:  350, enterY: -350, enterRotation:  25, enterDelay: 0.1  },
+    arrow:    { depthX: 0.12, depthY: 0.09, enterX:  280, enterY:  300, enterRotation: -20, enterDelay: 0.05 },
+  },
+];
+
 export default async function Home() {
   const projects = await sanity.fetch<Project[]>(query);
 
@@ -46,31 +61,12 @@ export default async function Home() {
       </div>
 
       {projects.map((project, i) => (
-        <div
+        <ProjectExpandedPanel
           key={project._id}
-          className="relative shrink-0 bg-white flex items-center justify-center"
-          style={{ width: "100dvw", height: "100dvh" }}
-        >
-          <ParallaxShape depthX={0.06} depthY={0.05} enterX={-500} enterY={80} enterRotation={-15} enterDelay={0} className="absolute top-1/2 -translate-y-1/2" style={{ left: -30, zIndex: 10 }}>
-            <Circle />
-          </ParallaxShape>
-          <ParallaxShape depthX={0.18} depthY={0.14} enterX={350} enterY={-350} enterRotation={25} enterDelay={0.1} className="absolute top-0 right-0" style={{ marginTop: -60, marginRight: -60, zIndex: 10 }}>
-            <Triangle />
-          </ParallaxShape>
-          <ParallaxShape depthX={0.12} depthY={0.09} enterX={280} enterY={300} enterRotation={-20} enterDelay={0.05} className="absolute bottom-0 right-0" style={{ marginBottom: -40, marginRight: -20, zIndex: 10 }}>
-            <Arrow />
-          </ParallaxShape>
-
-          <ProjectMockup
-            image={project.image}
-            title={project.title}
-            rotation={rotations[i]}
-          />
-
-          <div className="absolute bottom-8 left-12 z-10">
-            <ProjectTitle title={project.title} className={styles.projectTitle} />
-          </div>
-        </div>
+          project={project}
+          rotation={rotations[i]}
+          shapeConfig={shapeConfigs[i]}
+        />
       ))}
     </HorizontalScroll>
   );
