@@ -30,7 +30,7 @@ export default async function Home() {
       <div className={styles.introCard}>
         <div className={styles.introGroup}>
           <h3 className={styles.introText}>Bonjour <Smile />, je m'appelle </h3>
-          <AnimatedTitle className={styles.bigText} wheelStretch>Théo</AnimatedTitle>
+          <AnimatedTitle className={styles.bigText} wheelStretch gradient="linear-gradient(225deg, #A8CC00, #CCDD59 50%, #F0FF8A)" stroke="2px #202020">Théo</AnimatedTitle>
           <h3 className={styles.introText}>Et j'aime créer des choses</h3>
         </div>
       </div>

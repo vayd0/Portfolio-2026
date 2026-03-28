@@ -11,6 +11,8 @@ interface Props {
   children: string;
   className?: string;
   wheelStretch?: boolean;
+  gradient?: string;
+  stroke?: string;
 }
 
 interface Personality {
@@ -29,13 +31,31 @@ function idleSquish(char: Element, p: Personality) {
     .to(char, { scaleY: 1,                 scaleX: 1,                 y:   0, rotation: 0,               duration: 0.75, ease: "elastic.out(1, 0.2)" });
 }
 
-export default function AnimatedTitle({ children, className, wheelStretch }: Props) {
+export default function AnimatedTitle({ children, className, wheelStretch, gradient, stroke }: Props) {
   const ref = useRef<HTMLHeadingElement>(null);
   const lastCharRef = useRef<Element | null>(null);
 
   useGSAP(() => {
     if (!ref.current) return;
     const split = new SplitText(ref.current, { type: "chars" });
+
+    if (gradient) {
+      const h1Rect = ref.current.getBoundingClientRect();
+      split.chars.forEach((char) => {
+        const el = char as HTMLElement;
+        const charRect = el.getBoundingClientRect();
+        Object.assign(el.style, {
+          backgroundImage: gradient,
+          backgroundSize: `${h1Rect.width}px ${h1Rect.height}px`,
+          backgroundPositionX: `${-(charRect.left - h1Rect.left)}px`,
+          backgroundPositionY: `${-(charRect.top - h1Rect.top)}px`,
+          webkitBackgroundClip: "text",
+          backgroundClip: "text",
+          webkitTextFillColor: "transparent",
+          ...(stroke ? { webkitTextStroke: stroke } : {}),
+        });
+      });
+    }
 
     split.chars.forEach((char, i) => {
       const el = char as HTMLElement;
