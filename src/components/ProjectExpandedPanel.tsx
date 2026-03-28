@@ -84,7 +84,7 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig }:
       className="relative shrink-0 bg-white flex"
       style={{ width: "100dvw", height: "100dvh" }}
     >
-      <ParallaxShape depthX={shapeConfig.circle.depthX} depthY={shapeConfig.circle.depthY} enterX={shapeConfig.circle.enterX} enterY={shapeConfig.circle.enterY} enterRotation={shapeConfig.circle.enterRotation} enterDelay={shapeConfig.circle.enterDelay} className="absolute top-1/2 -translate-y-1/2" style={{ left: -30, zIndex: 10 }}>
+      <ParallaxShape depthX={shapeConfig.circle.depthX} depthY={shapeConfig.circle.depthY} enterX={shapeConfig.circle.enterX} enterY={shapeConfig.circle.enterY} enterRotation={shapeConfig.circle.enterRotation} enterDelay={shapeConfig.circle.enterDelay} className="absolute top-1/2 -translate-y-1/2" style={{ left: -30, zIndex: 2 }}>
         <Circle />
       </ParallaxShape>
       <ParallaxShape depthX={shapeConfig.triangle.depthX} depthY={shapeConfig.triangle.depthY} enterX={shapeConfig.triangle.enterX} enterY={shapeConfig.triangle.enterY} enterRotation={shapeConfig.triangle.enterRotation} enterDelay={shapeConfig.triangle.enterDelay} className="absolute top-0 right-0" style={{ marginTop: -60, marginRight: -60, zIndex: 10 }}>
