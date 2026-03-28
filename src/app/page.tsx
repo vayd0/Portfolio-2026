@@ -51,11 +51,13 @@ export default async function Home() {
             <Arrow />
           </div>
 
-          <ProjectMockup
-            image={project.image}
-            title={project.title}
-            rotation={rotations[i]}
-          />
+          <div className="absolute inset-0 flex items-center justify-center" style={{ overflow: "clip" }}>
+            <ProjectMockup
+              image={project.image}
+              title={project.title}
+              rotation={rotations[i]}
+            />
+          </div>
 
           <div className="absolute bottom-8 left-12 z-10">
             <span className={styles.projectTitle}>{project.title}</span>
