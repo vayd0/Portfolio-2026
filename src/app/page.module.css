@@ -28,6 +28,12 @@
   font-size: clamp(2rem, 40vw, 70rem);
   line-height: 80%;
   font-family: "Fat", sans-serif;
+  background: linear-gradient(225deg, #A8CC00, #CCDD59 50%, #F0FF8A);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 2px #202020;
+  paint-order: stroke fill;
 }
 
 .introGroup {
