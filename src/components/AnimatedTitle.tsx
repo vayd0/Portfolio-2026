@@ -101,10 +101,15 @@ export default function AnimatedTitle({ children, className, wheelStretch }: Pro
 
       if (scrollLeft >= releaseAt && !isReleased) {
         isReleased = true;
+        gsap.killTweensOf(lastChar);
         gsap.to(lastChar, {
           scaleX: 1,
+          scaleY: 1,
+          y: 0,
+          rotation: 0,
           duration: 1.0,
           ease: "elastic.out(1, 0.3)",
+          onComplete: () => gsap.set(lastChar, { transformOrigin: "bottom center" }),
         });
       } else if (scrollLeft < releaseAt) {
         isReleased = false;
@@ -112,7 +117,10 @@ export default function AnimatedTitle({ children, className, wheelStretch }: Pro
         gsap.killTweensOf(lastChar);
         gsap.set(lastChar, {
           scaleX: 1 + progress * (maxStretch - 1),
-          transformOrigin: "left center",
+          scaleY: 1,
+          y: 0,
+          rotation: 0,
+          transformOrigin: progress > 0 ? "left center" : "bottom center",
         });
       }
     };
