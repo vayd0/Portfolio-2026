@@ -17,7 +17,7 @@ type Project = {
 const query = `*[_type == "project"] | order(_createdAt asc)[0...3] {
   _id,
   title,
-  "image": image.asset->url
+  "image": mainImage.asset->url
 }`;
 
 const rotations = [-6, 5, -4];

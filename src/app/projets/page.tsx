@@ -14,7 +14,7 @@ type Project = {
 const query = `*[_type == "project"] | order(_createdAt asc) {
   _id,
   title,
-  "image": image.asset->url,
+  "image": mainImage.asset->url,
   color
 }`;
 
