@@ -43,9 +43,9 @@ export default function ProjectMockup({ image, title, rotation }: ProjectMockupP
             y: window.innerHeight * 0.4,
             scaleY: 0.4,
             scaleX: 1.6,
-            opacity: 0,
             duration: 0.5,
             ease: "power3.in",
+            onComplete: () => gsap.set(el, { opacity: 0 }),
           });
         }
       },
