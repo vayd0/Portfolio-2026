@@ -21,13 +21,13 @@
   position: relative;
   min-width: 100dvw;
   height: 100dvh;
+  z-index: 1;
 }
 
 .bigText {
   font-size: clamp(2rem, 40vw, 70rem);
   line-height: 80%;
   font-family: "Fat", sans-serif;
-  font-style: italic;
 }
 
 .introGroup {
