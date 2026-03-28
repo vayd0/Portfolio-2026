@@ -28,7 +28,6 @@ interface Props {
 
 export default function ProjectExpandedPanel({ project, rotation, shapeConfig }: Props) {
   const [open, setOpen] = useState(false);
-  const panelRef = useRef<HTMLDivElement>(null);
   const mockupWrapRef = useRef<HTMLDivElement>(null);
   const rightRef = useRef<HTMLDivElement>(null);
   const galleryRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -59,13 +58,15 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig }:
         x: 0,
         scaleX: 1,
         scaleY: 1,
-        duration: 0.6,
-        ease: "elastic.out(1, 0.5)",
+        duration: 0.45,
+        ease: "back.out(1.4)",
       }, 0.1);
   };
 
   useEffect(() => {
     if (!open) return;
+
+    galleryRefs.current = [];
 
     const gallery = galleryRefs.current.filter(Boolean);
 
@@ -117,14 +118,15 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig }:
   }, [open]);
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") closePanel(); };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && open) closePanel();
+    };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
   return (
     <div
-      ref={panelRef}
       className="relative shrink-0 bg-white flex items-center justify-center"
       style={{ width: "100dvw", height: "100dvh" }}
     >
@@ -171,7 +173,7 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig }:
         onClick={!open ? openPanel : undefined}
         style={{ cursor: open ? "default" : "pointer", zIndex: 5, position: "relative" }}
       >
-        <ProjectMockup image={project.image} title={project.title} rotation={open ? 0 : rotation} />
+        <ProjectMockup image={project.image} title={project.title} rotation={rotation} />
       </div>
 
       {open && (
@@ -193,7 +195,7 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig }:
           <div style={{ display: "flex", gap: 16, marginBottom: 40, flexWrap: "wrap" }}>
             {(project.gallery ?? []).slice(0, 3).map((src, i) => (
               <div
-                key={i}
+                key={src}
                 ref={(el) => { galleryRefs.current[i] = el; }}
                 style={{
                   width: "30%",
