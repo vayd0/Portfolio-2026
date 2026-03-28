@@ -102,15 +102,22 @@ export default function AnimatedTitle({ children, className, wheelStretch }: Pro
       if (scrollLeft >= releaseAt && !isReleased) {
         isReleased = true;
         gsap.killTweensOf(lastChar);
-        gsap.to(lastChar, {
-          scaleX: 1,
-          scaleY: 1,
-          y: 0,
-          rotation: 0,
-          duration: 1.0,
-          ease: "elastic.out(1, 0.3)",
+        gsap.timeline({
           onComplete: () => gsap.set(lastChar, { transformOrigin: "bottom center" }),
-        });
+        })
+          .to(lastChar, {
+            scaleX: 1,
+            scaleY: 1,
+            y: 0,
+            rotation: -10,
+            duration: 0.4,
+            ease: "power4.out",
+          })
+          .to(lastChar, {
+            rotation: 0,
+            duration: 0.9,
+            ease: "elastic.out(1, 0.28)",
+          }, "-=0.05");
       } else if (scrollLeft < releaseAt) {
         isReleased = false;
         const progress = Math.min(scrollLeft / introWidth, 1);
