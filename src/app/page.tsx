@@ -39,15 +39,15 @@ export default async function Home() {
         <div
           key={project._id}
           className="relative shrink-0 bg-white flex items-center justify-center"
-          style={{ width: "100dvw", height: "100dvh", clipPath: "inset(0 -200vw 0 -200vw)" }}
+          style={{ width: "100dvw", height: "100dvh" }}
         >
-          <div className="absolute top-1/2 -translate-y-1/2" style={{ left: -30 }}>
+          <div className="absolute top-1/2 -translate-y-1/2" style={{ left: -30, zIndex: 10 }}>
             <Circle />
           </div>
-          <div className="absolute top-0 right-0" style={{ marginTop: -60, marginRight: -60 }}>
+          <div className="absolute top-0 right-0" style={{ marginTop: -60, marginRight: -60, zIndex: 10 }}>
             <Triangle />
           </div>
-          <div className="absolute bottom-0 right-0" style={{ marginBottom: -40, marginRight: -20 }}>
+          <div className="absolute bottom-0 right-0" style={{ marginBottom: -40, marginRight: -20, zIndex: 10 }}>
             <Arrow />
           </div>
 
