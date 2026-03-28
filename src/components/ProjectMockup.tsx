@@ -63,7 +63,7 @@ export default function ProjectMockup({ image, title, rotation }: ProjectMockupP
       style={{ width: 640, aspectRatio: "16/9", overflow: "hidden" }}
     >
       {image ? (
-        <img src={image} alt={title} className="w-full h-full object-cover" />
+        <img src={image} alt={title} className="w-full h-full object-cover object-top" />
       ) : (
         <div className="w-full h-full bg-black" />
       )}

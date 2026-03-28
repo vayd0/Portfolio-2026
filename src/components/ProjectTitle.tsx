@@ -40,10 +40,10 @@ export default function ProjectTitle({ title, className }: Props) {
         style={{
           display: "block",
           height: "0.06em",
-          background: "#A8CC00",
+          background: "#202020",
           transformOrigin: "left center",
           transform: "scaleX(0)",
-          marginTop: "0.08em",
+          marginTop: "0.02em",
         }}
       />
     </div>
