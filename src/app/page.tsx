@@ -3,6 +3,7 @@ import HorizontalScroll from "@/components/HorizontalScroll";
 import { Smile } from "@/components/icons";
 import AnimatedTitle from "@/components/AnimatedTitle";
 import { Circle, Triangle, Arrow } from "@/components/shapes";
+import ParallaxShape from "@/components/ParallaxShape";
 import ProjectMockup from "@/components/ProjectMockup";
 import styles from "./page.module.css";
 
@@ -41,15 +42,15 @@ export default async function Home() {
           className="relative shrink-0 bg-white flex items-center justify-center"
           style={{ width: "100dvw", height: "100dvh" }}
         >
-          <div className="absolute top-1/2 -translate-y-1/2" style={{ left: -30, zIndex: 10 }}>
+          <ParallaxShape depthX={0.03} depthY={0.025} className="absolute top-1/2 -translate-y-1/2" style={{ left: -30, zIndex: 10 }}>
             <Circle />
-          </div>
-          <div className="absolute top-0 right-0" style={{ marginTop: -60, marginRight: -60, zIndex: 10 }}>
+          </ParallaxShape>
+          <ParallaxShape depthX={0.09} depthY={0.07} className="absolute top-0 right-0" style={{ marginTop: -60, marginRight: -60, zIndex: 10 }}>
             <Triangle />
-          </div>
-          <div className="absolute bottom-0 right-0" style={{ marginBottom: -40, marginRight: -20, zIndex: 10 }}>
+          </ParallaxShape>
+          <ParallaxShape depthX={0.06} depthY={0.05} className="absolute bottom-0 right-0" style={{ marginBottom: -40, marginRight: -20, zIndex: 10 }}>
             <Arrow />
-          </div>
+          </ParallaxShape>
 
           <ProjectMockup
             image={project.image}
