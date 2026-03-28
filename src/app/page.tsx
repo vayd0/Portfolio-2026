@@ -5,6 +5,7 @@ import AnimatedTitle from "@/components/AnimatedTitle";
 import { Circle, Triangle, Arrow } from "@/components/shapes";
 import ParallaxShape from "@/components/ParallaxShape";
 import ProjectMockup from "@/components/ProjectMockup";
+import ProjectTitle from "@/components/ProjectTitle";
 import styles from "./page.module.css";
 
 export const revalidate = 60;
@@ -59,7 +60,7 @@ export default async function Home() {
           />
 
           <div className="absolute bottom-8 left-12 z-10">
-            <span className={styles.projectTitle}>{project.title}</span>
+            <ProjectTitle title={project.title} className={styles.projectTitle} />
           </div>
         </div>
       ))}
