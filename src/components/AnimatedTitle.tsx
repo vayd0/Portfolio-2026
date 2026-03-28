@@ -40,23 +40,28 @@ export default function AnimatedTitle({ children, className, wheelStretch, gradi
     const split = new SplitText(ref.current, { type: "chars" });
 
     if (gradient) {
-      const rects = split.chars.map((c) => (c as HTMLElement).getBoundingClientRect());
-      const charsTop  = Math.min(...rects.map((r) => r.top));
-      const charsLeft = Math.min(...rects.map((r) => r.left));
-      const charsH    = Math.max(...rects.map((r) => r.bottom)) - charsTop;
-      const charsW    = Math.max(...rects.map((r) => r.right)) - charsLeft;
+      const fontSize = parseFloat(getComputedStyle(ref.current).fontSize);
+      const diacriticPad = Math.round(fontSize * 0.55);
 
-      const topPad     = charsH * 0.45;
-      const gradTop    = charsTop - topPad;
-      const gradHeight = charsH + topPad;
+      split.chars.forEach((char) => {
+        const el = char as HTMLElement;
+        el.style.paddingTop = `${diacriticPad}px`;
+        el.style.marginTop = `-${diacriticPad}px`;
+      });
+
+      const rects   = split.chars.map((c) => (c as HTMLElement).getBoundingClientRect());
+      const minTop  = Math.min(...rects.map((r) => r.top));
+      const minLeft = Math.min(...rects.map((r) => r.left));
+      const width   = Math.max(...rects.map((r) => r.right)) - minLeft;
+      const height  = Math.max(...rects.map((r) => r.bottom)) - minTop;
 
       split.chars.forEach((char, i) => {
         const el = char as HTMLElement;
         Object.assign(el.style, {
           backgroundImage: gradient,
-          backgroundSize: `${charsW}px ${gradHeight}px`,
-          backgroundPositionX: `${-(rects[i].left - charsLeft)}px`,
-          backgroundPositionY: `${-(rects[i].top - gradTop)}px`,
+          backgroundSize: `${width}px ${height}px`,
+          backgroundPositionX: `${-(rects[i].left - minLeft)}px`,
+          backgroundPositionY: `${-(rects[i].top - minTop)}px`,
           webkitBackgroundClip: "text",
           backgroundClip: "text",
           webkitTextFillColor: "transparent",
