@@ -171,7 +171,7 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig }:
       <div
         ref={mockupWrapRef}
         onClick={!open ? openPanel : undefined}
-        style={{ cursor: open ? "default" : "pointer", zIndex: 5, position: "relative" }}
+        style={{ cursor: open ? "default" : "pointer" }}
       >
         <ProjectMockup image={project.image} title={project.title} rotation={rotation} />
       </div>
