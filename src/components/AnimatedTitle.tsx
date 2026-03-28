@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
 import SplitText from "gsap/SplitText";
@@ -10,6 +10,7 @@ gsap.registerPlugin(SplitText);
 interface Props {
   children: string;
   className?: string;
+  wheelStretch?: boolean;
 }
 
 interface Personality {
@@ -28,8 +29,9 @@ function idleSquish(char: Element, p: Personality) {
     .to(char, { scaleY: 1,                 scaleX: 1,                 y:   0, rotation: 0,               duration: 0.75, ease: "elastic.out(1, 0.2)" });
 }
 
-export default function AnimatedTitle({ children, className }: Props) {
+export default function AnimatedTitle({ children, className, wheelStretch }: Props) {
   const ref = useRef<HTMLHeadingElement>(null);
+  const lastCharRef = useRef<Element | null>(null);
 
   useGSAP(() => {
     if (!ref.current) return;
@@ -63,13 +65,53 @@ export default function AnimatedTitle({ children, className }: Props) {
         .to(char, { y: 0, duration: 1.0, ease: "bounce.out" })
         .to(char, { rotation: 0, duration: 0.75, ease: "power3.out" }, "<")
         .to(char, { scaleX: 1, scaleY: 1, duration: 1.0, ease: "elastic.out(1, 0.4)" }, "<")
-        // extreme squash on landing
         .to(char, { scaleY: 0.38, scaleX: 1.6,  rotation: landRot, duration: 0.11, ease: "power3.out" })
         .to(char, { scaleY: 1.45, scaleX: 0.72, rotation: -landRot * 0.4, duration: 0.15, ease: "power2.out" })
         .to(char, { scaleY: 0.85, scaleX: 1.1,  duration: 0.11, ease: "power2.inOut" })
         .to(char, { scaleY: 1,    scaleX: 1, rotation: 0, duration: 0.55, ease: "elastic.out(1, 0.32)" });
     });
+
+    if (wheelStretch && split.chars.length > 0) {
+      lastCharRef.current = split.chars[split.chars.length - 1];
+    }
   }, { scope: ref });
+
+  useEffect(() => {
+    if (!wheelStretch) return;
+
+    let snapTimer: ReturnType<typeof setTimeout>;
+
+    const onWheel = (e: WheelEvent) => {
+      const lastChar = lastCharRef.current;
+      if (!lastChar || e.deltaY === 0) return;
+
+      clearTimeout(snapTimer);
+      const stretch = Math.min(1 + Math.abs(e.deltaY) * 0.007, 3.0);
+
+      gsap.killTweensOf(lastChar);
+      gsap.to(lastChar, {
+        scaleX: stretch,
+        transformOrigin: "left center",
+        duration: 0.12,
+        ease: "power2.out",
+        overwrite: true,
+      });
+
+      snapTimer = setTimeout(() => {
+        gsap.to(lastChar, {
+          scaleX: 1,
+          duration: 1.0,
+          ease: "elastic.out(1, 0.3)",
+        });
+      }, 150);
+    };
+
+    window.addEventListener("wheel", onWheel);
+    return () => {
+      window.removeEventListener("wheel", onWheel);
+      clearTimeout(snapTimer);
+    };
+  }, [wheelStretch]);
 
   return (
     <h1 ref={ref} className={className}>

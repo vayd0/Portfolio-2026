@@ -30,7 +30,7 @@ export default async function Home() {
       <div className={styles.introCard}>
         <div className={styles.introGroup}>
           <h3 className={styles.introText}>Bonjour <Smile />, je m'appelle </h3>
-          <AnimatedTitle className={styles.bigText}>Théo</AnimatedTitle>
+          <AnimatedTitle className={styles.bigText} wheelStretch>Théo</AnimatedTitle>
           <h3 className={styles.introText}>Et j'aime créer des choses</h3>
         </div>
       </div>
@@ -39,7 +39,7 @@ export default async function Home() {
         <div
           key={project._id}
           className="relative shrink-0 bg-white flex items-center justify-center"
-          style={{ width: "100dvw", height: "100dvh" }}
+          style={{ width: "100dvw", height: "100dvh", clipPath: "inset(0 -200vw 0 -200vw)" }}
         >
           <div className="absolute top-1/2 -translate-y-1/2" style={{ left: -30 }}>
             <Circle />
@@ -51,13 +51,11 @@ export default async function Home() {
             <Arrow />
           </div>
 
-          <div className="absolute inset-0 flex items-center justify-center" style={{ overflow: "clip" }}>
-            <ProjectMockup
-              image={project.image}
-              title={project.title}
-              rotation={rotations[i]}
-            />
-          </div>
+          <ProjectMockup
+            image={project.image}
+            title={project.title}
+            rotation={rotations[i]}
+          />
 
           <div className="absolute bottom-8 left-12 z-10">
             <span className={styles.projectTitle}>{project.title}</span>
