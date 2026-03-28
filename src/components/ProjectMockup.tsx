@@ -20,23 +20,27 @@ export default function ProjectMockup({ image, title, rotation }: ProjectMockupP
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (!entry.isIntersecting) return;
-        observer.unobserve(el);
-        gsap.set(el, {
-          opacity: 1,
-          y: -(window.innerHeight * 0.6 + 200),
-          scaleY: 3.5,
-          scaleX: 0.3,
-          rotation: 0,
-        });
-        gsap.to(el, {
-          y: 0,
-          scaleY: 1,
-          scaleX: 1,
-          rotation,
-          duration: 1.5,
-          ease: "elastic.out(1, 0.4)",
-        });
+        if (entry.isIntersecting) {
+          gsap.killTweensOf(el);
+          gsap.set(el, {
+            opacity: 1,
+            y: -(window.innerHeight * 0.6 + 200),
+            scaleY: 3.5,
+            scaleX: 0.3,
+            rotation: 0,
+          });
+          gsap.to(el, {
+            y: 0,
+            scaleY: 1,
+            scaleX: 1,
+            rotation,
+            duration: 1.5,
+            ease: "elastic.out(1, 0.4)",
+          });
+        } else {
+          gsap.killTweensOf(el);
+          gsap.set(el, { opacity: 0 });
+        }
       },
       { threshold: 0.1, rootMargin: "0px -30% 0px -30%" }
     );
