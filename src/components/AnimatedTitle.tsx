@@ -40,15 +40,19 @@ export default function AnimatedTitle({ children, className, wheelStretch, gradi
     const split = new SplitText(ref.current, { type: "chars" });
 
     if (gradient) {
-      const h1Rect = ref.current.getBoundingClientRect();
-      split.chars.forEach((char) => {
+      const rects = split.chars.map((c) => (c as HTMLElement).getBoundingClientRect());
+      const top    = Math.min(...rects.map((r) => r.top));
+      const left   = Math.min(...rects.map((r) => r.left));
+      const width  = Math.max(...rects.map((r) => r.right)) - left;
+      const height = Math.max(...rects.map((r) => r.bottom)) - top;
+
+      split.chars.forEach((char, i) => {
         const el = char as HTMLElement;
-        const charRect = el.getBoundingClientRect();
         Object.assign(el.style, {
           backgroundImage: gradient,
-          backgroundSize: `${h1Rect.width}px ${h1Rect.height}px`,
-          backgroundPositionX: `${-(charRect.left - h1Rect.left)}px`,
-          backgroundPositionY: `${-(charRect.top - h1Rect.top)}px`,
+          backgroundSize: `${width}px ${height}px`,
+          backgroundPositionX: `${-(rects[i].left - left)}px`,
+          backgroundPositionY: `${-(rects[i].top - top)}px`,
           webkitBackgroundClip: "text",
           backgroundClip: "text",
           webkitTextFillColor: "transparent",
