@@ -117,7 +117,7 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig }:
 
         <div
           className="absolute bottom-8 left-12"
-          style={{ zIndex: 10 }}
+          style={{ zIndex: 4 }}
           onClick={open ? closePanel : () => setOpen(true)}
         >
           <ProjectTitle title={project.title} className={styles.projectTitle} />
