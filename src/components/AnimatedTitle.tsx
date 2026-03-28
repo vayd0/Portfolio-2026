@@ -97,7 +97,7 @@ export default function AnimatedTitle({ children, className, wheelStretch }: Pro
 
       const scrollLeft = scrollContainer.scrollLeft;
       const introWidth = window.innerWidth;
-      const releaseAt = introWidth * (1 + 1 / 3);
+      const releaseAt = introWidth * 0.6;
 
       if (scrollLeft >= releaseAt && !isReleased) {
         isReleased = true;
