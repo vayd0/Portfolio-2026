@@ -3,6 +3,7 @@ import HorizontalScroll from "@/components/HorizontalScroll";
 import { Smile } from "@/components/icons";
 import AnimatedTitle from "@/components/AnimatedTitle";
 import { Circle, Triangle, Arrow } from "@/components/shapes";
+import ProjectMockup from "@/components/ProjectMockup";
 import styles from "./page.module.css";
 
 export const revalidate = 60;
@@ -50,26 +51,11 @@ export default async function Home() {
             <Arrow />
           </div>
 
-          <div
-            className="relative z-10"
-            style={{
-              transform: `rotate(${rotations[i]}deg)`,
-              border: "3px solid #44aaff",
-              width: 640,
-              aspectRatio: "16/9",
-              overflow: "hidden",
-            }}
-          >
-            {project.image ? (
-              <img
-                src={project.image}
-                alt={project.title}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="w-full h-full bg-black" />
-            )}
-          </div>
+          <ProjectMockup
+            image={project.image}
+            title={project.title}
+            rotation={rotations[i]}
+          />
 
           <div className="absolute bottom-8 left-12 z-10">
             <span className={styles.projectTitle}>{project.title}</span>
