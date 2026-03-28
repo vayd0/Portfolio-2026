@@ -72,8 +72,8 @@ export function Arrow() {
   return (
     <svg
       width="449"
-      height="254"
-      viewBox="0 0 449 254"
+      height="522"
+      viewBox="0 0 449 522"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >

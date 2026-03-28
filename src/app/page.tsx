@@ -40,13 +40,13 @@ export default async function Home() {
           className="relative shrink-0 overflow-hidden bg-white flex items-center justify-center"
           style={{ width: "100dvw", height: "100dvh" }}
         >
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/3">
+          <div className="absolute top-1/2 -translate-y-1/2" style={{ left: -30 }}>
             <Circle />
           </div>
-          <div className="absolute top-0 right-0 -translate-y-1/4 translate-x-1/4">
+          <div className="absolute top-0 right-0" style={{ marginTop: -60, marginRight: -60 }}>
             <Triangle />
           </div>
-          <div className="absolute bottom-0 right-0 translate-y-1/4">
+          <div className="absolute bottom-0 right-0" style={{ marginBottom: -40, marginRight: -20 }}>
             <Arrow />
           </div>
 
