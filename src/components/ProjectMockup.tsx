@@ -39,7 +39,14 @@ export default function ProjectMockup({ image, title, rotation }: ProjectMockupP
           });
         } else {
           gsap.killTweensOf(el);
-          gsap.set(el, { opacity: 0 });
+          gsap.to(el, {
+            y: window.innerHeight * 0.4,
+            scaleY: 0.4,
+            scaleX: 1.6,
+            opacity: 0,
+            duration: 0.5,
+            ease: "power3.in",
+          });
         }
       },
       { threshold: 0.1, rootMargin: "0px -30% 0px -30%" }
