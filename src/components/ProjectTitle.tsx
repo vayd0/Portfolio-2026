@@ -11,7 +11,10 @@ interface Props {
 export default function ProjectTitle({ title, className }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const lineRef = useRef<HTMLSpanElement>(null);
+  const letterRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const wordRefs = useRef<(HTMLSpanElement | null)[]>([]);
+
+  const letters = title.split("");
 
   useEffect(() => {
     const words = wordRefs.current.filter((el): el is HTMLSpanElement => el !== null);
@@ -42,41 +45,70 @@ export default function ProjectTitle({ title, className }: Props) {
 
   const onEnter = () => {
     gsap.to(lineRef.current, { scaleX: 1, duration: 1.1, ease: "elastic.out(1, 0.38)" });
+    const els = letterRefs.current.filter(Boolean);
+    gsap.to(els, {
+      y: "-18%",
+      duration: 0.5,
+      stagger: { each: 0.04, repeat: -1, yoyo: true },
+      ease: "power2.inOut",
+    });
   };
 
   const onLeave = () => {
     gsap.to(lineRef.current, { scaleX: 0, duration: 0.35, ease: "power3.in" });
+    const els = letterRefs.current.filter(Boolean);
+    gsap.killTweensOf(els);
+    gsap.to(els, { y: 0, duration: 0.4, ease: "elastic.out(1, 0.5)" });
   };
+
+  let letterIndex = 0;
 
   return (
     <div
       ref={containerRef}
       className={className}
-      style={{ display: "inline-block", cursor: "default" }}
+      style={{ position: "relative", display: "inline-block", cursor: "pointer" }}
       onMouseEnter={onEnter}
       onMouseLeave={onLeave}
     >
       <div style={{ display: "flex", flexWrap: "wrap", gap: "0.15em" }}>
-        {title.split(" ").map((word, i) => (
-          <span key={i} style={{ display: "inline-block", overflow: "hidden" }}>
-            <span
-              ref={(el) => { wordRefs.current[i] = el; }}
-              style={{ display: "inline-block" }}
-            >
-              {word}
+        {title.split(" ").map((word, wi) => {
+          const wordEl = (
+            <span key={wi} style={{ display: "inline-block", overflow: "hidden" }}>
+              <span
+                ref={(el) => { wordRefs.current[wi] = el; }}
+                style={{ display: "inline-flex" }}
+              >
+                {word.split("").map((char) => {
+                  const li = letterIndex++;
+                  return (
+                    <span
+                      key={li}
+                      ref={(el) => { letterRefs.current[li] = el; }}
+                      style={{ display: "inline-block" }}
+                    >
+                      {char}
+                    </span>
+                  );
+                })}
+              </span>
             </span>
-          </span>
-        ))}
+          );
+          letterIndex;
+          return wordEl;
+        })}
       </div>
       <span
         ref={lineRef}
         style={{
-          display: "block",
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          width: "100%",
           height: "0.06em",
           background: "#202020",
           transformOrigin: "left center",
           transform: "scaleX(0)",
-          marginTop: "0.02em",
         }}
       />
     </div>

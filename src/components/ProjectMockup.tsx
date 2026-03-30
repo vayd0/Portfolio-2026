@@ -25,9 +25,13 @@ export default function ProjectMockup({ image, title, rotation, freeze }: Projec
 
     gsap.set(el, { opacity: 0 });
 
+    const state = { current: "hidden" as "hidden" | "entering" | "visible" | "leaving" };
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
+          if (state.current === "entering" || state.current === "visible") return;
+          state.current = "entering";
           gsap.killTweensOf(el);
           gsap.set(el, {
             opacity: 1,
@@ -43,8 +47,11 @@ export default function ProjectMockup({ image, title, rotation, freeze }: Projec
             rotation,
             duration: 1.5,
             ease: "elastic.out(1, 0.4)",
+            onComplete: () => { state.current = "visible"; },
           });
         } else {
+          if (state.current === "leaving" || state.current === "hidden") return;
+          state.current = "leaving";
           gsap.killTweensOf(el);
           gsap.to(el, {
             y: window.innerHeight * 0.4,
@@ -52,7 +59,10 @@ export default function ProjectMockup({ image, title, rotation, freeze }: Projec
             scaleX: 1.6,
             duration: 0.5,
             ease: "power3.in",
-            onComplete: () => gsap.set(el, { opacity: 0 }),
+            onComplete: () => {
+              gsap.set(el, { opacity: 0 });
+              state.current = "hidden";
+            },
           });
         }
       },
@@ -63,11 +73,21 @@ export default function ProjectMockup({ image, title, rotation, freeze }: Projec
     return () => observer.disconnect();
   }, [rotation, freeze]);
 
+  const onEnter = () => {
+    gsap.to(ref.current, { scale: 1.22, duration: 1.2, ease: "elastic.out(1.2, 0.3)" });
+  };
+
+  const onLeave = () => {
+    gsap.to(ref.current, { scale: 1, duration: 1.4, ease: "elastic.out(1, 0.35)" });
+  };
+
   return (
     <div
       ref={ref}
       className="relative z-10"
-      style={{ width: 640, aspectRatio: "16/9", overflow: "hidden" }}
+      style={{ width: "clamp(280px, 38vw, 640px)", aspectRatio: "16/9", overflow: "hidden" }}
+      onMouseEnter={onEnter}
+      onMouseLeave={onLeave}
     >
       {image ? (
         <img src={image} alt={title} className="w-full h-full object-cover object-top" />

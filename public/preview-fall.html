@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fall Card</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0000FF;
+      height: 100svh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      font-family: system-ui, sans-serif;
+    }
+
+    .card {
+      width: 340px;
+      aspect-ratio: 1 / 1;
+      border-radius: 28px;
+      position: relative;
+      overflow: hidden;
+      rotate: -3deg;
+      cursor: pointer;
+      background:
+        radial-gradient(ellipse at 25% 20%, #f0ff8a 0%, transparent 55%),
+        radial-gradient(ellipse at 75% 85%, #aadd00 0%, transparent 50%),
+        linear-gradient(135deg, #e8ff6a 0%, #CCDD59 40%, #a8cc00 100%);
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+      background-size: 180px 180px;
+      opacity: 0.12;
+      mix-blend-mode: overlay;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .card-label {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      padding: 18px 20px;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: rgba(10, 40, 15, 0.6);
+      z-index: 2;
+    }
+  </style>
+</head>Ű_.ácdefv bgrtcdevrgtbhjnbygtvfrcdefrvgtéá
+<body>
+
+  <div class="card" id="card">
+    <div class="card-label">hkth.dev</div>
+  </div>
+
+  <script>
+    const card = document.getElementById('card');
+
+    function fall() {
+      gsap.set(card, { y: -600, scaleY: 1, scaleX: 1 });
+      gsap.timeline({ onComplete: () => setTimeout(fall, 1200) })
+        .to(card, { y: 0, duration: 1.2, ease: 'bounce.out' })
+        .to(card, { scaleY: 0.82, scaleX: 1.1, duration: 0.12, ease: 'power2.in' }, '>-0.18')
+        .to(card, { scaleY: 1.06, scaleX: 0.97, duration: 0.18, ease: 'power2.out' })
+        .to(card, { scaleY: 0.96, scaleX: 1.02, duration: 0.10, ease: 'power2.inOut' })
+        .to(card, { scaleY: 1, scaleX: 1, duration: 0.22, ease: 'elastic.out(1, 0.4)' });
+    }
+
+    setTimeout(fall, 300);
+  </script>
+</body>
+</html>

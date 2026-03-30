@@ -14,8 +14,20 @@
 }
 
 body {
-  background:var(--background);
+  background: var(--background);
   color: var(--foreground);
   overflow: hidden;
   height: 100vh;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, #e5e5e5 1px, transparent 1px),
+    linear-gradient(to bottom, #e5e5e5 1px, transparent 1px);
+  background-size: 120px 120px;
+  pointer-events: none;
+  z-index: 0;
 }

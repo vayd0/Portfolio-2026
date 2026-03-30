@@ -34,6 +34,7 @@ function idleSquish(char: Element, p: Personality) {
 export default function AnimatedTitle({ children, className, wheelStretch, gradient, stroke }: Props) {
   const ref = useRef<HTMLHeadingElement>(null);
   const lastCharRef = useRef<Element | null>(null);
+  const lastCharPersonalityRef = useRef<Personality | null>(null);
 
   useGSAP(() => {
     if (!ref.current) return;
@@ -91,6 +92,10 @@ export default function AnimatedTitle({ children, className, wheelStretch, gradi
         rotation: entryRot,
       });
 
+      if (wheelStretch && i === split.chars.length - 1) {
+        lastCharPersonalityRef.current = personality;
+      }
+
       gsap.timeline({
         delay: i * 0.1 + Math.random() * 0.04,
         onComplete: () => setTimeout(() => idleSquish(char, personality), 500 + i * 150 + Math.random() * 300),
@@ -122,11 +127,12 @@ export default function AnimatedTitle({ children, className, wheelStretch, gradi
     if (!scrollContainer) return;
 
     let isReleased = false;
+    let hasReleased = false;
     const maxStretch = 3.5;
 
     const onScroll = () => {
       const lastChar = lastCharRef.current;
-      if (!lastChar) return;
+      if (!lastChar || hasReleased) return;
 
       const scrollLeft = scrollContainer.scrollLeft;
       const introWidth = window.innerWidth;
@@ -134,9 +140,14 @@ export default function AnimatedTitle({ children, className, wheelStretch, gradi
 
       if (scrollLeft >= releaseAt && !isReleased) {
         isReleased = true;
+        hasReleased = true;
         gsap.killTweensOf(lastChar);
         gsap.timeline({
-          onComplete: () => gsap.set(lastChar, { transformOrigin: "bottom center" }),
+          onComplete: () => {
+            gsap.set(lastChar, { transformOrigin: "bottom center" });
+            const p = lastCharPersonalityRef.current;
+            if (p) setTimeout(() => idleSquish(lastChar, p), 600 + Math.random() * 400);
+          },
         })
           .to(lastChar, {
             scaleX: 1,

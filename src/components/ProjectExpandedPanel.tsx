@@ -1,11 +1,11 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import gsap from "gsap";
 import ProjectMockup from "@/components/ProjectMockup";
 import ProjectTitle from "@/components/ProjectTitle";
 import ParallaxShape from "@/components/ParallaxShape";
-import { Circle, Triangle, Arrow } from "@/components/shapes";
+import { Circle, Triangle, Arrow, ArrowDraw, drawCircle } from "@/components/shapes";
 import styles from "@/app/page.module.css";
 
 interface Props {
@@ -16,32 +16,75 @@ interface Props {
     gallery?: string[];
     description?: string;
     url?: string;
+    projectUrl?: string;
     github?: string;
   };
   rotation: number;
   shapeConfig: {
-    circle: { depthX: number; depthY: number; enterX: number; enterY: number; enterRotation: number; enterDelay: number };
-    triangle: { depthX: number; depthY: number; enterX: number; enterY: number; enterRotation: number; enterDelay: number };
-    arrow: { depthX: number; depthY: number; enterX: number; enterY: number; enterRotation: number; enterDelay: number };
+    circle: { depthX: number; depthY: number; enterX: number; enterY: number; enterRotation: number; enterDelay: number; className: string; style: React.CSSProperties };
+    triangle: { depthX: number; depthY: number; enterX: number; enterY: number; enterRotation: number; enterDelay: number; className: string; style: React.CSSProperties };
+    arrow: { depthX: number; depthY: number; enterX: number; enterY: number; enterRotation: number; enterDelay: number; className: string; style: React.CSSProperties; flipY?: boolean };
   };
+}
+
+function VisitButton({ href }: { href: string }) {
+  const btnRef = useRef<HTMLAnchorElement>(null);
+
+  const onEnter = () => {
+    gsap.to(btnRef.current, { scale: 1.12, duration: 0.7, ease: "elastic.out(1, 0.4)" });
+  };
+
+  const onLeave = () => {
+    gsap.to(btnRef.current, { scale: 1, duration: 0.6, ease: "elastic.out(1, 0.5)" });
+  };
+
+  return (
+    <a
+      ref={btnRef}
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{ position: "relative", display: "inline-flex", textDecoration: "none", color: "#202020", cursor: "pointer" }}
+      onMouseEnter={onEnter}
+      onMouseLeave={onLeave}
+    >
+      {drawCircle()}
+      <span style={{
+        position: "absolute",
+        inset: 0,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 6,
+        fontFamily: "Dudu, sans-serif",
+        fontSize: "clamp(1rem, 1.3vw, 1.5rem)",
+      }}>
+        Visiter <ArrowDraw />
+      </span>
+    </a>
+  );
 }
 
 export default function ProjectExpandedPanel({ project, rotation, shapeConfig }: Props) {
   const [open, setOpen] = useState(false);
+  const panelRef = useRef<HTMLDivElement>(null);
   const leftRef = useRef<HTMLDivElement>(null);
   const rightRef = useRef<HTMLDivElement>(null);
   const mockupWrapRef = useRef<HTMLDivElement>(null);
   const galleryRefs = useRef<(HTMLDivElement | null)[]>([]);
   const descRef = useRef<HTMLDivElement>(null);
+  const descWordRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const linksRef = useRef<HTMLDivElement>(null);
 
   const closePanel = () => {
     if (!open) return;
+    if (rightRef.current) rightRef.current.style.overflow = "hidden";
     const gallery = galleryRefs.current.filter(Boolean);
     const tl = gsap.timeline({ onComplete: () => setOpen(false) });
+    const descWords = descWordRefs.current.filter(Boolean);
     tl
       .to(linksRef.current, { opacity: 0, y: 20, duration: 0.15, ease: "power2.in" }, 0)
-      .to(descRef.current, { opacity: 0, y: 10, duration: 0.15, ease: "power2.in" }, 0)
+      .to(descWords, { y: "115%", stagger: { each: 0.012, from: "end" }, duration: 0.22, ease: "power3.in" }, 0)
       .to([...gallery].reverse(), { opacity: 0, scale: 0.7, y: -40, stagger: 0.05, duration: 0.2, ease: "power3.in" }, 0)
       .to(rightRef.current, { width: 0, duration: 0.4, ease: "power3.in" }, 0.1)
       .to(leftRef.current, { width: "100dvw", duration: 0.65, ease: "elastic.out(1, 0.5)" }, 0.15)
@@ -50,13 +93,24 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig }:
   };
 
   useEffect(() => {
+    if (!panelRef.current) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (!entry.isIntersecting && open) closePanel(); },
+      { threshold: 0.4 }
+    );
+    observer.observe(panelRef.current);
+    return () => observer.disconnect();
+  }, [open]);
+
+  useEffect(() => {
     if (!open) return;
 
     const gallery = galleryRefs.current.filter(Boolean);
     const galleryRotations = [-12, 6, -4];
 
+    const descWords = descWordRefs.current.filter(Boolean);
     gsap.set(gallery, { opacity: 0, scale: 0.4, y: -100, rotation: 0 });
-    gsap.set(descRef.current, { opacity: 0, y: 40 });
+    gsap.set(descWords, { y: "115%" });
     gsap.set(linksRef.current, { opacity: 0, y: 30 });
 
     const tl = gsap.timeline();
@@ -65,7 +119,7 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig }:
       .to(mockupWrapRef.current, { scaleY: 1.12, scaleX: 0.92, duration: 0.14, ease: "power2.out" })
       .to(mockupWrapRef.current, { scaleY: 1, scaleX: 1, duration: 0.9, ease: "elastic.out(1, 0.38)" })
       .to(leftRef.current, { width: "42vw", duration: 0.8, ease: "elastic.out(1, 0.45)" }, 0)
-      .to(rightRef.current, { width: "58vw", duration: 0.9, ease: "elastic.out(1, 0.42)" }, 0.1)
+      .to(rightRef.current, { width: "58vw", duration: 0.9, ease: "elastic.out(1, 0.42)", onComplete: () => { if (rightRef.current) rightRef.current.style.overflow = "visible"; } }, 0.1)
       .to(gallery, {
         opacity: 1,
         scale: 1,
@@ -75,23 +129,26 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig }:
         duration: 1.0,
         ease: "elastic.out(1, 0.45)",
       }, "-=0.5")
-      .to(descRef.current, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, "-=0.4")
+      .to(descWords, { y: "0%", stagger: 0.022, duration: 0.65, ease: "power4.out" }, "-=0.4")
       .to(linksRef.current, { opacity: 1, y: 0, duration: 0.7, ease: "elastic.out(1, 0.5)" }, "-=0.3");
   }, [open]);
 
   return (
     <div
-      className="relative shrink-0 bg-white flex"
+      ref={panelRef}
+      className="relative shrink-0 flex"
       style={{ width: "100dvw", height: "100dvh" }}
     >
-      <ParallaxShape depthX={shapeConfig.circle.depthX} depthY={shapeConfig.circle.depthY} enterX={shapeConfig.circle.enterX} enterY={shapeConfig.circle.enterY} enterRotation={shapeConfig.circle.enterRotation} enterDelay={shapeConfig.circle.enterDelay} className="absolute top-1/2 -translate-y-1/2" style={{ left: -30, zIndex: 2 }}>
+      <ParallaxShape depthX={shapeConfig.circle.depthX} depthY={shapeConfig.circle.depthY} enterX={shapeConfig.circle.enterX} enterY={shapeConfig.circle.enterY} enterRotation={shapeConfig.circle.enterRotation} enterDelay={shapeConfig.circle.enterDelay} className={shapeConfig.circle.className} style={{ ...shapeConfig.circle.style, zIndex: 2 }}>
         <Circle />
       </ParallaxShape>
-      <ParallaxShape depthX={shapeConfig.triangle.depthX} depthY={shapeConfig.triangle.depthY} enterX={shapeConfig.triangle.enterX} enterY={shapeConfig.triangle.enterY} enterRotation={shapeConfig.triangle.enterRotation} enterDelay={shapeConfig.triangle.enterDelay} className="absolute top-0 right-0" style={{ marginTop: -60, marginRight: -60, zIndex: 10 }}>
+      <ParallaxShape depthX={shapeConfig.triangle.depthX} depthY={shapeConfig.triangle.depthY} enterX={shapeConfig.triangle.enterX} enterY={shapeConfig.triangle.enterY} enterRotation={shapeConfig.triangle.enterRotation} enterDelay={shapeConfig.triangle.enterDelay} className={shapeConfig.triangle.className} style={{ ...shapeConfig.triangle.style, zIndex: 1 }}>
         <Triangle />
       </ParallaxShape>
-      <ParallaxShape depthX={shapeConfig.arrow.depthX} depthY={shapeConfig.arrow.depthY} enterX={shapeConfig.arrow.enterX} enterY={shapeConfig.arrow.enterY} enterRotation={shapeConfig.arrow.enterRotation} enterDelay={shapeConfig.arrow.enterDelay} className="absolute bottom-0 right-0" style={{ marginBottom: -40, marginRight: -20, zIndex: 10 }}>
-        <Arrow />
+      <ParallaxShape depthX={shapeConfig.arrow.depthX} depthY={shapeConfig.arrow.depthY} enterX={shapeConfig.arrow.enterX} enterY={shapeConfig.arrow.enterY} enterRotation={shapeConfig.arrow.enterRotation} enterDelay={shapeConfig.arrow.enterDelay} className={shapeConfig.arrow.className} style={{ ...shapeConfig.arrow.style, zIndex: 1 }}>
+        <div style={shapeConfig.arrow.flipY ? { transform: "scaleY(-1)" } : undefined}>
+          <Arrow />
+        </div>
       </ParallaxShape>
 
       <div
@@ -140,10 +197,10 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig }:
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
-            padding: "0 4vw",
+            padding: "0 clamp(16px, 4vw, 80px)",
           }}
         >
-          <div style={{ display: "flex", gap: 16, marginBottom: 40, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: "clamp(8px, 1vw, 16px)", marginBottom: "clamp(20px, 3vh, 40px)", flexWrap: "wrap" }}>
             {(project.gallery ?? []).slice(0, 3).map((src, i) => (
               <div
                 key={src}
@@ -153,6 +210,7 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig }:
                   aspectRatio: "16/9",
                   overflow: "hidden",
                   flexShrink: 0,
+                  minWidth: 0,
                 }}
               >
                 <img src={src} alt={`${project.title} ${i + 1}`} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }} />
@@ -160,31 +218,22 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig }:
             ))}
           </div>
 
-          <div ref={descRef} style={{ fontFamily: "Dudu, sans-serif", fontSize: "clamp(1rem, 1.4vw, 1.6rem)", lineHeight: 1.5, maxWidth: 480, marginBottom: 32 }}>
-            {project.description}
+          <div ref={descRef} style={{ fontFamily: "Dudu, sans-serif", fontSize: "clamp(0.85rem, 1.4vw, 1.6rem)", lineHeight: 1.5, maxWidth: "min(480px, 100%)", marginTop: "clamp(16px, 3vh, 40px)", marginBottom: "clamp(16px, 2.5vh, 32px)", display: "flex", flexWrap: "wrap", gap: "0.28em", alignContent: "flex-start" }}>
+            {(project.description ?? "").split(" ").map((word, i) => (
+              <span key={i} style={{ display: "inline-block", overflow: "hidden", lineHeight: 1.6 }}>
+                <span
+                  ref={(el) => { descWordRefs.current[i] = el; }}
+                  style={{ display: "inline-block" }}
+                >
+                  {word}
+                </span>
+              </span>
+            ))}
           </div>
 
           <div ref={linksRef} style={{ display: "flex", alignItems: "center", gap: 24 }}>
-            {project.url && (
-              <a
-                href={project.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  fontFamily: "Dudu, sans-serif",
-                  fontSize: "clamp(0.9rem, 1.2vw, 1.4rem)",
-                  border: "2px solid #202020",
-                  borderRadius: 999,
-                  padding: "8px 24px",
-                  textDecoration: "none",
-                  color: "#202020",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 8,
-                }}
-              >
-                Visiter ↗
-              </a>
+            {(project.projectUrl ?? project.url) && (
+              <VisitButton href={(project.projectUrl ?? project.url)!} />
             )}
             {project.github && (
               <a href={project.github} target="_blank" rel="noopener noreferrer" style={{ color: "#202020" }}>
