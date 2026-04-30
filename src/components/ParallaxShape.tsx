@@ -13,6 +13,7 @@ interface Props {
   enterDelay?: number;
   className?: string;
   style?: React.CSSProperties;
+  mobileStyle?: React.CSSProperties;
 }
 
 export default function ParallaxShape({
@@ -25,6 +26,7 @@ export default function ParallaxShape({
   enterDelay = 0,
   className,
   style,
+  mobileStyle,
 }: Props) {
   const parallaxRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
@@ -97,8 +99,11 @@ export default function ParallaxShape({
     };
   }, [depthX, depthY, enterX, enterY, enterRotation, enterDelay]);
 
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+  const appliedStyle = isMobile && mobileStyle ? { ...style, ...mobileStyle } : style;
+
   return (
-    <div ref={parallaxRef} className={className} style={style}>
+    <div ref={parallaxRef} className={className} style={appliedStyle}>
       <div ref={innerRef}>
         {children}
       </div>

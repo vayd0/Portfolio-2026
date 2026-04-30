@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
+import SlimeImage from "./SlimeImage";
 
 gsap.registerPlugin();
 
@@ -68,13 +69,13 @@ export default function Card({ title, image, index, color = "#e8e8e8", noSquish 
         style={{ aspectRatio: "16/9", backgroundColor: color }}
       >
         {image ? (
-          <img src={image} alt={title} className="absolute inset-0 w-full h-full object-cover" />
+          <SlimeImage src={image} alt={title} className="absolute inset-0" />
         ) : (
           <div className="absolute inset-0 bg-[#d4d4d4]" />
         )}
 
         <div className="absolute bottom-0 left-0 right-0 p-4">
-          <span className="text-sm font-medium tracking-tight" style={{ color: "#202020" }}>
+          <span className="text-sm font-medium tracking-tight" style={{ color: "#000000" }}>
             {title}
           </span>
         </div>
@@ -83,7 +84,7 @@ export default function Card({ title, image, index, color = "#e8e8e8", noSquish 
           ref={overlayRef}
           className="absolute flex flex-col items-start justify-end p-5"
           style={{
-            backgroundColor: "#CCDD59",
+            backgroundColor: "#C5FF33",
             top: "-80px",
             left: 0,
             right: 0,
@@ -92,8 +93,8 @@ export default function Card({ title, image, index, color = "#e8e8e8", noSquish 
           }}
         >
           <div className="flex items-center gap-3" style={{ transform: "skewY(10deg)" }}>
-            <span className="text-4xl font-bold" style={{ color: "#202020" }}>→</span>
-            <span className="text-xl font-bold italic leading-tight" style={{ color: "#202020" }}>
+            <span className="text-4xl font-bold" style={{ color: "#000000" }}>→</span>
+            <span className="text-xl font-bold italic leading-tight" style={{ color: "#000000" }}>
               {title}
             </span>
           </div>

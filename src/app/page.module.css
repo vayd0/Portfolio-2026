@@ -24,6 +24,12 @@
   z-index: 1;
 }
 
+@media (min-width: 768px) {
+  .introCard {
+    height: 100%;
+  }
+}
+
 .bigText {
   font-size: clamp(2rem, 40vw, 70rem);
   line-height: 80%;
@@ -43,7 +49,7 @@
 .projectTitle {
   font-family: "Fat", sans-serif;
   font-style: normal;
-  font-size: clamp(2rem, 12vw, 20rem);
+  font-size: clamp(3.5rem, 16vw, 20rem);
   line-height: 1;
   text-transform: uppercase;
 }
@@ -53,6 +59,8 @@
   display: flex;
   align-items: center;
   margin: 0;
+  position: relative;
+  z-index: 1;
 
   &:first-child {
     margin-bottom: -1.2em;

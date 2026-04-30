@@ -35,9 +35,12 @@ export default function AnimatedTitle({ children, className, wheelStretch, gradi
   const ref = useRef<HTMLHeadingElement>(null);
   const lastCharRef = useRef<Element | null>(null);
   const lastCharPersonalityRef = useRef<Personality | null>(null);
+  const allCharsRef = useRef<{ el: Element; personality: Personality }[]>([]);
+  const mobileReadyRef = useRef(false);
 
   useGSAP(() => {
     if (!ref.current) return;
+    allCharsRef.current = [];
     const split = new SplitText(ref.current, { type: "chars" });
 
     if (gradient) {
@@ -80,6 +83,10 @@ export default function AnimatedTitle({ children, className, wheelStretch, gradi
         scaleAmp: 0.88 + Math.random() * 0.38,
       };
 
+      if (wheelStretch) {
+        allCharsRef.current.push({ el: char, personality });
+      }
+
       const entryRot = (Math.random() - 0.5) * 600;
       const landRot = (Math.random() - 0.5) * 18;
 
@@ -96,9 +103,13 @@ export default function AnimatedTitle({ children, className, wheelStretch, gradi
         lastCharPersonalityRef.current = personality;
       }
 
+      const isLast = i === split.chars.length - 1;
       gsap.timeline({
         delay: i * 0.1 + Math.random() * 0.04,
-        onComplete: () => setTimeout(() => idleSquish(char, personality), 500 + i * 150 + Math.random() * 300),
+        onComplete: () => {
+          if (isLast) mobileReadyRef.current = true;
+          setTimeout(() => idleSquish(char, personality), 500 + i * 150 + Math.random() * 300);
+        },
       })
         .to(char, { y: 0, duration: 1.0, ease: "bounce.out" })
         .to(char, { rotation: 0, duration: 0.75, ease: "power3.out" }, "<")
@@ -178,6 +189,49 @@ export default function AnimatedTitle({ children, className, wheelStretch, gradi
 
     scrollContainer.addEventListener("scroll", onScroll);
     return () => scrollContainer.removeEventListener("scroll", onScroll);
+  }, [wheelStretch]);
+
+  useEffect(() => {
+    if (!wheelStretch || window.innerWidth >= 768) return;
+    const el = ref.current;
+    if (!el) return;
+
+    let hasReleased = false;
+    let ticking = false;
+    let lastScrollY = 0;
+    const maxStretch = 2.0;
+    const releaseAt = window.innerHeight * 0.22;
+
+    const update = () => {
+      if (hasReleased) return;
+      const scrollY = lastScrollY;
+
+      if (scrollY >= releaseAt) {
+        hasReleased = true;
+        gsap.killTweensOf(el);
+        gsap.timeline()
+          .to(el, { scaleY: 1, scaleX: 1, rotation: -6, duration: 0.38, ease: "power4.out", transformOrigin: "top center" })
+          .to(el, { rotation: 0, duration: 0.9, ease: "elastic.out(1, 0.28)" }, "-=0.05");
+      } else {
+        const progress = Math.min(scrollY / releaseAt, 1);
+        gsap.set(el, {
+          scaleY: 1 + progress * (maxStretch - 1),
+          transformOrigin: "top center",
+        });
+      }
+      ticking = false;
+    };
+
+    const onScroll = () => {
+      lastScrollY = window.scrollY;
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(update);
+      }
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, [wheelStretch]);
 
   return (
