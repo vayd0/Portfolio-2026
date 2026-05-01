@@ -241,8 +241,7 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
 
       <div
         ref={blackLayerRef}
-        data-circle-black-layer
-        style={{ position: "absolute", inset: 0, zIndex: 2, pointerEvents: "none" }}
+        style={{ position: "absolute", inset: 0, zIndex: 2, pointerEvents: "none", clipPath: "circle(0vmax at 50% 50%)" }}
       >
         <div className={shapeConfig.circle.className} style={{ zIndex: 1, ...shapeConfig.circle.style, filter: "brightness(0)" }}>
           <Circle />
@@ -259,7 +258,7 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
 
       <div
         data-ball-black-layer
-        style={{ position: "absolute", inset: 0, zIndex: 2, pointerEvents: "none" }}
+        style={{ position: "absolute", inset: 0, zIndex: 2, pointerEvents: "none", clipPath: "circle(0 at 0 0)" }}
       >
         <div className={shapeConfig.circle.className} style={{ zIndex: 1, ...shapeConfig.circle.style, filter: "brightness(0)" }}>
           <Circle />

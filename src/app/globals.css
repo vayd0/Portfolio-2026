@@ -1,10 +1,5 @@
 @import "tailwindcss";
 
-[data-ball-black-layer],
-[data-circle-black-layer] {
-  clip-path: circle(0 at 0 0);
-}
-
 :root {
   --background: #ffffff;
   --foreground: #000000;
