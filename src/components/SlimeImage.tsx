@@ -3,48 +3,85 @@
 import { useRef, useEffect } from "react";
 import gsap from "gsap";
 
-const VERT = `
-precision highp float;
-attribute vec3 position;
+const VERT_FLAT = `
+attribute vec2 position;
 attribute vec2 uv;
-attribute float aIndex;
-
-uniform float uTime;
-uniform float uHover;
-uniform vec2 uMouse;
-uniform float uAspect;
-
 varying vec2 vUv;
-
 void main() {
   vUv = uv;
-  vec2 pos = position.xy * 1.8;
-
-  vec2 diff = pos - uMouse;
-  vec2 diffAspect = vec2(diff.x * uAspect, diff.y);
-  float dist = length(diffAspect);
-  float radius = 0.85;
-  float force = max(0.0, 1.0 - dist / radius);
-  force = force * force * force;
-
-  pos += (diff / max(length(diff), 0.001)) * force * 0.45 * uHover;
-
-  pos.y += sin(aIndex * 3.2 + uTime * 4.0) * 0.028 * force * uHover;
-  pos.x += cos(aIndex * 2.7 + uTime * 3.5) * 0.02 * force * uHover;
-
-  gl_Position = vec4(pos, 0.0, 1.0);
+  gl_Position = vec4(position, 0, 1);
 }
 `;
 
-const FRAG = `
+const CLEAR_FRAG = `
 precision highp float;
-uniform sampler2D tImage;
+void main() {
+  gl_FragColor = vec4(0.5, 0.5, 0.0, 1.0);
+}
+`;
+
+const VELOCITY_FRAG = `
+precision highp float;
+uniform sampler2D tMap;
+uniform vec2 uMouse;
+uniform vec2 uVelocity;
+uniform float uAspect;
+uniform float uDecay;
+uniform float uRadius;
+uniform float uHover;
 varying vec2 vUv;
 
 void main() {
-  gl_FragColor = texture2D(tImage, vUv);
+  vec2 vel = texture2D(tMap, vUv).rg * 2.0 - 1.0;
+  vel *= uDecay;
+  vec2 diff = vUv - uMouse;
+  diff.x *= uAspect;
+  float dist = length(diff);
+  float falloff = 1.0 - smoothstep(0.0, uRadius, dist);
+  falloff *= falloff;
+  vel += uVelocity * falloff * uHover;
+  vel = clamp(vel, -1.0, 1.0);
+  gl_FragColor = vec4(vel * 0.5 + 0.5, 0.0, 1.0);
 }
 `;
+
+const MASK_FRAG = `
+precision highp float;
+uniform sampler2D tVelocity;
+uniform float uTime;
+uniform float uHover;
+varying vec2 vUv;
+
+void main() {
+  float t = uTime;
+  float h = uHover;
+  vec2 vel = texture2D(tVelocity, vUv).rg * 2.0 - 1.0;
+  float velMag = length(vel) * 0.018;
+
+  float dX = min(vUv.x, 1.0 - vUv.x);
+  float dY = min(vUv.y, 1.0 - vUv.y);
+  float d = min(dX, dY);
+  float w = 0.0015;
+  float innerX = 0.06;
+  float innerY = 0.1227;
+  float inInnerX = smoothstep(innerX - w, innerX + w, dX);
+  float inInnerY = smoothstep(innerY - w, innerY + w, dY);
+  float isInBorder = 1.0 - inInnerX * inInnerY;
+
+  float angle = atan(vUv.y - 0.5, vUv.x - 0.5);
+  float orgOff =
+    (0.5 + 0.5 * sin(angle * 5.0  + t * 1.8)) * 0.010 +
+    (0.5 + 0.5 * sin(angle * 11.0 + t * 3.1)) * 0.005 +
+    (0.5 + 0.5 * sin(angle * 19.0 + t * 4.3)) * 0.003;
+  orgOff = (orgOff + velMag) * h;
+
+  float outerCut = 1.0 - smoothstep(orgOff - w, orgOff + w, d);
+  float mask = isInBorder * (1.0 - outerCut);
+  gl_FragColor = vec4(0.0, 0.0, 0.0, mask);
+}
+`;
+
+const INNER_INSET = "12.3% 6%";
 
 export default function SlimeImage({
   src,
@@ -56,19 +93,28 @@ export default function SlimeImage({
   className?: string;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    const imgEl = imgRef.current;
+    if (!canvas || !imgEl) return;
 
-    gsap.set(canvas, { opacity: 0 });
+    gsap.set(imgEl, { opacity: 0 });
+
+    imgEl.onload = () => {
+      gsap.fromTo(imgEl, { opacity: 0, scale: 1.06 }, { opacity: 1, scale: 1, duration: 0.9, ease: "power3.out", delay: 0.15 });
+    };
+    imgEl.onerror = () => { gsap.set(imgEl, { opacity: 1 }); };
+    imgEl.src = `/api/img?url=${encodeURIComponent(src)}`;
 
     let rafId: number;
     let destroyed = false;
     const refs: { cleanup?: () => void } = {};
 
     (async () => {
-      const { Renderer, Program, Mesh, Plane, Texture } = await import("ogl");
+      const { Renderer, Program, Mesh, Triangle, RenderTarget } = await import("ogl");
 
       if (destroyed) return;
 
@@ -80,75 +126,83 @@ export default function SlimeImage({
       const gl = renderer.gl;
       gl.clearColor(0, 0, 0, 0);
 
-      const makeGeometry = () => {
-        const geo = new Plane(gl, { width: 1, height: 1, widthSegments: 24, heightSegments: 24 });
-        const count = geo.attributes.position.count;
-        const ids = new Float32Array(count);
-        for (let i = 0; i < count; i++) ids[i] = i;
-        geo.addAttribute("aIndex", { size: 1, data: ids });
-        return geo;
-      };
+      const triGeo = new Triangle(gl);
 
-      const geometry = makeGeometry();
-
-      const tex = new Texture(gl, {
-        generateMipmaps: false,
-        minFilter: gl.LINEAR,
-        magFilter: gl.LINEAR,
+      const makeFBO = () => new RenderTarget(gl, {
+        width: w, height: h,
+        minFilter: gl.LINEAR, magFilter: gl.LINEAR,
+        wrapS: gl.CLAMP_TO_EDGE, wrapT: gl.CLAMP_TO_EDGE,
       });
 
-      const img = new Image();
-      img.onload = () => {
-        if (destroyed) return;
-        tex.image = img;
-        gsap.fromTo(
-          canvas,
-          { opacity: 0, scale: 1.06 },
-          { opacity: 1, scale: 1, duration: 0.9, ease: "power3.out", delay: 0.15 }
-        );
-      };
-      img.onerror = () => {
-        if (!destroyed) gsap.set(canvas, { opacity: 1 });
-      };
-      img.src = `/api/img?url=${encodeURIComponent(src)}`;
+      let fbo = [makeFBO(), makeFBO()];
+      let curr = 0;
 
-      const program = new Program(gl, {
-        vertex: VERT,
-        fragment: FRAG,
+      const clearProg = new Program(gl, { vertex: VERT_FLAT, fragment: CLEAR_FRAG, depthTest: false, depthWrite: false });
+      const clearMesh = new Mesh(gl, { geometry: triGeo, program: clearProg });
+      renderer.render({ scene: clearMesh, target: fbo[0] });
+      renderer.render({ scene: clearMesh, target: fbo[1] });
+
+      const velProg = new Program(gl, {
+        vertex: VERT_FLAT,
+        fragment: VELOCITY_FRAG,
         depthTest: false,
         depthWrite: false,
         uniforms: {
-          tImage: { value: tex },
-          uTime: { value: 0 },
-          uHover: { value: 0 },
-          uMouse: { value: [0, 0] },
+          tMap: { value: fbo[1].texture },
+          uMouse: { value: [0.5, 0.5] },
+          uVelocity: { value: [0, 0] },
           uAspect: { value: w / h },
+          uDecay: { value: 0.93 },
+          uRadius: { value: 0.28 },
+          uHover: { value: 0 },
         },
       });
+      const velMesh = new Mesh(gl, { geometry: triGeo, program: velProg });
 
-      const mesh = new Mesh(gl, { geometry, program });
+      const maskProg = new Program(gl, {
+        vertex: VERT_FLAT,
+        fragment: MASK_FRAG,
+        depthTest: false,
+        depthWrite: false,
+        uniforms: {
+          tVelocity: { value: fbo[0].texture },
+          uTime: { value: 0 },
+          uHover: { value: 0 },
+        },
+      });
+      const maskMesh = new Mesh(gl, { geometry: triGeo, program: maskProg });
 
-      const m = { x: 0, y: 0 };
+      const m = { uvX: 0.5, uvY: 0.5, vx: 0, vy: 0 };
       let targetHover = 0;
       let currentHover = 0;
 
       const onMove = (e: MouseEvent) => {
         const rect = canvas.getBoundingClientRect();
-        m.x = (e.clientX - rect.left) / rect.width * 2.0 - 1.0;
-        m.y = 1.0 - (e.clientY - rect.top) / rect.height * 2.0;
+        const nx = (e.clientX - rect.left) / rect.width;
+        const ny = 1 - (e.clientY - rect.top) / rect.height;
+        m.vx = nx - m.uvX;
+        m.vy = ny - m.uvY;
+        m.uvX = nx;
+        m.uvY = ny;
       };
+
+      const wrapper = wrapperRef.current;
       const onEnter = () => { targetHover = 1; };
       const onLeave = () => { targetHover = 0; };
 
       canvas.addEventListener("mousemove", onMove);
-      canvas.addEventListener("mouseenter", onEnter);
-      canvas.addEventListener("mouseleave", onLeave);
+      wrapper?.addEventListener("mouseenter", onEnter);
+      wrapper?.addEventListener("mouseleave", onLeave);
 
       const ro = new ResizeObserver(() => {
         w = Math.max(parent.clientWidth, 1);
         h = Math.max(parent.clientHeight, 1);
         renderer.setSize(w, h);
-        program.uniforms.uAspect.value = w / h;
+        fbo = [makeFBO(), makeFBO()];
+        renderer.render({ scene: clearMesh, target: fbo[0] });
+        renderer.render({ scene: clearMesh, target: fbo[1] });
+        curr = 0;
+        velProg.uniforms.uAspect.value = w / h;
       });
       ro.observe(parent);
 
@@ -161,20 +215,31 @@ export default function SlimeImage({
 
         currentHover += (targetHover - currentHover) * 0.1;
 
-        program.uniforms.uTime.value = time;
-        program.uniforms.uHover.value = currentHover;
-        program.uniforms.uMouse.value = [m.x, m.y];
+        velProg.uniforms.tMap.value = fbo[1 - curr].texture;
+        velProg.uniforms.uMouse.value = [m.uvX, m.uvY];
+        velProg.uniforms.uVelocity.value = [m.vx * 6, m.vy * 6];
+        velProg.uniforms.uHover.value = currentHover;
+        renderer.render({ scene: velMesh, target: fbo[curr] });
+
+        m.vx *= 0.5;
+        m.vy *= 0.5;
+
+        maskProg.uniforms.tVelocity.value = fbo[curr].texture;
+        maskProg.uniforms.uTime.value = time;
+        maskProg.uniforms.uHover.value = currentHover;
 
         gl.clear(gl.COLOR_BUFFER_BIT);
-        renderer.render({ scene: mesh });
+        renderer.render({ scene: maskMesh });
+
+        curr = 1 - curr;
       }
 
       frame();
 
       refs.cleanup = () => {
         canvas.removeEventListener("mousemove", onMove);
-        canvas.removeEventListener("mouseenter", onEnter);
-        canvas.removeEventListener("mouseleave", onLeave);
+        wrapper?.removeEventListener("mouseenter", onEnter);
+        wrapper?.removeEventListener("mouseleave", onLeave);
         ro.disconnect();
       };
     })();
@@ -187,12 +252,18 @@ export default function SlimeImage({
   }, [src]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      className={className}
-      style={{ display: "block", width: "100%", height: "100%" }}
-      role="img"
-      aria-label={alt}
-    />
+    <div ref={wrapperRef} className={className}>
+      <div style={{ position: "absolute", inset: INNER_INSET, background: "#000" }}>
+        <img
+          ref={imgRef}
+          alt={alt}
+          style={{ width: "100%", height: "100%", display: "block" }}
+        />
+      </div>
+      <canvas
+        ref={canvasRef}
+        style={{ position: "absolute", inset: 0, display: "block", width: "100%", height: "100%" }}
+      />
+    </div>
   );
 }

@@ -13,6 +13,7 @@ interface ProjectMockupProps {
 
 export default function ProjectMockup({ image, title, rotation, freeze }: ProjectMockupProps) {
   const ref = useRef<HTMLDivElement>(null);
+  const hasEntered = useRef(false);
 
   useEffect(() => {
     const el = ref.current;
@@ -24,30 +25,20 @@ export default function ProjectMockup({ image, title, rotation, freeze }: Projec
       return;
     }
 
-    gsap.set(el, { opacity: 0 });
+    if (hasEntered.current) return;
 
-    let entered = false;
+    gsap.set(el, { opacity: 0 });
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (!entry.isIntersecting || entered) return;
-        entered = true;
+        if (!entry.isIntersecting || hasEntered.current) return;
+        hasEntered.current = true;
         observer.disconnect();
         gsap.killTweensOf(el);
-        gsap.set(el, {
-          opacity: 1,
-          y: -(window.innerHeight * 0.6 + 200),
-          scaleY: 3.5,
-          scaleX: 0.3,
-          rotation: 0,
-        });
+        gsap.set(el, { opacity: 1, y: -(window.innerHeight * 0.6 + 200), scaleY: 3.5, scaleX: 0.3, rotation: 0 });
         gsap.to(el, {
-          y: 0,
-          scaleY: 1,
-          scaleX: 1,
-          rotation,
-          duration: 1.5,
-          ease: "elastic.out(1, 0.4)",
+          y: 0, scaleY: 1, scaleX: 1, rotation,
+          duration: 1.5, ease: "elastic.out(1, 0.4)",
         });
       },
       { threshold: 0.1, rootMargin: "0px -30% 0px -30%" }
@@ -58,10 +49,12 @@ export default function ProjectMockup({ image, title, rotation, freeze }: Projec
   }, [rotation, freeze]);
 
   const onEnter = () => {
+    gsap.killTweensOf(ref.current);
     gsap.to(ref.current, { scale: 1.22, duration: 1.2, ease: "elastic.out(1.2, 0.3)" });
   };
 
   const onLeave = () => {
+    gsap.killTweensOf(ref.current);
     gsap.to(ref.current, { scale: 1, duration: 1.4, ease: "elastic.out(1, 0.35)" });
   };
 
@@ -72,6 +65,7 @@ export default function ProjectMockup({ image, title, rotation, freeze }: Projec
       style={{ width: "clamp(280px, 38vw, 640px)", aspectRatio: "16/9" }}
       onMouseEnter={onEnter}
       onMouseLeave={onLeave}
+      data-ball-surface
     >
       {image ? (
         <SlimeImage src={image} alt={title} className="absolute inset-0" />

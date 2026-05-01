@@ -33,6 +33,7 @@ main {
   background: #ffffff;
   border-radius: 12px;
   overflow: hidden;
+  position: relative;
 }
 
 @media (max-width: 767px) {

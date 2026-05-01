@@ -1,8 +1,10 @@
 "use client";
 
+import { useRef } from "react";
 import HorizontalScroll from "@/components/HorizontalScroll";
 import ProjectExpandedPanel from "@/components/ProjectExpandedPanel";
 import AnimatedTitle from "@/components/AnimatedTitle";
+import PhysicsBall, { PhysicsBallHandle } from "@/components/PhysicsBall";
 import { Smile } from "@/components/icons";
 import styles from "@/app/page.module.css";
 
@@ -41,9 +43,14 @@ const COPIES = [0, 1, 2];
 
 export default function PortfolioClient({ projects }: { projects: Project[] }) {
   const loopEvery = projects.length + 1;
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const ballRef = useRef<PhysicsBallHandle>(null);
+  const spawnBall = () => ballRef.current?.spawn();
 
   return (
     <>
+      <div ref={overlayRef} style={{ position: "absolute", inset: 0, background: "linear-gradient(225deg, #0AE448, #C5FF33 50%, #D2FF5E)", zIndex: 999, display: "none", pointerEvents: "none" }} />
+      <PhysicsBall ref={ballRef} />
       <HorizontalScroll loopEvery={loopEvery}>
         {COPIES.flatMap((copy) => [
           <div key={`intro-${copy}`} className={styles.introCard}>
@@ -66,6 +73,8 @@ export default function PortfolioClient({ projects }: { projects: Project[] }) {
               project={project}
               rotation={rotations[i % rotations.length]}
               shapeConfig={shapeConfigs[i % shapeConfigs.length]}
+              overlayRef={overlayRef}
+              spawnBall={spawnBall}
             />
           )),
         ])}

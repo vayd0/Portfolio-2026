@@ -3,6 +3,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import gsap from "gsap";
 import ProjectMockup from "@/components/ProjectMockup";
+import SlimeImage from "@/components/SlimeImage";
 import ProjectTitle from "@/components/ProjectTitle";
 import ParallaxShape from "@/components/ParallaxShape";
 import { Circle, Triangle, Arrow, ArrowDraw, drawCircle } from "@/components/shapes";
@@ -25,6 +26,8 @@ interface Props {
     triangle: { depthX: number; depthY: number; enterX: number; enterY: number; enterRotation: number; enterDelay: number; className: string; style: React.CSSProperties; mobileStyle?: React.CSSProperties };
     arrow: { depthX: number; depthY: number; enterX: number; enterY: number; enterRotation: number; enterDelay: number; className: string; style: React.CSSProperties; mobileStyle?: React.CSSProperties; flipY?: boolean };
   };
+  overlayRef: React.RefObject<HTMLDivElement | null>;
+  spawnBall?: () => void;
 }
 
 function VisitButton({ href }: { href: string }) {
@@ -65,7 +68,7 @@ function VisitButton({ href }: { href: string }) {
   );
 }
 
-export default function ProjectExpandedPanel({ project, rotation, shapeConfig }: Props) {
+export default function ProjectExpandedPanel({ project, rotation, shapeConfig, overlayRef, spawnBall }: Props) {
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
   const leftRef = useRef<HTMLDivElement>(null);
@@ -75,11 +78,52 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig }:
   const descRef = useRef<HTMLDivElement>(null);
   const descWordRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const linksRef = useRef<HTMLDivElement>(null);
+  const openCallRef = useRef<gsap.core.Tween | null>(null);
 
   const isMobile = () => window.innerWidth < 768;
 
+  const CC_OPEN  = "50% 50%";
+  const CC_CLOSE = "50% 50%";
+  const circleProxy = useRef({ r: 8 });
+
+  const animateCircle = (from: number, to: number, duration: number, ease: string, center: string, onDone?: () => void) => {
+    const el = overlayRef.current;
+    if (!el) return;
+    gsap.killTweensOf(circleProxy.current);
+    circleProxy.current.r = from;
+    gsap.to(circleProxy.current, {
+      r: to, duration, ease,
+      onUpdate: () => { el.style.clipPath = circleProxy.current.r >= 199 ? "none" : `circle(${circleProxy.current.r}vmax at ${center})`; },
+      onComplete: onDone,
+    });
+  };
+
+  const openWithTransition = () => {
+    const el = overlayRef.current;
+    if (!el) { setOpen(true); return; }
+    openCallRef.current?.kill();
+    el.style.clipPath = `circle(8vmax at ${CC_OPEN})`;
+    gsap.set(el, { display: "block", opacity: 1, zIndex: 1 });
+    animateCircle(8, 200, 0.85, "power3.inOut", CC_OPEN, () => { el.style.clipPath = "none"; });
+    openCallRef.current = gsap.delayedCall(0.35, () => setOpen(true));
+  };
+
   const closePanel = () => {
     if (!open) return;
+    openCallRef.current?.kill();
+    gsap.killTweensOf(circleProxy.current);
+
+    const el = overlayRef.current;
+    if (el) {
+      el.style.clipPath = "none";
+      gsap.set(el, { display: "block", zIndex: 1 });
+      animateCircle(200, 8, 0.65, "power3.inOut", CC_CLOSE, () => {
+        el.style.clipPath = "";
+        gsap.set(el, { display: "none" });
+        spawnBall?.();
+      });
+    }
+
     if (rightRef.current) rightRef.current.style.overflow = "hidden";
     const gallery = galleryRefs.current.filter(Boolean);
     const tl = gsap.timeline({ onComplete: () => setOpen(false) });
@@ -126,6 +170,7 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig }:
     gsap.set(linksRef.current, { opacity: 0, y: 30 });
 
     const tl = gsap.timeline();
+    const cleanup = () => tl.kill();
 
     if (mobile) {
       tl
@@ -156,6 +201,8 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig }:
         .to(descWords, { y: "0%", stagger: 0.022, duration: 0.65, ease: "power4.out" }, "-=0.4")
         .to(linksRef.current, { opacity: 1, y: 0, duration: 0.7, ease: "elastic.out(1, 0.5)" }, "-=0.3");
     }
+
+    return cleanup;
   }, [open]);
 
   return (
@@ -179,7 +226,7 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig }:
       <div ref={leftRef} className="expanded-left">
         <div
           ref={mockupWrapRef}
-          onClick={open ? closePanel : () => setOpen(true)}
+          onClick={open ? closePanel : openWithTransition}
           style={{ cursor: "pointer" }}
         >
           <ProjectMockup image={project.image} title={project.title} rotation={rotation} freeze={open} />
@@ -189,7 +236,7 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig }:
       <div
         className="absolute top-4 right-4 md:top-auto md:right-auto md:bottom-8 md:left-12"
         style={{ zIndex: 4 }}
-        onClick={open ? closePanel : () => setOpen(true)}
+        onClick={open ? closePanel : openWithTransition}
       >
         <ProjectTitle title={project.title} className={styles.projectTitle} />
       </div>
@@ -205,14 +252,14 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig }:
                 key={src}
                 ref={(el) => { galleryRefs.current[i] = el; }}
                 style={{
+                  position: "relative",
                   width: "30%",
                   aspectRatio: "16/9",
-                  overflow: "hidden",
                   flexShrink: 0,
                   minWidth: 0,
                 }}
               >
-                <img src={src} alt={`${project.title} ${i + 1}`} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }} />
+                <SlimeImage src={src} alt={`${project.title} ${i + 1}`} className="absolute inset-0" />
               </div>
             ))}
           </div>
