@@ -203,14 +203,19 @@ const PhysicsBall = forwardRef<PhysicsBallHandle>((_, ref) => {
       }
 
       const ballBlackLayers = document.querySelectorAll<HTMLElement>("[data-ball-black-layer]");
-      if (ballBlackLayers.length > 0) {
+      ballBlackLayers.forEach(el => {
+        const layerRect = el.getBoundingClientRect();
+        const ox = containerRect.left - layerRect.left;
+        const oy = containerRect.top - layerRect.top;
         let pathData = "";
         for (const ball of balls.current) {
           const r = RADIUS;
-          pathData += `M ${ball.x - r} ${ball.y} A ${r} ${r} 0 1 0 ${ball.x + r} ${ball.y} A ${r} ${r} 0 1 0 ${ball.x - r} ${ball.y} Z `;
+          const cx = ball.x + ox;
+          const cy = ball.y + oy;
+          pathData += `M ${cx - r} ${cy} A ${r} ${r} 0 1 0 ${cx + r} ${cy} A ${r} ${r} 0 1 0 ${cx - r} ${cy} Z `;
         }
-        ballBlackLayers.forEach(el => { el.style.clipPath = `path('${pathData}')`; });
-      }
+        el.style.clipPath = `path('${pathData.trim()}')`;
+      });
     };
 
     gsap.ticker.add(tick);
