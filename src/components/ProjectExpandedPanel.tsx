@@ -256,6 +256,23 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
         </div>
       </div>
 
+      <div
+        data-ball-black-layer
+        style={{ position: "absolute", inset: 0, zIndex: 2, pointerEvents: "none", clipPath: "circle(0 at 0 0)" }}
+      >
+        <div className={shapeConfig.circle.className} style={{ zIndex: 1, ...shapeConfig.circle.style, filter: "brightness(0)" }}>
+          <Circle />
+        </div>
+        <div className={shapeConfig.triangle.className} style={{ zIndex: 1, ...shapeConfig.triangle.style, filter: "brightness(0)" }}>
+          <Triangle />
+        </div>
+        <div className={shapeConfig.arrow.className} style={{ zIndex: 1, ...shapeConfig.arrow.style, filter: "brightness(0)" }}>
+          <div style={shapeConfig.arrow.flipY ? { transform: "scaleY(-1)" } : undefined}>
+            <Arrow />
+          </div>
+        </div>
+      </div>
+
       <div ref={leftRef} className="expanded-left" style={{ position: "relative", zIndex: 3 }}>
         <div
           ref={mockupWrapRef}
