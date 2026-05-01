@@ -1,6 +1,8 @@
 import { sanity } from "@/lib/sanity";
+import { slugify } from "@/lib/slugify";
 import Card from "@/components/Card";
 import FallIn from "@/components/FallIn";
+import Link from "next/link";
 
 export const revalidate = 60;
 
@@ -26,14 +28,16 @@ export default async function ProjetsPage() {
       <div className="flex flex-wrap justify-start gap-12 px-16 py-20">
         {projects.map((project, i) => (
           <FallIn key={project._id} delay={i * 0.05}>
-            <div className="w-[380px] shrink-0">
-              <Card
-                title={project.title}
-                image={project.image}
-                color={project.color}
-                index={i}
-              />
-            </div>
+            <Link href={`/projets/${slugify(project.title)}`} style={{ textDecoration: "none" }}>
+              <div className="w-[380px] shrink-0">
+                <Card
+                  title={project.title}
+                  image={project.image}
+                  color={project.color}
+                  index={i}
+                />
+              </div>
+            </Link>
           </FallIn>
         ))}
       </div>
