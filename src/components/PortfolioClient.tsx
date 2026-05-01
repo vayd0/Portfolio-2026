@@ -56,7 +56,7 @@ export default function PortfolioClient({ projects }: { projects: Project[] }) {
           <div key={`intro-${copy}`} className={styles.introCard}>
             <div className={styles.introGroup}>
               <h3 className={styles.introText}>Bonjour <Smile />, je m'appelle </h3>
-              {copy === 0 && <h1 className="sr-only">Théo Heck</h1>}
+              {copy === 0 && <h1 style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", border: 0 }}>Théo Heck</h1>}
               <AnimatedTitle
                 className={styles.bigText}
                 wheelStretch={copy === 0}
