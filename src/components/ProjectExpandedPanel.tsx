@@ -74,6 +74,7 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
   const leftRef = useRef<HTMLDivElement>(null);
   const rightRef = useRef<HTMLDivElement>(null);
   const rightInnerRef = useRef<HTMLDivElement>(null);
+  const blackLayerRef = useRef<HTMLDivElement>(null);
   const mockupWrapRef = useRef<HTMLDivElement>(null);
   const galleryRefs = useRef<(HTMLDivElement | null)[]>([]);
   const descRef = useRef<HTMLDivElement>(null);
@@ -89,21 +90,31 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
 
   const animateCircle = (from: number, to: number, duration: number, ease: string, center: string, onDone?: () => void) => {
     const el = overlayRef.current;
+    const bl = blackLayerRef.current;
     if (!el) return;
     gsap.killTweensOf(circleProxy.current);
     circleProxy.current.r = from;
     gsap.to(circleProxy.current, {
       r: to, duration, ease,
-      onUpdate: () => { el.style.clipPath = circleProxy.current.r >= 199 ? "none" : `circle(${circleProxy.current.r}vmax at ${center})`; },
-      onComplete: onDone,
+      onUpdate: () => {
+        const cp = circleProxy.current.r >= 199 ? "none" : `circle(${circleProxy.current.r}vmax at ${center})`;
+        el.style.clipPath = cp;
+        if (bl) bl.style.clipPath = cp;
+      },
+      onComplete: () => {
+        if (bl) bl.style.clipPath = "circle(0vmax at 50% 50%)";
+        onDone?.();
+      },
     });
   };
 
   const openWithTransition = () => {
     const el = overlayRef.current;
+    const bl = blackLayerRef.current;
     if (!el) { setOpen(true); return; }
     openCallRef.current?.kill();
     el.style.clipPath = `circle(8vmax at ${CC_OPEN})`;
+    if (bl) bl.style.clipPath = `circle(8vmax at ${CC_OPEN})`;
     gsap.set(el, { display: "block", opacity: 1, zIndex: 1 });
     animateCircle(8, 200, 0.85, "power3.inOut", CC_OPEN, () => { el.style.clipPath = "none"; });
     openCallRef.current = gsap.delayedCall(0.35, () => setOpen(true));
@@ -115,8 +126,10 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
     gsap.killTweensOf(circleProxy.current);
 
     const el = overlayRef.current;
+    const bl = blackLayerRef.current;
     if (el) {
       el.style.clipPath = "none";
+      if (bl) bl.style.clipPath = "none";
       gsap.set(el, { display: "block", zIndex: 1 });
       animateCircle(200, 8, 0.65, "power3.inOut", CC_CLOSE, () => {
         el.style.clipPath = "";
@@ -226,7 +239,24 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
         </div>
       </ParallaxShape>
 
-      <div ref={leftRef} className="expanded-left">
+      <div
+        ref={blackLayerRef}
+        style={{ position: "absolute", inset: 0, zIndex: 2, pointerEvents: "none", clipPath: "circle(0vmax at 50% 50%)" }}
+      >
+        <div className={shapeConfig.circle.className} style={{ zIndex: 1, ...shapeConfig.circle.style, filter: "brightness(0)" }}>
+          <Circle />
+        </div>
+        <div className={shapeConfig.triangle.className} style={{ zIndex: 1, ...shapeConfig.triangle.style, filter: "brightness(0)" }}>
+          <Triangle />
+        </div>
+        <div className={shapeConfig.arrow.className} style={{ zIndex: 1, ...shapeConfig.arrow.style, filter: "brightness(0)" }}>
+          <div style={shapeConfig.arrow.flipY ? { transform: "scaleY(-1)" } : undefined}>
+            <Arrow />
+          </div>
+        </div>
+      </div>
+
+      <div ref={leftRef} className="expanded-left" style={{ position: "relative", zIndex: 3 }}>
         <div
           ref={mockupWrapRef}
           onClick={open ? closePanel : openWithTransition}
@@ -244,7 +274,7 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
         <ProjectTitle title={project.title} className={styles.projectTitle} />
       </div>
 
-      <div ref={rightRef} className="expanded-right">
+      <div ref={rightRef} className="expanded-right" style={{ zIndex: 3 }}>
         <div
           ref={rightInnerRef}
           className="expanded-right-inner"
