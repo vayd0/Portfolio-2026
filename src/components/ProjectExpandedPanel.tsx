@@ -73,6 +73,7 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
   const panelRef = useRef<HTMLDivElement>(null);
   const leftRef = useRef<HTMLDivElement>(null);
   const rightRef = useRef<HTMLDivElement>(null);
+  const rightInnerRef = useRef<HTMLDivElement>(null);
   const mockupWrapRef = useRef<HTMLDivElement>(null);
   const galleryRefs = useRef<(HTMLDivElement | null)[]>([]);
   const descRef = useRef<HTMLDivElement>(null);
@@ -141,6 +142,7 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
         .to(linksRef.current, { opacity: 0, y: 20, duration: 0.15, ease: "power2.in" }, 0)
         .to(descWords, { y: "115%", stagger: { each: 0.012, from: "end" }, duration: 0.22, ease: "power3.in" }, 0)
         .to([...gallery].reverse(), { opacity: 0, scale: 0.7, y: -40, stagger: 0.05, duration: 0.2, ease: "power3.in" }, 0)
+        .to(rightInnerRef.current, { x: "-40vw", duration: 0.4, ease: "power3.in" }, 0)
         .to(rightRef.current, { width: 0, duration: 0.4, ease: "power3.in" }, 0.1)
         .to(leftRef.current, { width: "100dvw", duration: 0.65, ease: "elastic.out(1, 0.5)" }, 0.15)
         .to(mockupWrapRef.current, { scaleX: 1.06, scaleY: 0.88, duration: 0.1, ease: "power3.in" }, 0.15)
@@ -168,6 +170,7 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
     gsap.set(gallery, { opacity: 0, scale: 0.4, y: -100, rotation: 0 });
     gsap.set(descWords, { y: "115%" });
     gsap.set(linksRef.current, { opacity: 0, y: 30 });
+    gsap.set(rightInnerRef.current, { x: 0 });
 
     const tl = gsap.timeline();
     const cleanup = () => tl.kill();
@@ -243,6 +246,7 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
 
       <div ref={rightRef} className="expanded-right">
         <div
+          ref={rightInnerRef}
           className="expanded-right-inner"
           style={{ paddingTop: "clamp(24px, 4vw, 80px)", paddingBottom: "clamp(24px, 4vw, 80px)" }}
         >
