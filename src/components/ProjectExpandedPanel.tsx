@@ -92,6 +92,7 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
     const el = overlayRef.current;
     const bl = blackLayerRef.current;
     if (!el) return;
+    if (bl) bl.setAttribute("data-circle-animating", "1");
     gsap.killTweensOf(circleProxy.current);
     circleProxy.current.r = from;
     gsap.to(circleProxy.current, {
@@ -102,7 +103,10 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
         if (bl) bl.style.clipPath = cp;
       },
       onComplete: () => {
-        if (bl) bl.style.clipPath = "circle(0vmax at 50% 50%)";
+        if (bl) {
+          bl.style.clipPath = "circle(0vmax at 50% 50%)";
+          bl.removeAttribute("data-circle-animating");
+        }
         onDone?.();
       },
     });
@@ -241,24 +245,8 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
 
       <div
         ref={blackLayerRef}
+        data-ball-layer
         style={{ position: "absolute", inset: 0, zIndex: 2, pointerEvents: "none", clipPath: "circle(0vmax at 50% 50%)" }}
-      >
-        <div className={shapeConfig.circle.className} style={{ zIndex: 1, ...shapeConfig.circle.style, filter: "brightness(0)" }}>
-          <Circle />
-        </div>
-        <div className={shapeConfig.triangle.className} style={{ zIndex: 1, ...shapeConfig.triangle.style, filter: "brightness(0)" }}>
-          <Triangle />
-        </div>
-        <div className={shapeConfig.arrow.className} style={{ zIndex: 1, ...shapeConfig.arrow.style, filter: "brightness(0)" }}>
-          <div style={shapeConfig.arrow.flipY ? { transform: "scaleY(-1)" } : undefined}>
-            <Arrow />
-          </div>
-        </div>
-      </div>
-
-      <div
-        data-ball-black-layer
-        style={{ position: "absolute", inset: 0, zIndex: 2, pointerEvents: "none", clipPath: "circle(0 at 0 0)" }}
       >
         <div className={shapeConfig.circle.className} style={{ zIndex: 1, ...shapeConfig.circle.style, filter: "brightness(0)" }}>
           <Circle />

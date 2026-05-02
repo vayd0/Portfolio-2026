@@ -202,19 +202,24 @@ const PhysicsBall = forwardRef<PhysicsBallHandle>((_, ref) => {
         }
       }
 
-      const ballBlackLayers = document.querySelectorAll<HTMLElement>("[data-ball-black-layer]");
-      ballBlackLayers.forEach(el => {
+      const ballLayers = document.querySelectorAll<HTMLElement>("[data-ball-layer]");
+      ballLayers.forEach(el => {
+        if (el.hasAttribute("data-circle-animating")) return;
         const layerRect = el.getBoundingClientRect();
         const ox = containerRect.left - layerRect.left;
         const oy = containerRect.top - layerRect.top;
-        let pathData = "";
-        for (const ball of balls.current) {
-          const r = RADIUS;
-          const cx = ball.x + ox;
-          const cy = ball.y + oy;
-          pathData += `M ${cx - r} ${cy} A ${r} ${r} 0 1 0 ${cx + r} ${cy} A ${r} ${r} 0 1 0 ${cx - r} ${cy} Z `;
+        if (balls.current.length === 1) {
+          const ball = balls.current[0];
+          el.style.clipPath = `circle(${RADIUS}px at ${ball.x + ox}px ${ball.y + oy}px)`;
+        } else {
+          let pathData = "";
+          for (const ball of balls.current) {
+            const cx = ball.x + ox;
+            const cy = ball.y + oy;
+            pathData += `M ${cx - RADIUS} ${cy} A ${RADIUS} ${RADIUS} 0 1 0 ${cx + RADIUS} ${cy} A ${RADIUS} ${RADIUS} 0 1 0 ${cx - RADIUS} ${cy} Z `;
+          }
+          el.style.clipPath = `path('${pathData.trim()}')`;
         }
-        el.style.clipPath = `path('${pathData.trim()}')`;
       });
     };
 
