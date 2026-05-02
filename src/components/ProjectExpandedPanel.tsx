@@ -120,7 +120,7 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
     el.style.clipPath = `circle(8vmax at ${CC_OPEN})`;
     if (bl) bl.style.clipPath = `circle(8vmax at ${CC_OPEN})`;
     gsap.set(el, { display: "block", opacity: 1, zIndex: 1 });
-    animateCircle(8, 200, 0.85, "power3.inOut", CC_OPEN, () => { el.style.clipPath = "none"; });
+    animateCircle(8, 200, 0.85, "power3.inOut", CC_OPEN, () => { gsap.set(el, { display: "none" }); });
     openCallRef.current = gsap.delayedCall(0.35, () => setOpen(true));
   };
 
