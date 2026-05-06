@@ -65,7 +65,6 @@ export default function ProjectMockup({ image, title, rotation, freeze }: Projec
       style={{ width: "clamp(280px, 38vw, 640px)", aspectRatio: "16/9" }}
       onMouseEnter={onEnter}
       onMouseLeave={onLeave}
-      data-ball-surface
     >
       {image ? (
         <SlimeImage src={image} alt={title} className="absolute inset-0" />

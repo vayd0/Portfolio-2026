@@ -68,7 +68,10 @@ export default function HorizontalScroll({ children, loopEvery }: { children: Re
       }
     };
 
-    if (window.innerWidth >= 768) window.scrollTo(0, 0);
+    if (window.innerWidth >= 768) {
+      window.scrollTo(0, 0);
+      targetX.current = container.scrollLeft;
+    }
 
     container.addEventListener("wheel", onWheel, { passive: false });
     container.addEventListener("scroll", onContainerScroll, { passive: true });
@@ -104,6 +107,7 @@ export default function HorizontalScroll({ children, loopEvery }: { children: Re
   return (
     <div
       ref={containerRef}
+      data-scroll-container
       className="flex flex-col overflow-x-hidden md:flex-row md:h-full md:overflow-x-auto md:items-center"
       style={{
         scrollbarWidth: "none",

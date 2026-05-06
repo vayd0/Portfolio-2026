@@ -75,6 +75,12 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
   const rightRef = useRef<HTMLDivElement>(null);
   const rightInnerRef = useRef<HTMLDivElement>(null);
   const blackLayerRef = useRef<HTMLDivElement>(null);
+  const circleParallaxRef = useRef<HTMLDivElement>(null);
+  const triangleParallaxRef = useRef<HTMLDivElement>(null);
+  const arrowParallaxRef = useRef<HTMLDivElement>(null);
+  const blackCircleRef = useRef<HTMLDivElement>(null);
+  const blackTriangleRef = useRef<HTMLDivElement>(null);
+  const blackArrowRef = useRef<HTMLDivElement>(null);
   const mockupWrapRef = useRef<HTMLDivElement>(null);
   const galleryRefs = useRef<(HTMLDivElement | null)[]>([]);
   const descRef = useRef<HTMLDivElement>(null);
@@ -104,8 +110,12 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
       },
       onComplete: () => {
         if (bl) {
-          bl.style.clipPath = "circle(0vmax at 50% 50%)";
-          bl.removeAttribute("data-circle-animating");
+          if (to > 100) {
+            bl.style.clipPath = "none";
+          } else {
+            bl.style.clipPath = "circle(0vmax at 50% 50%)";
+            bl.removeAttribute("data-circle-animating");
+          }
         }
         onDone?.();
       },
@@ -120,7 +130,7 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
     el.style.clipPath = `circle(8vmax at ${CC_OPEN})`;
     if (bl) bl.style.clipPath = `circle(8vmax at ${CC_OPEN})`;
     gsap.set(el, { display: "block", opacity: 1, zIndex: 1 });
-    animateCircle(8, 200, 0.85, "power3.inOut", CC_OPEN, () => { gsap.set(el, { display: "none" }); });
+    animateCircle(8, 200, 0.85, "power3.inOut", CC_OPEN);
     openCallRef.current = gsap.delayedCall(0.35, () => setOpen(true));
   };
 
@@ -178,6 +188,22 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
   }, [open]);
 
   useEffect(() => {
+    const sync = () => {
+      const pairs: [HTMLDivElement | null, HTMLDivElement | null][] = [
+        [circleParallaxRef.current, blackCircleRef.current],
+        [triangleParallaxRef.current, blackTriangleRef.current],
+        [arrowParallaxRef.current, blackArrowRef.current],
+      ];
+      for (const [src, dst] of pairs) {
+        if (!src || !dst) continue;
+        gsap.set(dst, { x: gsap.getProperty(src, "x"), y: gsap.getProperty(src, "y") });
+      }
+    };
+    gsap.ticker.add(sync);
+    return () => gsap.ticker.remove(sync);
+  }, []);
+
+  useEffect(() => {
     if (!open) return;
     const mobile = isMobile();
     const gallery = galleryRefs.current.filter(Boolean);
@@ -231,13 +257,13 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
       className="relative shrink-0 flex flex-col md:flex-row panel-height"
       style={{ width: "100dvw", position: "relative", zIndex: 2 }}
     >
-      <ParallaxShape depthX={shapeConfig.circle.depthX} depthY={shapeConfig.circle.depthY} enterX={shapeConfig.circle.enterX} enterY={shapeConfig.circle.enterY} enterRotation={shapeConfig.circle.enterRotation} enterDelay={shapeConfig.circle.enterDelay} className={shapeConfig.circle.className} style={{ zIndex: 1, ...shapeConfig.circle.style }} mobileStyle={shapeConfig.circle.mobileStyle}>
+      <ParallaxShape ref={circleParallaxRef} depthX={shapeConfig.circle.depthX} depthY={shapeConfig.circle.depthY} enterX={shapeConfig.circle.enterX} enterY={shapeConfig.circle.enterY} enterRotation={shapeConfig.circle.enterRotation} enterDelay={shapeConfig.circle.enterDelay} className={shapeConfig.circle.className} style={{ zIndex: 1, ...shapeConfig.circle.style }} mobileStyle={shapeConfig.circle.mobileStyle}>
         <Circle />
       </ParallaxShape>
-      <ParallaxShape depthX={shapeConfig.triangle.depthX} depthY={shapeConfig.triangle.depthY} enterX={shapeConfig.triangle.enterX} enterY={shapeConfig.triangle.enterY} enterRotation={shapeConfig.triangle.enterRotation} enterDelay={shapeConfig.triangle.enterDelay} className={shapeConfig.triangle.className} style={{ zIndex: 1, ...shapeConfig.triangle.style }} mobileStyle={shapeConfig.triangle.mobileStyle}>
+      <ParallaxShape ref={triangleParallaxRef} depthX={shapeConfig.triangle.depthX} depthY={shapeConfig.triangle.depthY} enterX={shapeConfig.triangle.enterX} enterY={shapeConfig.triangle.enterY} enterRotation={shapeConfig.triangle.enterRotation} enterDelay={shapeConfig.triangle.enterDelay} className={shapeConfig.triangle.className} style={{ zIndex: 1, ...shapeConfig.triangle.style }} mobileStyle={shapeConfig.triangle.mobileStyle}>
         <Triangle />
       </ParallaxShape>
-      <ParallaxShape depthX={shapeConfig.arrow.depthX} depthY={shapeConfig.arrow.depthY} enterX={shapeConfig.arrow.enterX} enterY={shapeConfig.arrow.enterY} enterRotation={shapeConfig.arrow.enterRotation} enterDelay={shapeConfig.arrow.enterDelay} className={shapeConfig.arrow.className} style={{ zIndex: 1, ...shapeConfig.arrow.style }} mobileStyle={shapeConfig.arrow.mobileStyle}>
+      <ParallaxShape ref={arrowParallaxRef} depthX={shapeConfig.arrow.depthX} depthY={shapeConfig.arrow.depthY} enterX={shapeConfig.arrow.enterX} enterY={shapeConfig.arrow.enterY} enterRotation={shapeConfig.arrow.enterRotation} enterDelay={shapeConfig.arrow.enterDelay} className={shapeConfig.arrow.className} style={{ zIndex: 1, ...shapeConfig.arrow.style }} mobileStyle={shapeConfig.arrow.mobileStyle}>
         <div style={shapeConfig.arrow.flipY ? { transform: "scaleY(-1)" } : undefined}>
           <Arrow />
         </div>
@@ -248,13 +274,13 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
         data-ball-layer
         style={{ position: "absolute", inset: 0, zIndex: 2, pointerEvents: "none", clipPath: "circle(0vmax at 50% 50%)" }}
       >
-        <div className={shapeConfig.circle.className} style={{ zIndex: 1, ...shapeConfig.circle.style, filter: "brightness(0)" }}>
+        <div ref={blackCircleRef} className={shapeConfig.circle.className} style={{ zIndex: 1, ...shapeConfig.circle.style, filter: "brightness(0)" }}>
           <Circle />
         </div>
-        <div className={shapeConfig.triangle.className} style={{ zIndex: 1, ...shapeConfig.triangle.style, filter: "brightness(0)" }}>
+        <div ref={blackTriangleRef} className={shapeConfig.triangle.className} style={{ zIndex: 1, ...shapeConfig.triangle.style, filter: "brightness(0)" }}>
           <Triangle />
         </div>
-        <div className={shapeConfig.arrow.className} style={{ zIndex: 1, ...shapeConfig.arrow.style, filter: "brightness(0)" }}>
+        <div ref={blackArrowRef} className={shapeConfig.arrow.className} style={{ zIndex: 1, ...shapeConfig.arrow.style, filter: "brightness(0)" }}>
           <div style={shapeConfig.arrow.flipY ? { transform: "scaleY(-1)" } : undefined}>
             <Arrow />
           </div>

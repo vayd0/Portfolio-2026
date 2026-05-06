@@ -19,10 +19,53 @@ interface Ball {
   vy: number;
   rotation: number;
   sleeping: boolean;
+  jumpTarget: Element | null;
 }
 
 export interface PhysicsBallHandle {
   spawn: () => void;
+}
+
+function DebugHitboxes({ containerRef }: { containerRef: React.RefObject<HTMLDivElement | null> }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const draw = () => {
+      const canvas = canvasRef.current;
+      const container = containerRef.current;
+      if (!canvas || !container) return;
+      const containerRect = container.getBoundingClientRect();
+      canvas.width = containerRect.width;
+      canvas.height = containerRect.height;
+      const ctx = canvas.getContext("2d")!;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      document.querySelectorAll<HTMLElement>("[data-ball-surface]").forEach(el => {
+        const r = el.getBoundingClientRect();
+        const x = r.left - containerRect.left;
+        const y = r.top - containerRect.top;
+        ctx.strokeStyle = "rgba(255,0,0,0.7)";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x, y, r.width, r.height);
+      });
+
+      document.querySelectorAll<HTMLElement>("[data-ball-title]").forEach(el => {
+        const r = el.getBoundingClientRect();
+        const cx = (r.left + r.right) / 2 - containerRect.left;
+        const cy = (r.top + r.bottom) / 2 - containerRect.top;
+        ctx.strokeStyle = "rgba(0,100,255,0.7)";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 8, 0, Math.PI * 2);
+        ctx.stroke();
+      });
+    };
+
+    gsap.ticker.add(draw);
+    return () => gsap.ticker.remove(draw);
+  }, [containerRef]);
+
+  return <canvas ref={canvasRef} style={{ position: "absolute", inset: 0, pointerEvents: "none" }} />;
 }
 
 const PhysicsBall = forwardRef<PhysicsBallHandle>((_, ref) => {
@@ -58,6 +101,7 @@ const PhysicsBall = forwardRef<PhysicsBallHandle>((_, ref) => {
         vy: 2,
         rotation: 0,
         sleeping: false,
+        jumpTarget: null,
       };
       outer.style.left = (ball.x - RADIUS) + "px";
       outer.style.top = (ball.y - RADIUS) + "px";
@@ -91,8 +135,45 @@ const PhysicsBall = forwardRef<PhysicsBallHandle>((_, ref) => {
       const H = container.clientHeight;
       const containerRect = container.getBoundingClientRect();
       const surfaces = document.querySelectorAll("[data-ball-surface]");
+      const titleEls = document.querySelectorAll<HTMLElement>("[data-ball-title]");
 
       for (const ball of balls.current) {
+        if (ball.jumpTarget) {
+          const tr = ball.jumpTarget.getBoundingClientRect();
+          const titleLeft = tr.left - containerRect.left;
+          const titleRight = tr.right - containerRect.left;
+          if (ball.x > titleRight + RADIUS * 2 || ball.x < titleLeft - RADIUS * 2) {
+            ball.jumpTarget = null;
+          }
+        }
+
+        if (!ball.jumpTarget) {
+          for (const titleEl of titleEls) {
+            const r = titleEl.getBoundingClientRect();
+            if (r.width === 0 || r.height === 0) continue;
+            const titleLeft = r.left - containerRect.left;
+            const titleRight = r.right - containerRect.left;
+            const margin = r.width * 0.2;
+            const approachingFromLeft = ball.x >= titleLeft - margin && ball.x < titleLeft;
+            const approachingFromRight = ball.x > titleRight && ball.x <= titleRight + margin;
+            if (!approachingFromLeft && !approachingFromRight) continue;
+            if (ball.y + RADIUS < H - 4) continue;
+
+            const tx = approachingFromLeft
+              ? titleLeft + RADIUS
+              : titleRight - RADIUS;
+            const ty = r.top - containerRect.top - RADIUS;
+            const dx = tx - ball.x;
+            const dy = ty - ball.y;
+            const t = Math.max(25, Math.sqrt(2 * Math.max(1, Math.abs(dy)) / GRAVITY) * 3);
+            ball.jumpTarget = titleEl;
+            ball.vx = dx / t;
+            ball.vy = dy / t - 0.5 * GRAVITY * t;
+            ball.sleeping = false;
+            break;
+          }
+        }
+
         if (ball.sleeping) continue;
 
         ball.vy += GRAVITY;
@@ -228,10 +309,9 @@ const PhysicsBall = forwardRef<PhysicsBallHandle>((_, ref) => {
   }, []);
 
   return (
-    <div
-      ref={containerRef}
-      style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 1 }}
-    />
+    <div ref={containerRef} style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 1 }}>
+      <DebugHitboxes containerRef={containerRef} />
+    </div>
   );
 });
 

@@ -67,6 +67,8 @@ export default function ProjectTitle({ title, className }: Props) {
     <div
       ref={containerRef}
       className={className}
+      data-ball-title
+      data-ball-surface
       style={{ position: "relative", display: "inline-block", cursor: "pointer" }}
       onMouseEnter={onEnter}
       onMouseLeave={onLeave}

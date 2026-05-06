@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, forwardRef, useCallback } from "react";
 import gsap from "gsap";
 
 interface Props {
@@ -16,7 +16,7 @@ interface Props {
   mobileStyle?: React.CSSProperties;
 }
 
-export default function ParallaxShape({
+const ParallaxShape = forwardRef<HTMLDivElement, Props>(function ParallaxShape({
   children,
   depthX = 0.05,
   depthY = 0.04,
@@ -27,8 +27,13 @@ export default function ParallaxShape({
   className,
   style,
   mobileStyle,
-}: Props) {
+}, forwardedRef) {
   const parallaxRef = useRef<HTMLDivElement>(null);
+  const setRef = useCallback((el: HTMLDivElement | null) => {
+    (parallaxRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
+    if (typeof forwardedRef === "function") forwardedRef(el);
+    else if (forwardedRef) (forwardedRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
+  }, [forwardedRef]);
   const innerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -103,10 +108,12 @@ export default function ParallaxShape({
   const appliedStyle = isMobile && mobileStyle ? { ...style, ...mobileStyle } : style;
 
   return (
-    <div ref={parallaxRef} className={className} style={appliedStyle}>
+    <div ref={setRef} className={className} style={appliedStyle}>
       <div ref={innerRef}>
         {children}
       </div>
     </div>
   );
-}
+});
+
+export default ParallaxShape;
