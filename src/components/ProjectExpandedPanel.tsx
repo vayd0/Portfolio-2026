@@ -218,13 +218,29 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
       targetR = Math.max(0, (1 - Math.abs(panelLeft) / W) * 120);
     };
 
+    const GAP = 3;
+    const RING = 5;
+
     const tick = () => {
       const overlay = darkBgRef.current;
       if (!overlay) return;
       const factor = targetR < currentR ? 0.03 : 0.1;
       currentR += (targetR - currentR) * factor;
       if (Math.abs(currentR - targetR) < 0.05) currentR = targetR;
-      overlay.style.clipPath = `circle(${currentR}vmax at 0% 50%)`;
+
+      if (currentR < 0.5) {
+        overlay.style.clipPath = "circle(0vmax at 0% 50%)";
+        overlay.style.maskImage = "";
+        (overlay.style as CSSStyleDeclaration & { webkitMaskImage: string }).webkitMaskImage = "";
+        return;
+      }
+
+      const inner = Math.max(0, currentR - GAP);
+      const outer = currentR + RING;
+      const mask = `radial-gradient(circle at 0% 50%, black ${inner}vmax, transparent ${inner}vmax, transparent ${currentR}vmax, black ${currentR}vmax, black ${outer}vmax, transparent ${outer}vmax)`;
+      overlay.style.clipPath = `circle(${outer}vmax at 0% 50%)`;
+      overlay.style.maskImage = mask;
+      (overlay.style as CSSStyleDeclaration & { webkitMaskImage: string }).webkitMaskImage = mask;
     };
 
     updateTarget();
