@@ -3,6 +3,7 @@
 import { useRef, useEffect } from "react";
 import gsap from "gsap";
 import SlimeImage from "@/components/SlimeImage";
+import { subscribeVel } from "@/lib/velBus";
 
 interface ProjectMockupProps {
   image?: string;
@@ -12,6 +13,7 @@ interface ProjectMockupProps {
 
 export default function ProjectMockup({ image, title, rotation }: ProjectMockupProps) {
   const ref = useRef<HTMLDivElement>(null);
+  const velRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const el = ref.current;
@@ -42,6 +44,17 @@ export default function ProjectMockup({ image, title, rotation }: ProjectMockupP
     return () => observer.disconnect();
   }, [rotation]);
 
+  useEffect(() => {
+    const el = velRef.current;
+    if (!el) return;
+    el.style.transformOrigin = "center center";
+    return subscribeVel((v) => {
+      const skew = v * 0.4;
+      const sy = 1 - Math.abs(v) * 0.003;
+      el.style.transform = `skewX(${skew}deg) scaleY(${sy})`;
+    });
+  }, []);
+
   const onEnter = () => {
     gsap.killTweensOf(ref.current);
     gsap.to(ref.current, { scale: 1.22, duration: 1.2, ease: "elastic.out(1.2, 0.3)" });
@@ -53,18 +66,20 @@ export default function ProjectMockup({ image, title, rotation }: ProjectMockupP
   };
 
   return (
-    <div
-      ref={ref}
-      className="relative z-10"
-      style={{ width: "clamp(280px, 38vw, 640px)", aspectRatio: "16/9" }}
-      onMouseEnter={onEnter}
-      onMouseLeave={onLeave}
-    >
-      {image ? (
-        <SlimeImage src={image} alt={title} className="absolute inset-0" />
-      ) : (
-        <div className="w-full h-full bg-black" />
-      )}
+    <div ref={velRef}>
+      <div
+        ref={ref}
+        className="relative z-10"
+        style={{ width: "clamp(280px, 38vw, 640px)", aspectRatio: "16/9" }}
+        onMouseEnter={onEnter}
+        onMouseLeave={onLeave}
+      >
+        {image ? (
+          <SlimeImage src={image} alt={title} className="absolute inset-0" />
+        ) : (
+          <div className="w-full h-full bg-black" />
+        )}
+      </div>
     </div>
   );
 }

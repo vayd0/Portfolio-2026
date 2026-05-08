@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useRef, useEffect } from "react";
+import { useRef, useEffect } from "react";
 import gsap from "gsap";
-import { subscribeVel } from "@/lib/velBus";
 import HorizontalScroll from "@/components/HorizontalScroll";
 import ProjectExpandedPanel from "@/components/ProjectExpandedPanel";
 import AnimatedTitle from "@/components/AnimatedTitle";
@@ -128,16 +127,6 @@ function IntroFallingBalls() {
   return <div ref={containerRef} style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 0, overflow: "hidden" }} />;
 }
 
-function IntroText({ children, className }: { children: React.ReactNode; className?: string }) {
-  const ref = useRef<HTMLHeadingElement>(null);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    el.style.transformOrigin = "bottom center";
-    return subscribeVel((v) => { el.style.transform = `skewX(${v * 1.5}deg)`; });
-  }, []);
-  return <h3 ref={ref} data-intro-surface className={className}>{children}</h3>;
-}
 
 type Project = {
   _id: string;
@@ -187,7 +176,7 @@ export default function PortfolioClient({ projects }: { projects: Project[] }) {
         {COPIES.flatMap((copy) => [
           <div key={`intro-${copy}`} className={styles.introCard}>
             <div className={styles.introGroup}>
-              <IntroText className={styles.introText}>Bonjour <Smile />, je m'appelle </IntroText>
+              <h3 data-intro-surface className={styles.introText}>Bonjour <Smile />, je m'appelle </h3>
               {copy === 0 && <h1 style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", border: 0 }}>Théo Heck</h1>}
               <div data-intro-surface>
                 <AnimatedTitle
@@ -199,7 +188,7 @@ export default function PortfolioClient({ projects }: { projects: Project[] }) {
                   Théo
                 </AnimatedTitle>
               </div>
-              <IntroText className={styles.introText}>Et j'aime créer des choses</IntroText>
+              <h3 data-intro-surface className={styles.introText}>Et j'aime créer des choses</h3>
             </div>
           </div>,
           ...projects.map((project, i) => (
