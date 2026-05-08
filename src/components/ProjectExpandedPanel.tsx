@@ -215,11 +215,12 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
     const updateTarget = () => {
       const panelLeft = panel.getBoundingClientRect().left;
       const W = window.innerWidth;
-      targetR = Math.max(0, (1 - Math.abs(panelLeft) / W) * 120);
+      targetR = Math.max(0, (1 - Math.abs(panelLeft) / W) * 140);
     };
 
-    const GAP = 3;
-    const RING = 5;
+    const GAPS = [10, 6, 3, 1.5]; // outer → inner, vmax
+    const RING_W = 3;
+    const SHELL_W = 5;
 
     const tick = () => {
       const overlay = darkBgRef.current;
@@ -235,10 +236,37 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
         return;
       }
 
-      const inner = Math.max(0, currentR - GAP);
-      const outer = currentR + RING;
-      const mask = `radial-gradient(circle at 0% 50%, black ${inner}vmax, transparent ${inner}vmax, transparent ${currentR}vmax, black ${currentR}vmax, black ${outer}vmax, transparent ${outer}vmax)`;
-      overlay.style.clipPath = `circle(${outer}vmax at 0% 50%)`;
+      const r = currentR;
+      const segs: Array<{ from: number; to: number; black: boolean }> = [
+        { from: r, to: r + SHELL_W, black: true },
+      ];
+
+      let pos = r;
+      for (const gap of GAPS) {
+        const gapFrom = Math.max(0, pos - gap);
+        segs.push({ from: gapFrom, to: pos, black: false });
+        pos = gapFrom;
+        if (pos <= 0) break;
+        const ringFrom = Math.max(0, pos - RING_W);
+        segs.push({ from: ringFrom, to: pos, black: true });
+        pos = ringFrom;
+      }
+      if (pos > 0) segs.push({ from: 0, to: pos, black: true });
+
+      segs.sort((a, b) => a.from - b.from);
+
+      const stops: string[] = ["black 0"];
+      let prevBlack = true;
+      for (const seg of segs) {
+        const c = seg.black ? "black" : "transparent";
+        if (seg.black !== prevBlack) stops.push(`${c} ${seg.from}vmax`);
+        stops.push(`${c} ${seg.to}vmax`);
+        prevBlack = seg.black;
+      }
+      if (prevBlack) stops.push(`transparent ${r + SHELL_W}vmax`);
+
+      const mask = `radial-gradient(circle at 0% 50%, ${stops.join(", ")})`;
+      overlay.style.clipPath = `circle(${r + SHELL_W}vmax at 0% 50%)`;
       overlay.style.maskImage = mask;
       (overlay.style as CSSStyleDeclaration & { webkitMaskImage: string }).webkitMaskImage = mask;
     };
