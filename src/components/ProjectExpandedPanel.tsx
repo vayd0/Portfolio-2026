@@ -221,9 +221,10 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
     const tick = () => {
       const overlay = darkBgRef.current;
       if (!overlay) return;
-      currentR += (targetR - currentR) * 0.1;
+      const factor = targetR < currentR ? 0.03 : 0.1;
+      currentR += (targetR - currentR) * factor;
       if (Math.abs(currentR - targetR) < 0.05) currentR = targetR;
-      overlay.style.clipPath = `circle(${currentR}vmax at 100% 50%)`;
+      overlay.style.clipPath = `circle(${currentR}vmax at 0% 50%)`;
     };
 
     updateTarget();
@@ -336,7 +337,7 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
             position: "absolute",
             inset: 0,
             background: "#000",
-            clipPath: "circle(0vmax at 100% 50%)",
+            clipPath: "circle(0vmax at 0% 50%)",
             zIndex: 0,
             pointerEvents: "none",
           }}
