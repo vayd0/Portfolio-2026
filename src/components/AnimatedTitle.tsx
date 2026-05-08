@@ -16,32 +16,27 @@ interface Props {
   stroke?: string;
 }
 
-interface Personality {
-  rotAmp: number;
-  scaleAmp: number;
-}
 
-function idleSquish(char: Element, p: Personality) {
-  gsap.timeline({
-    onComplete: () => { setTimeout(() => idleSquish(char, p), 800 + Math.random() * 1800); },
-  })
-    .to(char, { scaleY: 1.28 * p.scaleAmp, scaleX: 0.76 / p.scaleAmp, y: -18, rotation: p.rotAmp, duration: 0.14, ease: "power2.out" })
-    .to(char, { scaleY: 0.52,              scaleX: 1.45 * p.scaleAmp, y:  14, rotation: -p.rotAmp * 0.5, duration: 0.1, ease: "power4.in" })
-    .to(char, { scaleY: 1.22 * p.scaleAmp, scaleX: 0.85,              y:  -8, rotation: p.rotAmp * 0.3,  duration: 0.13, ease: "power2.out" })
-    .to(char, { scaleY: 0.91,              scaleX: 1.06,              y:   3, rotation: -p.rotAmp * 0.1, duration: 0.11, ease: "power2.inOut" })
-    .to(char, { scaleY: 1,                 scaleX: 1,                 y:   0, rotation: 0,               duration: 0.75, ease: "elastic.out(1, 0.2)" });
+function idleBreathe(char: Element, i: number) {
+  gsap.to(char, {
+    y: -3,
+    scaleY: 1.03,
+    scaleX: 0.98,
+    duration: 2.2 + Math.random() * 0.6,
+    ease: "sine.inOut",
+    yoyo: true,
+    repeat: -1,
+    delay: i * 0.12 + Math.random() * 0.4,
+  });
 }
 
 export default function AnimatedTitle({ children, className, wheelStretch, gradient, stroke }: Props) {
   const ref = useRef<HTMLHeadingElement>(null);
   const lastCharRef = useRef<Element | null>(null);
-  const lastCharPersonalityRef = useRef<Personality | null>(null);
-  const allCharsRef = useRef<{ el: Element; personality: Personality }[]>([]);
   const mobileReadyRef = useRef(false);
 
   useGSAP(() => {
     if (!ref.current) return;
-    allCharsRef.current = [];
     const split = new SplitText(ref.current, { type: "chars" });
 
     if (gradient) {
@@ -79,15 +74,6 @@ export default function AnimatedTitle({ children, className, wheelStretch, gradi
       const el = char as HTMLElement;
       const fromTop = -(el.getBoundingClientRect().top + el.offsetHeight + window.innerHeight * 0.6);
 
-      const personality: Personality = {
-        rotAmp: 4 + Math.random() * 9,
-        scaleAmp: 0.88 + Math.random() * 0.38,
-      };
-
-      if (wheelStretch) {
-        allCharsRef.current.push({ el: char, personality });
-      }
-
       const entryRot = (Math.random() - 0.5) * 600;
       const landRot = (Math.random() - 0.5) * 18;
 
@@ -100,16 +86,12 @@ export default function AnimatedTitle({ children, className, wheelStretch, gradi
         rotation: entryRot,
       });
 
-      if (wheelStretch && i === split.chars.length - 1) {
-        lastCharPersonalityRef.current = personality;
-      }
-
       const isLast = i === split.chars.length - 1;
       gsap.timeline({
         delay: i * 0.1 + Math.random() * 0.04,
         onComplete: () => {
           if (isLast) mobileReadyRef.current = true;
-          setTimeout(() => idleSquish(char, personality), 500 + i * 150 + Math.random() * 300);
+          idleBreathe(char, i);
         },
       })
         .to(char, { y: 0, duration: 1.0, ease: "bounce.out" })
@@ -177,8 +159,7 @@ export default function AnimatedTitle({ children, className, wheelStretch, gradi
         gsap.timeline({
           onComplete: () => {
             gsap.set(lastChar, { transformOrigin: "bottom center" });
-            const p = lastCharPersonalityRef.current;
-            if (p) setTimeout(() => idleSquish(lastChar, p), 600 + Math.random() * 400);
+            idleBreathe(lastChar, 0);
           },
         })
           .to(lastChar, { scaleX: 1, scaleY: 1, y: 0, rotation: -10, duration: 0.4, ease: "power4.out" })
