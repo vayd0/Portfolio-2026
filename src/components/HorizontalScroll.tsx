@@ -11,11 +11,21 @@ export default function HorizontalScroll({ children, loopEvery }: { children: Re
     const container = containerRef.current;
     if (!container) return;
 
+    let prevScrollLeft = 0;
+    let smoothVel = 0;
+
+    const truePanel = () => {
+      if (!loopEvery || container.children.length < 2) return container.clientWidth;
+      const first = container.children[0] as HTMLElement;
+      const second = container.children[1] as HTMLElement;
+      return second.offsetLeft - first.offsetLeft;
+    };
+
     const proximitySnap = () => {
-      const panelWidth = container.clientWidth;
-      const nearest = Math.round(container.scrollLeft / panelWidth) * panelWidth;
+      const pw = truePanel();
+      const nearest = Math.round(container.scrollLeft / pw) * pw;
       const distance = Math.abs(container.scrollLeft - nearest);
-      if (distance > 1 && distance < panelWidth * 0.4) {
+      if (distance > 1 && distance < pw * 0.4) {
         targetX.current = nearest;
         gsap.to(container, { scrollLeft: nearest, duration: 0.8, ease: "power1.out" });
       }
@@ -24,8 +34,7 @@ export default function HorizontalScroll({ children, loopEvery }: { children: Re
     const onWheel = (e: WheelEvent) => {
       if (window.innerWidth < 768) return;
       e.preventDefault();
-      const panelWidth = container.clientWidth;
-      const maxScroll = container.scrollWidth - panelWidth;
+      const maxScroll = container.scrollWidth - container.clientWidth;
       targetX.current = Math.max(0, Math.min(maxScroll, targetX.current + e.deltaY));
       gsap.to(container, {
         scrollLeft: targetX.current,
@@ -38,16 +47,20 @@ export default function HorizontalScroll({ children, loopEvery }: { children: Re
 
     const onContainerScroll = () => {
       if (!loopEvery || window.innerWidth < 768) return;
-      const panelWidth = container.clientWidth;
-      const cycleWidth = loopEvery * panelWidth;
+      const pw = truePanel();
+      const cycleWidth = loopEvery * pw;
 
-      if (container.scrollLeft < cycleWidth) return;
+      let jumpDelta = 0;
+      if (container.scrollLeft >= 2 * cycleWidth) jumpDelta = -cycleWidth;
+      else if (container.scrollLeft < pw * 0.5) jumpDelta = cycleWidth;
+      if (jumpDelta === 0) return;
 
-      const newScrollLeft = container.scrollLeft % cycleWidth;
-      const newTarget = ((targetX.current % cycleWidth) + cycleWidth) % cycleWidth;
+      const newScrollLeft = container.scrollLeft + jumpDelta;
+      const newTarget = targetX.current + jumpDelta;
 
       gsap.killTweensOf(container);
       container.scrollLeft = newScrollLeft;
+      prevScrollLeft = newScrollLeft;
       targetX.current = newTarget;
 
       if (Math.abs(newTarget - newScrollLeft) > 2) {
@@ -70,8 +83,32 @@ export default function HorizontalScroll({ children, loopEvery }: { children: Re
 
     if (window.innerWidth >= 768) {
       window.scrollTo(0, 0);
-      targetX.current = container.scrollLeft;
+      if (loopEvery) {
+        const firstOfCopy2 = container.children[loopEvery] as HTMLElement | undefined;
+        const startX = firstOfCopy2 ? firstOfCopy2.offsetLeft : loopEvery * container.clientWidth;
+        container.scrollLeft = startX;
+        targetX.current = startX;
+      } else {
+        targetX.current = container.scrollLeft;
+      }
     }
+
+    prevScrollLeft = container.scrollLeft;
+
+    const velTick = () => {
+      if (window.innerWidth < 768) {
+        smoothVel *= 0.85;
+        document.documentElement.style.setProperty("--vel-skew", smoothVel * 0.15 + "deg");
+        return;
+      }
+      const raw = container.scrollLeft - prevScrollLeft;
+      prevScrollLeft = container.scrollLeft;
+      const delta = Math.max(-200, Math.min(200, raw));
+      smoothVel += (delta - smoothVel) * 0.1;
+      smoothVel *= 0.82;
+      document.documentElement.style.setProperty("--vel-skew", smoothVel * 0.15 + "deg");
+    };
+    gsap.ticker.add(velTick);
 
     container.addEventListener("wheel", onWheel, { passive: false });
     container.addEventListener("scroll", onContainerScroll, { passive: true });
@@ -80,6 +117,8 @@ export default function HorizontalScroll({ children, loopEvery }: { children: Re
       container.removeEventListener("wheel", onWheel);
       container.removeEventListener("scroll", onContainerScroll);
       window.removeEventListener("resize", onResize);
+      gsap.ticker.remove(velTick);
+      document.documentElement.style.setProperty("--vel-skew", "0deg");
     };
   }, [loopEvery]);
 

@@ -22,12 +22,14 @@ interface Props {
   };
   rotation: number;
   shapeConfig: {
-    circle: { depthX: number; depthY: number; enterX: number; enterY: number; enterRotation: number; enterDelay: number; className: string; style: React.CSSProperties; mobileStyle?: React.CSSProperties };
-    triangle: { depthX: number; depthY: number; enterX: number; enterY: number; enterRotation: number; enterDelay: number; className: string; style: React.CSSProperties; mobileStyle?: React.CSSProperties };
-    arrow: { depthX: number; depthY: number; enterX: number; enterY: number; enterRotation: number; enterDelay: number; className: string; style: React.CSSProperties; mobileStyle?: React.CSSProperties; flipY?: boolean };
+    circle: { depthX: number; depthY: number; className: string; style: React.CSSProperties; mobileStyle?: React.CSSProperties };
+    triangle: { depthX: number; depthY: number; className: string; style: React.CSSProperties; mobileStyle?: React.CSSProperties };
+    arrow: { depthX: number; depthY: number; className: string; style: React.CSSProperties; mobileStyle?: React.CSSProperties; flipY?: boolean };
   };
   overlayRef: React.RefObject<HTMLDivElement | null>;
   spawnBall?: () => void;
+  setBallBlack?: (black: boolean) => void;
+  titlePosition?: "bottom-left" | "top-right";
 }
 
 function VisitButton({ href }: { href: string }) {
@@ -68,7 +70,7 @@ function VisitButton({ href }: { href: string }) {
   );
 }
 
-export default function ProjectExpandedPanel({ project, rotation, shapeConfig, overlayRef, spawnBall }: Props) {
+export default function ProjectExpandedPanel({ project, rotation, shapeConfig, overlayRef, spawnBall, setBallBlack, titlePosition = "bottom-left" }: Props) {
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
   const leftRef = useRef<HTMLDivElement>(null);
@@ -87,6 +89,7 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
   const descWordRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const linksRef = useRef<HTMLDivElement>(null);
   const openCallRef = useRef<gsap.core.Tween | null>(null);
+  const openTlRef = useRef<gsap.core.Timeline | null>(null);
 
   const isMobile = () => window.innerWidth < 768;
 
@@ -131,16 +134,29 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
     if (bl) bl.style.clipPath = `circle(8vmax at ${CC_OPEN})`;
     gsap.set(el, { display: "block", opacity: 1, zIndex: 1 });
     animateCircle(8, 200, 0.85, "power3.inOut", CC_OPEN);
+    document.querySelectorAll<HTMLElement>("[data-ball-layer]").forEach(layer => {
+      if (layer === bl) return;
+      layer.setAttribute("data-circle-animating", "1");
+      layer.style.clipPath = "none";
+    });
+    setBallBlack?.(true);
     openCallRef.current = gsap.delayedCall(0.35, () => setOpen(true));
   };
 
   const closePanel = () => {
     if (!open) return;
     openCallRef.current?.kill();
+    openTlRef.current?.kill();
+    openTlRef.current = null;
     gsap.killTweensOf(circleProxy.current);
 
     const el = overlayRef.current;
     const bl = blackLayerRef.current;
+    document.querySelectorAll<HTMLElement>("[data-ball-layer]").forEach(layer => {
+      if (layer === bl) return;
+      layer.removeAttribute("data-circle-animating");
+      layer.style.clipPath = "circle(0vmax at 50% 50%)";
+    });
     if (el) {
       el.style.clipPath = "none";
       if (bl) bl.style.clipPath = "none";
@@ -148,6 +164,7 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
       animateCircle(200, 8, 0.65, "power3.inOut", CC_CLOSE, () => {
         el.style.clipPath = "";
         gsap.set(el, { display: "none" });
+        setBallBlack?.(false);
         spawnBall?.();
       });
     }
@@ -169,6 +186,7 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
         .to(linksRef.current, { opacity: 0, y: 20, duration: 0.15, ease: "power2.in" }, 0)
         .to(descWords, { y: "115%", stagger: { each: 0.012, from: "end" }, duration: 0.22, ease: "power3.in" }, 0)
         .to([...gallery].reverse(), { opacity: 0, scale: 0.7, y: -40, stagger: 0.05, duration: 0.2, ease: "power3.in" }, 0)
+        .to([circleParallaxRef.current, triangleParallaxRef.current, arrowParallaxRef.current, blackCircleRef.current, blackTriangleRef.current, blackArrowRef.current], { x: 0, y: 0, duration: 0.6, ease: "power2.out" }, 0)
         .to(rightInnerRef.current, { x: "-40vw", duration: 0.4, ease: "power3.in" }, 0)
         .to(rightRef.current, { width: 0, duration: 0.4, ease: "power3.in" }, 0.1)
         .to(leftRef.current, { width: "100dvw", duration: 0.65, ease: "elastic.out(1, 0.5)" }, 0.15)
@@ -204,19 +222,26 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
   }, []);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      gsap.set(leftRef.current, { clearProps: "width,height" });
+      gsap.set(rightRef.current, { clearProps: "width,height" });
+      gsap.set(rightInnerRef.current, { clearProps: "x,transform" });
+      gsap.set(mockupWrapRef.current, { clearProps: "scaleX,scaleY,transform" });
+      return;
+    }
     const mobile = isMobile();
     const gallery = galleryRefs.current.filter(Boolean);
     const galleryRotations = [-12, 6, -4];
     const descWords = descWordRefs.current.filter(Boolean);
 
-    gsap.set(gallery, { opacity: 0, scale: 0.4, y: -100, rotation: 0 });
+    gsap.set(gallery, { opacity: 0, scale: 1, y: -window.innerHeight, rotation: 0 });
     gsap.set(descWords, { y: "115%" });
     gsap.set(linksRef.current, { opacity: 0, y: 30 });
     gsap.set(rightInnerRef.current, { x: 0 });
 
     const tl = gsap.timeline();
-    const cleanup = () => tl.kill();
+    openTlRef.current = tl;
+    const cleanup = () => { tl.kill(); openTlRef.current = null; };
 
     if (mobile) {
       tl
@@ -224,7 +249,8 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
         .to(mockupWrapRef.current, { scaleY: 1.12, scaleX: 0.92, duration: 0.14, ease: "power2.out" })
         .to(mockupWrapRef.current, { scaleY: 1, scaleX: 1, duration: 0.9, ease: "elastic.out(1, 0.38)" })
         .to(leftRef.current, { height: "42dvh", duration: 0.7, ease: "elastic.out(1, 0.45)" }, 0)
-        .to(rightRef.current, { height: "50dvh", duration: 0.6, ease: "power3.out", onComplete: () => { if (rightRef.current) rightRef.current.style.overflow = "visible"; } }, 0.1)
+        .to(rightRef.current, { height: "50dvh", duration: 0.6, ease: "power3.out" }, 0.1)
+        .call(() => { if (rightRef.current) rightRef.current.style.overflow = "visible"; }, undefined, 0.2)
         .to(gallery, {
           opacity: 1, scale: 1, y: 0,
           rotation: (i) => galleryRotations[i] ?? 0,
@@ -238,7 +264,11 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
         .to(mockupWrapRef.current, { scaleY: 1.12, scaleX: 0.92, duration: 0.14, ease: "power2.out" })
         .to(mockupWrapRef.current, { scaleY: 1, scaleX: 1, duration: 0.9, ease: "elastic.out(1, 0.38)" })
         .to(leftRef.current, { width: "42vw", duration: 0.8, ease: "elastic.out(1, 0.45)" }, 0)
-        .to(rightRef.current, { width: "58vw", duration: 0.9, ease: "elastic.out(1, 0.42)", onComplete: () => { if (rightRef.current) rightRef.current.style.overflow = "visible"; } }, 0.1)
+        .to(circleParallaxRef.current, { x: -window.innerWidth * 0.25, y: (circleParallaxRef.current?.getBoundingClientRect().top ?? 0) < window.innerHeight / 2 ? -window.innerHeight * 0.25 : window.innerHeight * 0.25, duration: 0.7, ease: "power2.out" }, 0)
+        .to(triangleParallaxRef.current, { x: -window.innerWidth * 0.25, y: (triangleParallaxRef.current?.getBoundingClientRect().top ?? 0) < window.innerHeight / 2 ? -window.innerHeight * 0.25 : window.innerHeight * 0.25, duration: 0.7, ease: "power2.out" }, 0)
+        .to(arrowParallaxRef.current, { x: -window.innerWidth * 0.25, y: (arrowParallaxRef.current?.getBoundingClientRect().top ?? 0) < window.innerHeight / 2 ? -window.innerHeight * 0.25 : window.innerHeight * 0.25, duration: 0.7, ease: "power2.out" }, 0)
+        .to(rightRef.current, { width: "58vw", duration: 0.9, ease: "elastic.out(1, 0.42)" }, 0.1)
+        .call(() => { if (rightRef.current) rightRef.current.style.overflow = "visible"; }, undefined, 0.3)
         .to(gallery, {
           opacity: 1, scale: 1, y: 0,
           rotation: (i) => galleryRotations[i] ?? 0,
@@ -255,15 +285,16 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
     <div
       ref={panelRef}
       className="relative shrink-0 flex flex-col md:flex-row panel-height"
+      data-panel-open={open ? "" : undefined}
       style={{ width: "100dvw", position: "relative", zIndex: 2 }}
     >
-      <ParallaxShape ref={circleParallaxRef} depthX={shapeConfig.circle.depthX} depthY={shapeConfig.circle.depthY} enterX={shapeConfig.circle.enterX} enterY={shapeConfig.circle.enterY} enterRotation={shapeConfig.circle.enterRotation} enterDelay={shapeConfig.circle.enterDelay} className={shapeConfig.circle.className} style={{ zIndex: 1, ...shapeConfig.circle.style }} mobileStyle={shapeConfig.circle.mobileStyle}>
+      <ParallaxShape ref={circleParallaxRef} depthX={shapeConfig.circle.depthX} depthY={shapeConfig.circle.depthY} className={shapeConfig.circle.className} style={{ zIndex: 1, ...shapeConfig.circle.style }} mobileStyle={shapeConfig.circle.mobileStyle}>
         <Circle />
       </ParallaxShape>
-      <ParallaxShape ref={triangleParallaxRef} depthX={shapeConfig.triangle.depthX} depthY={shapeConfig.triangle.depthY} enterX={shapeConfig.triangle.enterX} enterY={shapeConfig.triangle.enterY} enterRotation={shapeConfig.triangle.enterRotation} enterDelay={shapeConfig.triangle.enterDelay} className={shapeConfig.triangle.className} style={{ zIndex: 1, ...shapeConfig.triangle.style }} mobileStyle={shapeConfig.triangle.mobileStyle}>
+      <ParallaxShape ref={triangleParallaxRef} depthX={shapeConfig.triangle.depthX} depthY={shapeConfig.triangle.depthY} className={shapeConfig.triangle.className} style={{ zIndex: 1, ...shapeConfig.triangle.style }} mobileStyle={shapeConfig.triangle.mobileStyle}>
         <Triangle />
       </ParallaxShape>
-      <ParallaxShape ref={arrowParallaxRef} depthX={shapeConfig.arrow.depthX} depthY={shapeConfig.arrow.depthY} enterX={shapeConfig.arrow.enterX} enterY={shapeConfig.arrow.enterY} enterRotation={shapeConfig.arrow.enterRotation} enterDelay={shapeConfig.arrow.enterDelay} className={shapeConfig.arrow.className} style={{ zIndex: 1, ...shapeConfig.arrow.style }} mobileStyle={shapeConfig.arrow.mobileStyle}>
+      <ParallaxShape ref={arrowParallaxRef} depthX={shapeConfig.arrow.depthX} depthY={shapeConfig.arrow.depthY} className={shapeConfig.arrow.className} style={{ zIndex: 1, ...shapeConfig.arrow.style }} mobileStyle={shapeConfig.arrow.mobileStyle}>
         <div style={shapeConfig.arrow.flipY ? { transform: "scaleY(-1)" } : undefined}>
           <Arrow />
         </div>
@@ -293,12 +324,15 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
           onClick={open ? closePanel : openWithTransition}
           style={{ cursor: "pointer" }}
         >
-          <ProjectMockup image={project.image} title={project.title} rotation={rotation} freeze={open} />
+          <ProjectMockup image={project.image} title={project.title} rotation={rotation} />
         </div>
       </div>
 
       <div
-        className="absolute top-4 right-4 md:top-auto md:right-auto md:bottom-8 md:left-12"
+        data-vel
+        className={titlePosition === "top-right"
+          ? "absolute top-4 right-4 md:top-8 md:right-12"
+          : "absolute top-4 right-4 md:top-auto md:right-auto md:bottom-8 md:left-12"}
         style={{ zIndex: 4 }}
         onClick={open ? closePanel : openWithTransition}
       >
@@ -316,13 +350,7 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
               <div
                 key={src}
                 ref={(el) => { galleryRefs.current[i] = el; }}
-                style={{
-                  position: "relative",
-                  width: "30%",
-                  aspectRatio: "16/9",
-                  flexShrink: 0,
-                  minWidth: 0,
-                }}
+                style={{ position: "relative", width: "30%", aspectRatio: "16/9", flexShrink: 0, minWidth: 0, transform: `translateY(${-28 - i * 8}px)` }}
               >
                 <SlimeImage src={src} alt={`${project.title} ${i + 1}`} className="absolute inset-0" />
               </div>

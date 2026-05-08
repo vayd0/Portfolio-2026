@@ -22,7 +22,7 @@ interface Personality {
 
 function idleSquish(char: Element, p: Personality) {
   gsap.timeline({
-    onComplete: () => setTimeout(() => idleSquish(char, p), 800 + Math.random() * 1800),
+    onComplete: () => { setTimeout(() => idleSquish(char, p), 800 + Math.random() * 1800); },
   })
     .to(char, { scaleY: 1.28 * p.scaleAmp, scaleX: 0.76 / p.scaleAmp, y: -18, rotation: p.rotAmp, duration: 0.14, ease: "power2.out" })
     .to(char, { scaleY: 0.52,              scaleX: 1.45 * p.scaleAmp, y:  14, rotation: -p.rotAmp * 0.5, duration: 0.1, ease: "power4.in" })
@@ -138,20 +138,30 @@ export default function AnimatedTitle({ children, className, wheelStretch, gradi
     if (!scrollContainer) return;
 
     let isReleased = false;
-    let hasReleased = false;
-    const maxStretch = 3.5;
+    let shakeProgress = 0;
+    const maxStretch = 2.2;
+
+    const shakeTick = () => {
+      const lastChar = lastCharRef.current;
+      if (!lastChar || shakeProgress <= 0) return;
+      const amp = shakeProgress * 1.2;
+      gsap.set(lastChar, { rotation: Math.sin(Date.now() * 0.034) * amp });
+    };
+    gsap.ticker.add(shakeTick);
 
     const onScroll = () => {
       const lastChar = lastCharRef.current;
-      if (!lastChar || hasReleased) return;
+      const titleEl = ref.current;
+      if (!lastChar || !titleEl) return;
 
-      const scrollLeft = scrollContainer.scrollLeft;
-      const introWidth = window.innerWidth;
-      const releaseAt = introWidth * 0.6;
+      const rightEdge = titleEl.getBoundingClientRect().right;
+      const vw = window.innerWidth;
+      const stretchEnd = vw * 0.85;
+      const releaseAt = vw * 0.3;
 
-      if (scrollLeft >= releaseAt && !isReleased) {
+      if (rightEdge <= releaseAt && !isReleased) {
         isReleased = true;
-        hasReleased = true;
+        shakeProgress = 0;
         gsap.killTweensOf(lastChar);
         gsap.timeline({
           onComplete: () => {
@@ -160,35 +170,31 @@ export default function AnimatedTitle({ children, className, wheelStretch, gradi
             if (p) setTimeout(() => idleSquish(lastChar, p), 600 + Math.random() * 400);
           },
         })
-          .to(lastChar, {
-            scaleX: 1,
+          .to(lastChar, { scaleX: 1, scaleY: 1, y: 0, rotation: -10, duration: 0.4, ease: "power4.out" })
+          .to(lastChar, { rotation: 0, duration: 0.9, ease: "elastic.out(1, 0.28)" }, "-=0.05");
+      } else if (rightEdge > releaseAt) {
+        isReleased = false;
+        if (rightEdge < stretchEnd) {
+          const progress = 1 - (rightEdge - releaseAt) / (stretchEnd - releaseAt);
+          shakeProgress = progress;
+          gsap.killTweensOf(lastChar);
+          gsap.set(lastChar, {
+            scaleX: 1 + progress * (maxStretch - 1),
             scaleY: 1,
             y: 0,
-            rotation: -10,
-            duration: 0.4,
-            ease: "power4.out",
-          })
-          .to(lastChar, {
-            rotation: 0,
-            duration: 0.9,
-            ease: "elastic.out(1, 0.28)",
-          }, "-=0.05");
-      } else if (scrollLeft < releaseAt) {
-        isReleased = false;
-        const progress = Math.min(scrollLeft / introWidth, 1);
-        gsap.killTweensOf(lastChar);
-        gsap.set(lastChar, {
-          scaleX: 1 + progress * (maxStretch - 1),
-          scaleY: 1,
-          y: 0,
-          rotation: 0,
-          transformOrigin: progress > 0 ? "left center" : "bottom center",
-        });
+            transformOrigin: "left center",
+          });
+        } else {
+          shakeProgress = 0;
+        }
       }
     };
 
     scrollContainer.addEventListener("scroll", onScroll);
-    return () => scrollContainer.removeEventListener("scroll", onScroll);
+    return () => {
+      scrollContainer.removeEventListener("scroll", onScroll);
+      gsap.ticker.remove(shakeTick);
+    };
   }, [wheelStretch]);
 
   useEffect(() => {
@@ -235,7 +241,7 @@ export default function AnimatedTitle({ children, className, wheelStretch, gradi
   }, [wheelStretch]);
 
   return (
-    <h1 ref={ref} className={className}>
+    <h1 ref={ref} className={className} data-vel>
       {children}
     </h1>
   );

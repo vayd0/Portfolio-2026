@@ -3,6 +3,13 @@
 :root {
   --background: #ffffff;
   --foreground: #000000;
+  --vel-skew: 0deg;
+}
+
+[data-vel] {
+  transform-origin: bottom center;
+  transform: skewX(var(--vel-skew));
+  will-change: transform;
 }
 
 html {
@@ -32,7 +39,8 @@ main {
   min-height: 0;
   background: #ffffff;
   border-radius: 12px;
-  overflow: hidden;
+  overflow-x: clip;
+  overflow-y: visible;
   position: relative;
 }
 
@@ -70,7 +78,6 @@ main {
 
 .expanded-left {
   width: 100dvw;
-  height: 100%;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -81,7 +88,6 @@ main {
 
 .expanded-right {
   width: 0;
-  height: 100%;
   flex-shrink: 0;
   overflow: hidden;
   position: relative;
@@ -99,6 +105,22 @@ main {
   justify-content: center;
   padding-left: clamp(16px, 4vw, 80px);
   padding-right: clamp(16px, 4vw, 80px);
+}
+
+.with-grain {
+  position: relative;
+  isolation: isolate;
+}
+.with-grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+  opacity: 0.1;
+  mix-blend-mode: overlay;
+  pointer-events: none;
 }
 
 @media (max-width: 767px) {

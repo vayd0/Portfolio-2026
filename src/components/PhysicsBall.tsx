@@ -24,6 +24,7 @@ interface Ball {
 
 export interface PhysicsBallHandle {
   spawn: () => void;
+  setBlack: (black: boolean) => void;
 }
 
 function DebugHitboxes({ containerRef }: { containerRef: React.RefObject<HTMLDivElement | null> }) {
@@ -88,7 +89,8 @@ const PhysicsBall = forwardRef<PhysicsBallHandle>((_, ref) => {
       const rotator = document.createElement("div");
       rotator.style.cssText = `width:100%;height:100%;`;
       const inner = document.createElement("div");
-      inner.style.cssText = `width:100%;height:100%;border-radius:50%;background:linear-gradient(225deg,#0AE448,#C5FF33 50%,#D2FF5E);transform-origin:50% 100%;`;
+      inner.style.cssText = `width:100%;height:100%;border-radius:50%;background:linear-gradient(225deg,#92FF33,#E2FF55);transform-origin:50% 100%;`;
+      inner.className = "with-grain";
       rotator.appendChild(inner);
       outer.appendChild(rotator);
       container.appendChild(outer);
@@ -106,6 +108,14 @@ const PhysicsBall = forwardRef<PhysicsBallHandle>((_, ref) => {
       outer.style.left = (ball.x - RADIUS) + "px";
       outer.style.top = (ball.y - RADIUS) + "px";
       balls.current.push(ball);
+    },
+    setBlack(black: boolean) {
+      const bg = black
+        ? "#000000"
+        : "linear-gradient(225deg,#92FF33,#E2FF55)";
+      for (const ball of balls.current) {
+        ball.inner.style.background = bg;
+      }
     },
   }));
 
@@ -126,6 +136,7 @@ const PhysicsBall = forwardRef<PhysicsBallHandle>((_, ref) => {
         prevScrollLeft = scrollEl.scrollLeft;
         if (Math.abs(delta) > 0.1) {
           for (const ball of balls.current) {
+            if (ball.jumpTarget) continue;
             ball.x += delta * 0.35;
             ball.sleeping = false;
           }
@@ -153,7 +164,7 @@ const PhysicsBall = forwardRef<PhysicsBallHandle>((_, ref) => {
             if (r.width === 0 || r.height === 0) continue;
             const titleLeft = r.left - containerRect.left;
             const titleRight = r.right - containerRect.left;
-            const margin = r.width * 0.2;
+            const margin = r.width * 0.4;
             const approachingFromLeft = ball.x >= titleLeft - margin && ball.x < titleLeft;
             const approachingFromRight = ball.x > titleRight && ball.x <= titleRight + margin;
             if (!approachingFromLeft && !approachingFromRight) continue;
@@ -165,7 +176,7 @@ const PhysicsBall = forwardRef<PhysicsBallHandle>((_, ref) => {
             const ty = r.top - containerRect.top - RADIUS;
             const dx = tx - ball.x;
             const dy = ty - ball.y;
-            const t = Math.max(25, Math.sqrt(2 * Math.max(1, Math.abs(dy)) / GRAVITY) * 3);
+            const t = Math.max(25, Math.sqrt(2 * Math.max(1, Math.abs(dy)) / GRAVITY) * 2.8);
             ball.jumpTarget = titleEl;
             ball.vx = dx / t;
             ball.vy = dy / t - 0.5 * GRAVITY * t;
@@ -221,6 +232,7 @@ const PhysicsBall = forwardRef<PhysicsBallHandle>((_, ref) => {
             top: rect.top - containerRect.top,
             bottom: rect.bottom - containerRect.top,
           };
+          if (ball.jumpTarget && el === ball.jumpTarget && (ball.x < r.left || ball.x > r.right)) return;
           const cx = Math.max(r.left, Math.min(ball.x, r.right));
           const cy = Math.max(r.top, Math.min(ball.y, r.bottom));
           const dx = ball.x - cx;
@@ -248,7 +260,7 @@ const PhysicsBall = forwardRef<PhysicsBallHandle>((_, ref) => {
           gsap.killTweensOf(ball.inner);
           gsap.to(ball.inner, {
             scaleX: sx, scaleY: sy, duration: 0.06, ease: "power1.out",
-            onComplete: () => gsap.to(ball.inner, { scaleX: 1, scaleY: 1, duration: 0.55, ease: "elastic.out(1, 0.4)" }),
+            onComplete: () => { gsap.to(ball.inner, { scaleX: 1, scaleY: 1, duration: 0.55, ease: "elastic.out(1, 0.4)" }); },
           });
         }
       }
