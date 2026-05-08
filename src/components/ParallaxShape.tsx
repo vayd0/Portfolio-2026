@@ -2,6 +2,7 @@
 
 import { useRef, useEffect, forwardRef, useCallback } from "react";
 import gsap from "gsap";
+import { subscribeVel } from "@/lib/velBus";
 
 interface Props {
   children: React.ReactNode;
@@ -48,10 +49,14 @@ const ParallaxShape = forwardRef<HTMLDivElement, Props>(function ParallaxShape({
       qy(my);
     };
 
+    inner.style.transformOrigin = "bottom center";
+    const unsubVel = subscribeVel((v) => { inner.style.transform = `skewX(${v * 1.5}deg)`; });
+
     window.addEventListener("mousemove", onMouseMove);
 
     return () => {
       window.removeEventListener("mousemove", onMouseMove);
+      unsubVel();
     };
   }, [depthX, depthY]);
 

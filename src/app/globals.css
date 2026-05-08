@@ -3,13 +3,6 @@
 :root {
   --background: #ffffff;
   --foreground: #000000;
-  --vel-skew: 0deg;
-}
-
-[data-vel] {
-  transform-origin: bottom center;
-  transform: skewX(var(--vel-skew));
-  will-change: transform;
 }
 
 html {

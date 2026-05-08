@@ -2,6 +2,7 @@
 
 import React, { useRef, useState, useEffect } from "react";
 import gsap from "gsap";
+import { subscribeVel } from "@/lib/velBus";
 import ProjectMockup from "@/components/ProjectMockup";
 import SlimeImage from "@/components/SlimeImage";
 import ProjectTitle from "@/components/ProjectTitle";
@@ -90,6 +91,7 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
   const linksRef = useRef<HTMLDivElement>(null);
   const openCallRef = useRef<gsap.core.Tween | null>(null);
   const openTlRef = useRef<gsap.core.Timeline | null>(null);
+  const titleRef = useRef<HTMLDivElement>(null);
 
   const isMobile = () => window.innerWidth < 768;
 
@@ -194,6 +196,13 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
         .to(mockupWrapRef.current, { scaleX: 1, scaleY: 1, duration: 0.7, ease: "elastic.out(1, 0.45)" }, 0.25);
     }
   };
+
+  useEffect(() => {
+    const el = titleRef.current;
+    if (!el) return;
+    el.style.transformOrigin = "bottom center";
+    return subscribeVel((v) => { el.style.transform = `skewX(${v * 1.5}deg)`; });
+  }, []);
 
   useEffect(() => {
     if (!panelRef.current) return;
@@ -329,7 +338,7 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
       </div>
 
       <div
-        data-vel
+        ref={titleRef}
         className={titlePosition === "top-right"
           ? "absolute top-4 right-4 md:top-8 md:right-12"
           : "absolute top-4 right-4 md:top-auto md:right-auto md:bottom-8 md:left-12"}

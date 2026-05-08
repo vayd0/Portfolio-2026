@@ -2,6 +2,7 @@
 
 import { useRef, useEffect } from "react";
 import gsap from "gsap";
+import { emitVel } from "@/lib/velBus";
 
 export default function HorizontalScroll({ children, loopEvery }: { children: React.ReactNode; loopEvery?: number }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -98,15 +99,15 @@ export default function HorizontalScroll({ children, loopEvery }: { children: Re
     const velTick = () => {
       if (window.innerWidth < 768) {
         smoothVel *= 0.85;
-        document.documentElement.style.setProperty("--vel-skew", smoothVel * 0.15 + "deg");
+        emitVel(smoothVel * 0.15);
         return;
       }
       const raw = container.scrollLeft - prevScrollLeft;
       prevScrollLeft = container.scrollLeft;
       const delta = Math.max(-200, Math.min(200, raw));
-      smoothVel += (delta - smoothVel) * 0.1;
-      smoothVel *= 0.82;
-      document.documentElement.style.setProperty("--vel-skew", smoothVel * 0.15 + "deg");
+      smoothVel += (delta - smoothVel) * 0.14;
+      smoothVel *= 0.78;
+      emitVel(smoothVel * 0.4);
     };
     gsap.ticker.add(velTick);
 
@@ -118,7 +119,7 @@ export default function HorizontalScroll({ children, loopEvery }: { children: Re
       container.removeEventListener("scroll", onContainerScroll);
       window.removeEventListener("resize", onResize);
       gsap.ticker.remove(velTick);
-      document.documentElement.style.setProperty("--vel-skew", "0deg");
+      emitVel(0);
     };
   }, [loopEvery]);
 

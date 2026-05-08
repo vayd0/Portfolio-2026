@@ -4,6 +4,7 @@ import { useRef, useEffect } from "react";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
 import SplitText from "gsap/SplitText";
+import { subscribeVel } from "@/lib/velBus";
 
 gsap.registerPlugin(SplitText);
 
@@ -124,6 +125,16 @@ export default function AnimatedTitle({ children, className, wheelStretch, gradi
       lastCharRef.current = split.chars[split.chars.length - 1];
     }
   }, { scope: ref });
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.transformOrigin = "bottom center";
+    return subscribeVel((v) => {
+      if (window.innerWidth < 768) return;
+      el.style.transform = `skewX(${v * 1.5}deg)`;
+    });
+  }, []);
 
   useEffect(() => {
     if (!wheelStretch || !ref.current) return;
