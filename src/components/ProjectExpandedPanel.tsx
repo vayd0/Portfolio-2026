@@ -30,6 +30,7 @@ interface Props {
   spawnBall?: () => void;
   setBallBlack?: (black: boolean) => void;
   titlePosition?: "bottom-left" | "top-right";
+  darkMode?: boolean;
 }
 
 function VisitButton({ href }: { href: string }) {
@@ -70,7 +71,7 @@ function VisitButton({ href }: { href: string }) {
   );
 }
 
-export default function ProjectExpandedPanel({ project, rotation, shapeConfig, overlayRef, spawnBall, setBallBlack, titlePosition = "bottom-left" }: Props) {
+export default function ProjectExpandedPanel({ project, rotation, shapeConfig, overlayRef, spawnBall, setBallBlack, titlePosition = "bottom-left", darkMode }: Props) {
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
   const leftRef = useRef<HTMLDivElement>(null);
@@ -90,6 +91,8 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
   const linksRef = useRef<HTMLDivElement>(null);
   const openCallRef = useRef<gsap.core.Tween | null>(null);
   const openTlRef = useRef<gsap.core.Timeline | null>(null);
+  const darkBgRef = useRef<HTMLDivElement>(null);
+  const darkProxy = useRef({ r: 0 });
 
   const isMobile = () => window.innerWidth < 768;
 
@@ -196,6 +199,43 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
   };
 
   useEffect(() => {
+    if (!darkMode || !panelRef.current) return;
+    const panel = panelRef.current;
+
+    let scrollRoot: HTMLElement | null = panel.parentElement;
+    while (scrollRoot) {
+      if (getComputedStyle(scrollRoot).overflowX === "auto") break;
+      scrollRoot = scrollRoot.parentElement;
+    }
+
+    const proxy = darkProxy.current;
+
+    const observer = new IntersectionObserver(([entry]) => {
+      const overlay = darkBgRef.current;
+      if (!overlay) return;
+      gsap.killTweensOf(proxy);
+      if (entry.isIntersecting) {
+        gsap.to(proxy, {
+          r: 150,
+          duration: 1.5,
+          ease: "elastic.out(1, 0.6)",
+          onUpdate: () => { overlay.style.clipPath = `circle(${proxy.r}vmax at 50% 50%)`; },
+        });
+      } else {
+        gsap.to(proxy, {
+          r: 0,
+          duration: 0.6,
+          ease: "power3.in",
+          onUpdate: () => { overlay.style.clipPath = `circle(${proxy.r}vmax at 50% 50%)`; },
+        });
+      }
+    }, { root: scrollRoot, threshold: 0.4 });
+
+    observer.observe(panel);
+    return () => observer.disconnect();
+  }, [darkMode]);
+
+  useEffect(() => {
     if (!panelRef.current) return;
     const observer = new IntersectionObserver(
       ([entry]) => { if (!entry.isIntersecting && open) closePanel(); },
@@ -288,6 +328,19 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
       data-panel-open={open ? "" : undefined}
       style={{ width: "100dvw", position: "relative", zIndex: 2 }}
     >
+      {darkMode && (
+        <div
+          ref={darkBgRef}
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: "#000",
+            clipPath: "circle(0vmax at 50% 50%)",
+            zIndex: 0,
+            pointerEvents: "none",
+          }}
+        />
+      )}
       <ParallaxShape ref={circleParallaxRef} depthX={shapeConfig.circle.depthX} depthY={shapeConfig.circle.depthY} className={shapeConfig.circle.className} style={{ zIndex: 1, ...shapeConfig.circle.style }} mobileStyle={shapeConfig.circle.mobileStyle}>
         <Circle />
       </ParallaxShape>
