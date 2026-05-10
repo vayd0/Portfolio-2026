@@ -380,9 +380,10 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
           style={{
             position: "absolute",
             inset: 0,
-            background: "#000",
+            background: "#fff",
+            mixBlendMode: "difference",
             clipPath: "circle(0vmax at 0% 50%)",
-            zIndex: 0,
+            zIndex: 10,
             pointerEvents: "none",
           }}
         />
