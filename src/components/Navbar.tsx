@@ -116,8 +116,12 @@ function ContactButton() {
       onMouseEnter={onEnter}
       onMouseLeave={onLeave}
     >
-      <svg ref={svgRef} width="296" height="101" viewBox="0 0 296 101" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M17.4033 6.2002H281.011V0H285.511V6.2002H285.6V6.21973H296V10.7197H285.6V85.2197H296V89.7197H285.6V89.7998H285.511V100.12H281.011V89.7998H17.4033V100.12H12.9033V89.7998H12.9004V89.7197H0V85.2197H12.9004V10.7197H0V6.21973H12.9004V6.2002H12.9033V0H17.4033V6.2002Z" fill="white" stroke="black" strokeWidth="2" />
+      <svg ref={svgRef} width="296" height="104" viewBox="0 0 296 104" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="16.0107" y="12.88" width="267" height="78" fill="white"/>
+        <line x1="15.207" x2="15.207" y2="104" stroke="black" strokeWidth="4.5"/>
+        <line x1="283.207" x2="283.207" y2="104" stroke="black" strokeWidth="4.5"/>
+        <line x1="-2.24183e-07" y1="91.3499" x2="296" y2="91.3498" stroke="black" strokeWidth="4.5"/>
+        <line x1="2.24183e-07" y1="12.3499" x2="296" y2="12.3499" stroke="black" strokeWidth="4.5"/>
       </svg>
       <span
         style={{
