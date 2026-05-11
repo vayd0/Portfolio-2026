@@ -3,7 +3,7 @@ import { useId } from "react";
 export type Palette = 0 | 1 | 2;
 
 const PALETTES = [
-  { stops: [{ offset: "0%", color: "#8AFF2F" }, { offset: "60%", color: "#00C853" }, { offset: "100%", color: "#00875A" }] },
+  { stops: [{ offset: "0%", color: "#0AE448" }, { offset: "50%", color: "#C5FF33" }, { offset: "100%", color: "#D2FF5E" }] },
   { stops: [{ offset: "0%", color: "#FF8500" }, { offset: "50%", color: "#FF5500" }, { offset: "100%", color: "#FFD000" }] },
   { stops: [{ offset: "0%", color: "#7700FF" }, { offset: "50%", color: "#CC00FF" }, { offset: "100%", color: "#FF3399" }] },
 ];
