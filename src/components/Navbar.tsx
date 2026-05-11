@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import gsap from "gsap";
 
 const FONT_STYLE: React.CSSProperties = {
@@ -10,71 +11,94 @@ const FONT_STYLE: React.CSSProperties = {
   fontSize: "clamp(0.95rem, 1.4vw, 1.5rem)",
 };
 
-function ContactSvg() {
-  return (
-    <svg width="296" height="101" viewBox="0 0 296 101" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M17.4033 6.2002H281.011V0H285.511V6.2002H285.6V6.21973H296V10.7197H285.6V85.2197H296V89.7197H285.6V89.7998H285.511V100.12H281.011V89.7998H17.4033V100.12H12.9033V89.7998H12.9004V89.7197H0V85.2197H12.9004V10.7197H0V6.21973H12.9004V6.2002H12.9033V0H17.4033V6.2002Z" fill="currentColor" />
-    </svg>
-  );
-}
-
 function ProjetsLink() {
   const letterRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const linkRef = useRef<HTMLAnchorElement>(null);
+  const blendRef = useRef<HTMLDivElement>(null);
   const letters = "projets".split("");
+  const [mounted, setMounted] = useState(false);
+  const [rect, setRect] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+    const measure = () => {
+      if (!linkRef.current) return;
+      const r = linkRef.current.getBoundingClientRect();
+      setRect({ top: r.top, left: r.left, width: r.width, height: r.height });
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, []);
 
   const onEnter = () => {
     gsap.killTweensOf(letterRefs.current);
-    gsap.to(letterRefs.current, {
-      y: -6,
-      duration: 0.35,
-      ease: "power2.out",
-      stagger: { each: 0.04 },
-    });
-    gsap.to(letterRefs.current, {
-      y: 0,
-      duration: 0.6,
-      ease: "elastic.out(1, 0.4)",
-      stagger: { each: 0.04 },
-      delay: 0.15,
-    });
+    gsap.to(letterRefs.current, { y: -6, duration: 0.35, ease: "power2.out", stagger: { each: 0.04 } });
+    gsap.to(letterRefs.current, { y: 0, duration: 0.6, ease: "elastic.out(1, 0.4)", stagger: { each: 0.04 }, delay: 0.15 });
+    gsap.killTweensOf(blendRef.current);
+    gsap.to(blendRef.current, { y: -6, duration: 0.35, ease: "power2.out" });
+    gsap.to(blendRef.current, { y: 0, duration: 0.6, ease: "elastic.out(1, 0.4)", delay: 0.15 });
   };
 
   const onLeave = () => {
     gsap.killTweensOf(letterRefs.current);
-    gsap.to(letterRefs.current, {
-      y: 0,
-      duration: 0.5,
-      ease: "elastic.out(1, 0.4)",
-      stagger: { each: 0.03 },
-    });
+    gsap.to(letterRefs.current, { y: 0, duration: 0.5, ease: "elastic.out(1, 0.4)", stagger: { each: 0.03 } });
+    gsap.killTweensOf(blendRef.current);
+    gsap.to(blendRef.current, { y: 0, duration: 0.5, ease: "elastic.out(1, 0.4)" });
   };
 
   return (
-    <a
-      href="#projets"
-      style={{
-        ...FONT_STYLE,
-        textDecoration: "none",
-        letterSpacing: "0.02em",
-        color: "#fff",
-        mixBlendMode: "difference",
-        pointerEvents: "auto",
-        display: "inline-flex",
-        overflow: "hidden",
-      }}
-      onMouseEnter={onEnter}
-      onMouseLeave={onLeave}
-    >
-      {letters.map((char, i) => (
-        <span
-          key={i}
-          ref={(el) => { letterRefs.current[i] = el; }}
-          style={{ display: "inline-block" }}
+    <>
+      <a
+        ref={linkRef}
+        href="#projets"
+        style={{
+          ...FONT_STYLE,
+          textDecoration: "none",
+          letterSpacing: "0.02em",
+          color: "transparent",
+          pointerEvents: "auto",
+          display: "inline-flex",
+          overflow: "hidden",
+        }}
+        onMouseEnter={onEnter}
+        onMouseLeave={onLeave}
+      >
+        {letters.map((char, i) => (
+          <span
+            key={i}
+            ref={(el) => { letterRefs.current[i] = el; }}
+            style={{ display: "inline-block" }}
+          >
+            {char}
+          </span>
+        ))}
+      </a>
+      {mounted && rect && createPortal(
+        <div
+          ref={blendRef}
+          aria-hidden
+          style={{
+            position: "fixed",
+            top: rect.top,
+            left: rect.left,
+            width: rect.width,
+            height: rect.height,
+            display: "flex",
+            alignItems: "center",
+            pointerEvents: "none",
+            mixBlendMode: "difference",
+            color: "white",
+            zIndex: 101,
+            ...FONT_STYLE,
+            letterSpacing: "0.02em",
+          }}
         >
-          {char}
-        </span>
-      ))}
-    </a>
+          projets
+        </div>,
+        document.body
+      )}
+    </>
   );
 }
 
@@ -84,20 +108,12 @@ function ContactButton() {
 
   const onEnter = () => {
     gsap.killTweensOf(btnRef.current);
-    gsap.to(btnRef.current, {
-      scale: 1.08,
-      duration: 0.6,
-      ease: "elastic.out(1, 0.4)",
-    });
+    gsap.to(btnRef.current, { scale: 1.08, duration: 0.6, ease: "elastic.out(1, 0.4)" });
   };
 
   const onLeave = () => {
     gsap.killTweensOf(btnRef.current);
-    gsap.to(btnRef.current, {
-      scale: 1,
-      duration: 0.7,
-      ease: "elastic.out(1, 0.35)",
-    });
+    gsap.to(btnRef.current, { scale: 1, duration: 0.7, ease: "elastic.out(1, 0.35)" });
   };
 
   return (
