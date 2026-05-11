@@ -202,6 +202,7 @@ export default function PortfolioClient({ projects }: { projects: Project[] }) {
               setBallBlack={setBallBlack}
               titlePosition={i === 1 ? "top-right" : "bottom-left"}
               palette={i % 3 as 0 | 1 | 2}
+              mockupOffsetY={i === 1 ? 40 : 0}
             />
           )),
         ])}

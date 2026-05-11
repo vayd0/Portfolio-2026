@@ -31,6 +31,7 @@ interface Props {
   setBallBlack?: (black: boolean) => void;
   titlePosition?: "bottom-left" | "top-right";
   palette?: Palette;
+  mockupOffsetY?: number;
 }
 
 function VisitButton({ href }: { href: string }) {
@@ -71,7 +72,7 @@ function VisitButton({ href }: { href: string }) {
   );
 }
 
-export default function ProjectExpandedPanel({ project, rotation, shapeConfig, overlayRef, spawnBall, setBallBlack, titlePosition = "bottom-left", palette = 0 }: Props) {
+export default function ProjectExpandedPanel({ project, rotation, shapeConfig, overlayRef, spawnBall, setBallBlack, titlePosition = "bottom-left", palette = 0, mockupOffsetY = 0 }: Props) {
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
   const leftRef = useRef<HTMLDivElement>(null);
@@ -319,12 +320,14 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
       </div>
 
       <div ref={leftRef} className="expanded-left" style={{ position: "relative", zIndex: 3 }}>
-        <div
-          ref={mockupWrapRef}
-          onClick={open ? closePanel : openWithTransition}
-          style={{ cursor: "pointer" }}
-        >
-          <ProjectMockup image={project.image} title={project.title} rotation={rotation} />
+        <div style={{ transform: mockupOffsetY ? `translateY(${mockupOffsetY}px)` : undefined }}>
+          <div
+            ref={mockupWrapRef}
+            onClick={open ? closePanel : openWithTransition}
+            style={{ cursor: "pointer" }}
+          >
+            <ProjectMockup image={project.image} title={project.title} rotation={rotation} />
+          </div>
         </div>
       </div>
 
