@@ -2,6 +2,12 @@ import { useId } from "react";
 
 export type Palette = 0 | 1 | 2;
 
+export const PALETTE_GRADIENTS = [
+  "linear-gradient(135deg, #0AE448, #C5FF33, #D2FF5E)",
+  "linear-gradient(135deg, #FF8500, #FF5500, #FFD000)",
+  "linear-gradient(135deg, #7700FF, #CC00FF, #FF3399)",
+] as const;
+
 const PALETTES = [
   { stops: [{ offset: "0%", color: "#0AE448" }, { offset: "50%", color: "#C5FF33" }, { offset: "100%", color: "#D2FF5E" }] },
   { stops: [{ offset: "0%", color: "#FF8500" }, { offset: "50%", color: "#FF5500" }, { offset: "100%", color: "#FFD000" }] },

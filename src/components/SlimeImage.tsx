@@ -87,10 +87,12 @@ export default function SlimeImage({
   src,
   alt,
   className,
+  background = "#000",
 }: {
   src: string;
   alt: string;
   className?: string;
+  background?: string;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -253,7 +255,7 @@ export default function SlimeImage({
 
   return (
     <div ref={wrapperRef} className={className}>
-      <div style={{ position: "absolute", inset: INNER_INSET, background: "#000" }}>
+      <div style={{ position: "absolute", inset: INNER_INSET, background }}>
         <img
           ref={imgRef}
           alt={alt}

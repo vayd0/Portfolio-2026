@@ -326,7 +326,7 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
             onClick={open ? closePanel : openWithTransition}
             style={{ cursor: "pointer" }}
           >
-            <ProjectMockup image={project.image} title={project.title} rotation={rotation} />
+            <ProjectMockup image={project.image} title={project.title} rotation={rotation} palette={palette} />
           </div>
         </div>
       </div>

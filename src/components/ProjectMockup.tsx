@@ -4,14 +4,16 @@ import { useRef, useEffect } from "react";
 import gsap from "gsap";
 import SlimeImage from "@/components/SlimeImage";
 import { subscribeVel } from "@/lib/velBus";
+import { PALETTE_GRADIENTS, type Palette } from "@/components/shapes";
 
 interface ProjectMockupProps {
   image?: string;
   title: string;
   rotation: number;
+  palette?: Palette;
 }
 
-export default function ProjectMockup({ image, title, rotation }: ProjectMockupProps) {
+export default function ProjectMockup({ image, title, rotation, palette = 0 }: ProjectMockupProps) {
   const ref = useRef<HTMLDivElement>(null);
   const velRef = useRef<HTMLDivElement>(null);
 
@@ -78,9 +80,9 @@ export default function ProjectMockup({ image, title, rotation }: ProjectMockupP
         onMouseLeave={onLeave}
       >
         {image ? (
-          <SlimeImage src={image} alt={title} className="absolute inset-0" />
+          <SlimeImage src={image} alt={title} className="absolute inset-0" background={PALETTE_GRADIENTS[palette]} />
         ) : (
-          <div className="w-full h-full bg-black" />
+          <div className="w-full h-full" style={{ background: PALETTE_GRADIENTS[palette] }} />
         )}
       </div>
     </div>
