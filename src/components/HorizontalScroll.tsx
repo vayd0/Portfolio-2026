@@ -83,6 +83,8 @@ export default function HorizontalScroll({ children, loopEvery }: { children: Re
     };
 
     if (window.innerWidth >= 768) {
+      document.documentElement.style.overflow = "hidden";
+      document.body.style.overflow = "hidden";
       window.scrollTo(0, 0);
       if (loopEvery) {
         const firstOfCopy2 = container.children[loopEvery] as HTMLElement | undefined;
@@ -120,6 +122,8 @@ export default function HorizontalScroll({ children, loopEvery }: { children: Re
       window.removeEventListener("resize", onResize);
       gsap.ticker.remove(velTick);
       emitVel(0);
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
     };
   }, [loopEvery]);
 

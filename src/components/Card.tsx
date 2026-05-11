@@ -84,7 +84,7 @@ export default function Card({ title, image, index, color = "#e8e8e8", noSquish 
           ref={overlayRef}
           className="absolute flex flex-col items-start justify-end p-5"
           style={{
-            backgroundColor: "#C5FF33",
+            backgroundColor: "#92FF33",
             top: "-80px",
             left: 0,
             right: 0,

@@ -25,14 +25,17 @@ export default function ProjectMockup({ image, title, rotation }: ProjectMockupP
       scrollRoot = scrollRoot.parentElement;
     }
 
+    const isMobile = !scrollRoot;
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           gsap.killTweensOf(el);
           gsap.set(el, { y: -(window.innerHeight * 0.6 + 200), scaleY: 3.5, scaleX: 0.3, rotation: 0 });
-          gsap.to(el, { y: 40, duration: 1.0, ease: "expo.out" });
+          gsap.to(el, { y: -20, duration: 1.0, ease: "expo.out" });
           gsap.to(el, { scaleY: 1, scaleX: 1, rotation, duration: 1.5, ease: "elastic.out(1, 0.4)" });
-        } else {
+          if (isMobile) observer.disconnect();
+        } else if (!isMobile) {
           gsap.killTweensOf(el);
           gsap.set(el, { y: -(window.innerHeight * 0.6 + 200), scaleY: 3.5, scaleX: 0.3, rotation: 0 });
         }

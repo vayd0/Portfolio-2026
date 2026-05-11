@@ -120,6 +120,7 @@ export default function AnimatedTitle({ children, className, wheelStretch, gradi
     if (!scrollContainer) return;
 
     let isReleased = false;
+    let isInNormalZone = true;
     let shakeProgress = 0;
     const maxStretch = 2.2;
 
@@ -143,6 +144,7 @@ export default function AnimatedTitle({ children, className, wheelStretch, gradi
 
       if (rightEdge <= releaseAt && !isReleased) {
         isReleased = true;
+        isInNormalZone = false;
         shakeProgress = 0;
         gsap.killTweensOf(lastChar);
         gsap.timeline({
@@ -156,6 +158,7 @@ export default function AnimatedTitle({ children, className, wheelStretch, gradi
       } else if (rightEdge > releaseAt) {
         isReleased = false;
         if (rightEdge < stretchEnd) {
+          isInNormalZone = false;
           const progress = 1 - (rightEdge - releaseAt) / (stretchEnd - releaseAt);
           shakeProgress = progress;
           gsap.killTweensOf(lastChar);
@@ -167,6 +170,12 @@ export default function AnimatedTitle({ children, className, wheelStretch, gradi
           });
         } else {
           shakeProgress = 0;
+          if (!isInNormalZone) {
+            isInNormalZone = true;
+            gsap.killTweensOf(lastChar);
+            gsap.set(lastChar, { scaleX: 1, scaleY: 1, y: 0, transformOrigin: "bottom center" });
+            idleBreathe(lastChar, 0);
+          }
         }
       }
     };

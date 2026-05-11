@@ -1,4 +1,18 @@
-export function Circle() {
+import { useId } from "react";
+
+export type Palette = 0 | 1 | 2;
+
+const PALETTES = [
+  { stops: [{ offset: "0%", color: "#8AFF2F" }, { offset: "60%", color: "#00C853" }, { offset: "100%", color: "#00875A" }] },
+  { stops: [{ offset: "0%", color: "#FF8500" }, { offset: "50%", color: "#FF5500" }, { offset: "100%", color: "#FFD000" }] },
+  { stops: [{ offset: "0%", color: "#7700FF" }, { offset: "50%", color: "#CC00FF" }, { offset: "100%", color: "#FF3399" }] },
+];
+
+export function Circle({ palette = 0 }: { palette?: Palette }) {
+  const uid = useId();
+  const filterId = `gf_${uid}`;
+  const gradId = `gg_${uid}`;
+  const { stops } = PALETTES[palette];
   return (
     <svg
       width="319"
@@ -8,33 +22,28 @@ export function Circle() {
       xmlns="http://www.w3.org/2000/svg"
       className="circle-shape"
     >
-      <ellipse cx="159.5" cy="145" rx="159.5" ry="145" fill="#D9D9D9" />
-      <ellipse
-        cx="159.5"
-        cy="145"
-        rx="159.5"
-        ry="145"
-        fill="url(#paint0_linear_132_292)"
-      />
       <defs>
-        <linearGradient
-          id="paint0_linear_132_292"
-          x1="305.642"
-          y1="2.18717"
-          x2="145.527"
-          y2="264.614"
-          gradientUnits="userSpaceOnUse"
-        >
-          <stop stopColor="#0AE448" />
-          <stop offset="0.5" stopColor="#C5FF33" />
-          <stop offset="1" stopColor="#D2FF5E" />
+        <filter id={filterId} x="-5%" y="-5%" width="110%" height="110%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="4" stitchTiles="stitch" result="noise"/>
+          <feColorMatrix type="saturate" values="0" in="noise" result="gray"/>
+          <feComposite in="gray" in2="SourceGraphic" operator="in" result="masked"/>
+          <feBlend in="SourceGraphic" in2="masked" mode="overlay"/>
+        </filter>
+        <linearGradient id={gradId} x1="0" y1="0" x2="319" y2="290" gradientUnits="userSpaceOnUse">
+          {stops.map((s, i) => <stop key={i} offset={s.offset} stopColor={s.color} />)}
         </linearGradient>
       </defs>
+      <ellipse cx="159.5" cy="145" rx="159.5" ry="145" fill="#D9D9D9" />
+      <ellipse cx="159.5" cy="145" rx="159.5" ry="145" fill={`url(#${gradId})`} filter={`url(#${filterId})`} />
     </svg>
   );
 }
 
-export function Triangle() {
+export function Triangle({ palette = 0 }: { palette?: Palette }) {
+  const uid = useId();
+  const filterId = `gf_${uid}`;
+  const gradId = `gg_${uid}`;
+  const { stops } = PALETTES[palette];
   return (
     <svg
       width="406"
@@ -44,33 +53,28 @@ export function Triangle() {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <path
-        d="M368.999 -3.26091e-06L405.582 447.204L-0.000109388 255.284L368.999 -3.26091e-06Z"
-        fill="#D9D9D9"
-      />
-      <path
-        d="M368.999 -3.26091e-06L405.582 447.204L-0.000109388 255.284L368.999 -3.26091e-06Z"
-        fill="url(#paint0_linear_132_307)"
-      />
       <defs>
-        <linearGradient
-          id="paint0_linear_132_307"
-          x1="581.88"
-          y1="105.058"
-          x2="123.048"
-          y2="378.676"
-          gradientUnits="userSpaceOnUse"
-        >
-          <stop stopColor="#0AE448" />
-          <stop offset="0.5" stopColor="#C5FF33" />
-          <stop offset="1" stopColor="#D2FF5E" />
+        <filter id={filterId} x="-5%" y="-5%" width="110%" height="110%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="4" stitchTiles="stitch" result="noise"/>
+          <feColorMatrix type="saturate" values="0" in="noise" result="gray"/>
+          <feComposite in="gray" in2="SourceGraphic" operator="in" result="masked"/>
+          <feBlend in="SourceGraphic" in2="masked" mode="overlay"/>
+        </filter>
+        <linearGradient id={gradId} x1="0" y1="0" x2="406" y2="448" gradientUnits="userSpaceOnUse">
+          {stops.map((s, i) => <stop key={i} offset={s.offset} stopColor={s.color} />)}
         </linearGradient>
       </defs>
+      <path d="M368.999 -3.26091e-06L405.582 447.204L-0.000109388 255.284L368.999 -3.26091e-06Z" fill="#D9D9D9" />
+      <path d="M368.999 -3.26091e-06L405.582 447.204L-0.000109388 255.284L368.999 -3.26091e-06Z" fill={`url(#${gradId})`} filter={`url(#${filterId})`} />
     </svg>
   );
 }
 
-export function Arrow() {
+export function Arrow({ palette = 0 }: { palette?: Palette }) {
+  const uid = useId();
+  const filterId = `gf_${uid}`;
+  const gradId = `gg_${uid}`;
+  const { stops } = PALETTES[palette];
   return (
     <svg
       width="449"
@@ -80,27 +84,25 @@ export function Arrow() {
       xmlns="http://www.w3.org/2000/svg"
       className="arrow-shape"
     >
-      <path
-        d="M308.119 82.9984L-0.000189359 476.096L58.7386 522.137L366.858 129.039L379.72 190.181L448.922 176.343L419.373 4.24604e-05L244.089 15.7899L248.687 87.4747L308.119 82.9984Z"
-        fill="url(#paint0_linear_238_30)"
-      />
       <defs>
-        <linearGradient
-          id="paint0_linear_238_30"
-          x1="505.389"
-          y1="101.121"
-          x2="217.911"
-          y2="-18.9776"
-          gradientUnits="userSpaceOnUse"
-        >
-          <stop stopColor="#0AE448" />
-          <stop offset="0.5" stopColor="#C5FF33" />
-          <stop offset="1" stopColor="#D2FF5E" />
+        <filter id={filterId} x="-5%" y="-5%" width="110%" height="110%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="4" stitchTiles="stitch" result="noise"/>
+          <feColorMatrix type="saturate" values="0" in="noise" result="gray"/>
+          <feComposite in="gray" in2="SourceGraphic" operator="in" result="masked"/>
+          <feBlend in="SourceGraphic" in2="masked" mode="overlay"/>
+        </filter>
+        <linearGradient id={gradId} x1="505.389" y1="101.121" x2="217.911" y2="-18.9776" gradientUnits="userSpaceOnUse">
+          {stops.map((s, i) => <stop key={i} offset={s.offset} stopColor={s.color} />)}
         </linearGradient>
       </defs>
+      <path
+        d="M308.119 82.9984L-0.000189359 476.096L58.7386 522.137L366.858 129.039L379.72 190.181L448.922 176.343L419.373 4.24604e-05L244.089 15.7899L248.687 87.4747L308.119 82.9984Z"
+        fill={`url(#${gradId})`} filter={`url(#${filterId})`}
+      />
     </svg>
   );
 }
+
 export function drawCircle() {
   return (
     <svg

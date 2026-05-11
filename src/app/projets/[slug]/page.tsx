@@ -110,7 +110,7 @@ export default async function ProjetPage({ params }: { params: Promise<{ slug: s
             href={project.projectUrl}
             target="_blank"
             rel="noopener noreferrer"
-            style={{ display: "inline-block", padding: "12px 28px", background: "linear-gradient(225deg, #0AE448, #C5FF33 50%, #D2FF5E)", color: "#000", textDecoration: "none", borderRadius: 100, fontSize: "1rem", fontFamily: "Dudu, sans-serif" }}
+            style={{ display: "inline-block", padding: "12px 28px", background: "linear-gradient(225deg, #92FF33, #E2FF55)", color: "#000", textDecoration: "none", borderRadius: 100, fontSize: "1rem", fontFamily: "Dudu, sans-serif" }}
           >
             Voir le projet ↗
           </a>

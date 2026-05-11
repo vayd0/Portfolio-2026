@@ -201,7 +201,7 @@ export default function PortfolioClient({ projects }: { projects: Project[] }) {
               spawnBall={spawnBall}
               setBallBlack={setBallBlack}
               titlePosition={i === 1 ? "top-right" : "bottom-left"}
-              darkMode={i === 1}
+              palette={i % 3 as 0 | 1 | 2}
             />
           )),
         ])}

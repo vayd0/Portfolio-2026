@@ -108,7 +108,7 @@ export default function ProjectTitle({ title, className }: Props) {
           left: 0,
           width: "100%",
           height: "0.06em",
-          background: "#000000",
+          background: "currentColor",
           transformOrigin: "left center",
           transform: "scaleX(0)",
         }}

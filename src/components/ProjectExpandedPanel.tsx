@@ -6,7 +6,7 @@ import ProjectMockup from "@/components/ProjectMockup";
 import SlimeImage from "@/components/SlimeImage";
 import ProjectTitle from "@/components/ProjectTitle";
 import ParallaxShape from "@/components/ParallaxShape";
-import { Circle, Triangle, Arrow, ArrowDraw, drawCircle } from "@/components/shapes";
+import { Circle, Triangle, Arrow, ArrowDraw, drawCircle, type Palette } from "@/components/shapes";
 import styles from "@/app/page.module.css";
 
 interface Props {
@@ -30,7 +30,7 @@ interface Props {
   spawnBall?: () => void;
   setBallBlack?: (black: boolean) => void;
   titlePosition?: "bottom-left" | "top-right";
-  darkMode?: boolean;
+  palette?: Palette;
 }
 
 function VisitButton({ href }: { href: string }) {
@@ -71,7 +71,7 @@ function VisitButton({ href }: { href: string }) {
   );
 }
 
-export default function ProjectExpandedPanel({ project, rotation, shapeConfig, overlayRef, spawnBall, setBallBlack, titlePosition = "bottom-left", darkMode }: Props) {
+export default function ProjectExpandedPanel({ project, rotation, shapeConfig, overlayRef, spawnBall, setBallBlack, titlePosition = "bottom-left", palette = 0 }: Props) {
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
   const leftRef = useRef<HTMLDivElement>(null);
@@ -91,8 +91,6 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
   const linksRef = useRef<HTMLDivElement>(null);
   const openCallRef = useRef<gsap.core.Tween | null>(null);
   const openTlRef = useRef<gsap.core.Timeline | null>(null);
-  const darkBgRef = useRef<HTMLDivElement>(null);
-
   const isMobile = () => window.innerWidth < 768;
 
   const CC_OPEN  = "50% 50%";
@@ -198,90 +196,6 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
   };
 
   useEffect(() => {
-    if (!darkMode || !panelRef.current || window.innerWidth < 768) return;
-    const panel = panelRef.current;
-
-    let scrollRoot: HTMLElement | null = panel.parentElement;
-    while (scrollRoot) {
-      if (getComputedStyle(scrollRoot).overflowX === "auto") break;
-      scrollRoot = scrollRoot.parentElement;
-    }
-    if (!scrollRoot) return;
-    const container = scrollRoot;
-
-    let targetR = 0;
-    let currentR = 0;
-
-    const updateTarget = () => {
-      const panelLeft = panel.getBoundingClientRect().left;
-      const W = window.innerWidth;
-      targetR = Math.max(0, (1 - Math.abs(panelLeft) / W) * 140);
-    };
-
-    const GAPS = [10, 6, 3, 1.5]; // outer → inner, vmax
-    const RING_W = 3;
-    const SHELL_W = 5;
-
-    const tick = () => {
-      const overlay = darkBgRef.current;
-      if (!overlay) return;
-      const factor = targetR < currentR ? 0.03 : 0.1;
-      currentR += (targetR - currentR) * factor;
-      if (Math.abs(currentR - targetR) < 0.05) currentR = targetR;
-
-      if (currentR < 0.5) {
-        overlay.style.clipPath = "circle(0vmax at 0% 50%)";
-        overlay.style.maskImage = "";
-        (overlay.style as CSSStyleDeclaration & { webkitMaskImage: string }).webkitMaskImage = "";
-        return;
-      }
-
-      const r = currentR;
-      const segs: Array<{ from: number; to: number; black: boolean }> = [
-        { from: r, to: r + SHELL_W, black: true },
-      ];
-
-      let pos = r;
-      for (const gap of GAPS) {
-        const gapFrom = Math.max(0, pos - gap);
-        segs.push({ from: gapFrom, to: pos, black: false });
-        pos = gapFrom;
-        if (pos <= 0) break;
-        const ringFrom = Math.max(0, pos - RING_W);
-        segs.push({ from: ringFrom, to: pos, black: true });
-        pos = ringFrom;
-      }
-      if (pos > 0) segs.push({ from: 0, to: pos, black: true });
-
-      segs.sort((a, b) => a.from - b.from);
-
-      const stops: string[] = ["black 0"];
-      let prevBlack = true;
-      for (const seg of segs) {
-        const c = seg.black ? "black" : "transparent";
-        if (seg.black !== prevBlack) stops.push(`${c} ${seg.from}vmax`);
-        stops.push(`${c} ${seg.to}vmax`);
-        prevBlack = seg.black;
-      }
-      if (prevBlack) stops.push(`transparent ${r + SHELL_W}vmax`);
-
-      const mask = `radial-gradient(circle at 0% 50%, ${stops.join(", ")})`;
-      overlay.style.clipPath = `circle(${r + SHELL_W}vmax at 0% 50%)`;
-      overlay.style.maskImage = mask;
-      (overlay.style as CSSStyleDeclaration & { webkitMaskImage: string }).webkitMaskImage = mask;
-    };
-
-    updateTarget();
-    container.addEventListener("scroll", updateTarget, { passive: true });
-    gsap.ticker.add(tick);
-
-    return () => {
-      container.removeEventListener("scroll", updateTarget);
-      gsap.ticker.remove(tick);
-    };
-  }, [darkMode]);
-
-  useEffect(() => {
     if (!panelRef.current) return;
     const observer = new IntersectionObserver(
       ([entry]) => { if (!entry.isIntersecting && open) closePanel(); },
@@ -374,29 +288,15 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
       data-panel-open={open ? "" : undefined}
       style={{ width: "100dvw", position: "relative", zIndex: 2 }}
     >
-      {darkMode && (
-        <div
-          ref={darkBgRef}
-          style={{
-            position: "absolute",
-            inset: 0,
-            background: "#fff",
-            mixBlendMode: "difference",
-            clipPath: "circle(0vmax at 0% 50%)",
-            zIndex: 10,
-            pointerEvents: "none",
-          }}
-        />
-      )}
       <ParallaxShape ref={circleParallaxRef} depthX={shapeConfig.circle.depthX} depthY={shapeConfig.circle.depthY} className={shapeConfig.circle.className} style={{ zIndex: 1, ...shapeConfig.circle.style }} mobileStyle={shapeConfig.circle.mobileStyle}>
-        <Circle />
+        <Circle palette={palette} />
       </ParallaxShape>
       <ParallaxShape ref={triangleParallaxRef} depthX={shapeConfig.triangle.depthX} depthY={shapeConfig.triangle.depthY} className={shapeConfig.triangle.className} style={{ zIndex: 1, ...shapeConfig.triangle.style }} mobileStyle={shapeConfig.triangle.mobileStyle}>
-        <Triangle />
+        <Triangle palette={palette} />
       </ParallaxShape>
       <ParallaxShape ref={arrowParallaxRef} depthX={shapeConfig.arrow.depthX} depthY={shapeConfig.arrow.depthY} className={shapeConfig.arrow.className} style={{ zIndex: 1, ...shapeConfig.arrow.style }} mobileStyle={shapeConfig.arrow.mobileStyle}>
         <div style={shapeConfig.arrow.flipY ? { transform: "scaleY(-1)" } : undefined}>
-          <Arrow />
+          <Arrow palette={palette} />
         </div>
       </ParallaxShape>
 
@@ -438,7 +338,7 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
         <ProjectTitle title={project.title} className={styles.projectTitle} />
       </div>
 
-      <div ref={rightRef} className="expanded-right" style={{ zIndex: 3 }}>
+      <div ref={rightRef} className="expanded-right" style={{ position: "relative", zIndex: 5 }}>
         <div
           ref={rightInnerRef}
           className="expanded-right-inner"
@@ -474,7 +374,7 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
               <VisitButton href={(project.projectUrl ?? project.url)!} />
             )}
             {project.github && (
-              <a href={project.github} target="_blank" rel="noopener noreferrer" style={{ color: "#000000" }}>
+              <a href={project.github} target="_blank" rel="noopener noreferrer" style={{ color: "inherit" }}>
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z" />
                 </svg>
