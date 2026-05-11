@@ -7,7 +7,7 @@ import gsap from "gsap";
 const FONT_STYLE: React.CSSProperties = {
   fontFamily: "Satoshi, sans-serif",
   fontWeight: 700,
-  fontSize: "clamp(1.2rem, 2vw, 2rem)",
+  fontSize: "clamp(0.95rem, 1.4vw, 1.5rem)",
 };
 
 function ContactSvg() {
