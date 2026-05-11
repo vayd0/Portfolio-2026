@@ -110,7 +110,7 @@ function ContactButton() {
         justifyContent: "center",
         pointerEvents: "auto",
         textDecoration: "none",
-        width: "clamp(90px, 10vw, 150px)",
+        width: "clamp(105px, 12vw, 175px)",
         color: "#000",
       }}
       onMouseEnter={onEnter}
