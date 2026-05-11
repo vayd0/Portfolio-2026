@@ -165,7 +165,7 @@ export default function PortfolioClient({ projects }: { projects: Project[] }) {
   const loopEvery = projects.length + 1;
   const overlayRef = useRef<HTMLDivElement>(null);
   const ballRef = useRef<PhysicsBallHandle>(null);
-  const spawnBall = () => ballRef.current?.spawn();
+  const spawnBall = (gradient?: string) => ballRef.current?.spawn(gradient);
   const setBallBlack = (black: boolean) => ballRef.current?.setBlack(black);
 
   return (

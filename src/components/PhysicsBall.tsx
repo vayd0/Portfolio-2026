@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useImperativeHandle, forwardRef } from "react";
+import { PALETTE_GRADIENTS } from "@/components/shapes";
 import gsap from "gsap";
 
 const RADIUS = 40;
@@ -20,10 +21,11 @@ interface Ball {
   rotation: number;
   sleeping: boolean;
   jumpTarget: Element | null;
+  gradient: string;
 }
 
 export interface PhysicsBallHandle {
-  spawn: () => void;
+  spawn: (gradient?: string) => void;
   setBlack: (black: boolean) => void;
 }
 
@@ -74,7 +76,7 @@ const PhysicsBall = forwardRef<PhysicsBallHandle>((_, ref) => {
   const balls = useRef<Ball[]>([]);
 
   useImperativeHandle(ref, () => ({
-    spawn() {
+    spawn(gradient = PALETTE_GRADIENTS[0]) {
       const container = containerRef.current;
       if (!container) return;
 
@@ -89,7 +91,7 @@ const PhysicsBall = forwardRef<PhysicsBallHandle>((_, ref) => {
       const rotator = document.createElement("div");
       rotator.style.cssText = `width:100%;height:100%;`;
       const inner = document.createElement("div");
-      inner.style.cssText = `width:100%;height:100%;border-radius:50%;background:linear-gradient(225deg,#92FF33,#E2FF55);transform-origin:50% 100%;`;
+      inner.style.cssText = `width:100%;height:100%;border-radius:50%;background:${gradient};transform-origin:50% 100%;`;
       inner.className = "with-grain";
       rotator.appendChild(inner);
       outer.appendChild(rotator);
@@ -104,17 +106,15 @@ const PhysicsBall = forwardRef<PhysicsBallHandle>((_, ref) => {
         rotation: 0,
         sleeping: false,
         jumpTarget: null,
+        gradient,
       };
       outer.style.left = (ball.x - RADIUS) + "px";
       outer.style.top = (ball.y - RADIUS) + "px";
       balls.current.push(ball);
     },
     setBlack(black: boolean) {
-      const bg = black
-        ? "#000000"
-        : "linear-gradient(225deg,#92FF33,#E2FF55)";
       for (const ball of balls.current) {
-        ball.inner.style.background = bg;
+        ball.inner.style.background = black ? "#000000" : ball.gradient;
       }
     },
   }));

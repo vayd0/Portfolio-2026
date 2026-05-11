@@ -27,7 +27,7 @@ interface Props {
     arrow: { depthX: number; depthY: number; className: string; style: React.CSSProperties; mobileStyle?: React.CSSProperties; flipY?: boolean };
   };
   overlayRef: React.RefObject<HTMLDivElement | null>;
-  spawnBall?: () => void;
+  spawnBall?: (gradient?: string) => void;
   setBallBlack?: (black: boolean) => void;
   titlePosition?: "bottom-left" | "top-right";
   palette?: Palette;
@@ -167,7 +167,7 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
         el.style.clipPath = "";
         gsap.set(el, { display: "none" });
         setBallBlack?.(false);
-        spawnBall?.();
+        spawnBall?.(PALETTE_GRADIENTS[palette]);
       });
     }
 
