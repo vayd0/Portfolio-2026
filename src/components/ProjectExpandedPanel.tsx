@@ -27,7 +27,7 @@ interface Props {
     arrow: { depthX: number; depthY: number; className: string; style: React.CSSProperties; mobileStyle?: React.CSSProperties; flipY?: boolean };
   };
   overlayRef: React.RefObject<HTMLDivElement | null>;
-  spawnBall?: (gradient?: string) => void;
+  spawnBall?: () => void;
   setBallBlack?: (black: boolean) => void;
   titlePosition?: "bottom-left" | "top-right";
   palette?: Palette;
@@ -167,7 +167,7 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
         el.style.clipPath = "";
         gsap.set(el, { display: "none" });
         setBallBlack?.(false);
-        spawnBall?.(PALETTE_GRADIENTS[palette]);
+        spawnBall?.();
       });
     }
 
@@ -288,6 +288,7 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
       ref={panelRef}
       className="relative shrink-0 flex flex-col md:flex-row panel-height"
       data-panel-open={open ? "" : undefined}
+      data-palette={palette}
       style={{ width: "100dvw", position: "relative", zIndex: 2 }}
     >
       <ParallaxShape ref={circleParallaxRef} depthX={shapeConfig.circle.depthX} depthY={shapeConfig.circle.depthY} className={shapeConfig.circle.className} style={{ zIndex: 1, ...shapeConfig.circle.style }} mobileStyle={shapeConfig.circle.mobileStyle}>

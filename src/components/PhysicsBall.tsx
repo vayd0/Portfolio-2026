@@ -1,8 +1,8 @@
 "use client";
 
 import { useRef, useEffect, useImperativeHandle, forwardRef } from "react";
-import { PALETTE_GRADIENTS } from "@/components/shapes";
 import gsap from "gsap";
+import { PALETTE_GRADIENTS } from "@/components/shapes";
 
 const RADIUS = 40;
 const GRAVITY = 0.45;
@@ -14,6 +14,7 @@ interface Ball {
   outer: HTMLDivElement;
   rotator: HTMLDivElement;
   inner: HTMLDivElement;
+  paletteLayers: Map<number, HTMLDivElement>;
   x: number;
   y: number;
   vx: number;
@@ -21,11 +22,11 @@ interface Ball {
   rotation: number;
   sleeping: boolean;
   jumpTarget: Element | null;
-  gradient: string;
+  black: boolean;
 }
 
 export interface PhysicsBallHandle {
-  spawn: (gradient?: string) => void;
+  spawn: () => void;
   setBlack: (black: boolean) => void;
 }
 
@@ -76,7 +77,7 @@ const PhysicsBall = forwardRef<PhysicsBallHandle>((_, ref) => {
   const balls = useRef<Ball[]>([]);
 
   useImperativeHandle(ref, () => ({
-    spawn(gradient = PALETTE_GRADIENTS[0]) {
+    spawn() {
       const container = containerRef.current;
       if (!container) return;
 
@@ -87,18 +88,30 @@ const PhysicsBall = forwardRef<PhysicsBallHandle>((_, ref) => {
       }
 
       const outer = document.createElement("div");
-      outer.style.cssText = `position:absolute;width:${RADIUS * 2}px;height:${RADIUS * 2}px;pointer-events:none;`;
+      outer.style.cssText = `position:absolute;width:${RADIUS * 2}px;height:${RADIUS * 2}px;pointer-events:none;border-radius:50%;overflow:hidden;`;
+
       const rotator = document.createElement("div");
-      rotator.style.cssText = `width:100%;height:100%;`;
+      rotator.style.cssText = `position:absolute;inset:0;`;
+
       const inner = document.createElement("div");
-      inner.style.cssText = `width:100%;height:100%;border-radius:50%;background:${gradient};transform-origin:50% 100%;`;
+      inner.style.cssText = `position:absolute;inset:0;background:${PALETTE_GRADIENTS[0]};transform-origin:50% 100%;`;
       inner.className = "with-grain";
       rotator.appendChild(inner);
       outer.appendChild(rotator);
+
+      const paletteLayers = new Map<number, HTMLDivElement>();
+      for (let p = 1; p < PALETTE_GRADIENTS.length; p++) {
+        const layer = document.createElement("div");
+        layer.style.cssText = `position:absolute;inset:0;background:${PALETTE_GRADIENTS[p]};clip-path:inset(0 200% 0 0);`;
+        layer.className = "with-grain";
+        outer.appendChild(layer);
+        paletteLayers.set(p, layer);
+      }
+
       container.appendChild(outer);
 
       const ball: Ball = {
-        outer, rotator, inner,
+        outer, rotator, inner, paletteLayers,
         x: container.clientWidth / 2,
         y: container.clientHeight / 2,
         vx: (Math.random() - 0.5) * 4,
@@ -106,7 +119,7 @@ const PhysicsBall = forwardRef<PhysicsBallHandle>((_, ref) => {
         rotation: 0,
         sleeping: false,
         jumpTarget: null,
-        gradient,
+        black: false,
       };
       outer.style.left = (ball.x - RADIUS) + "px";
       outer.style.top = (ball.y - RADIUS) + "px";
@@ -114,7 +127,11 @@ const PhysicsBall = forwardRef<PhysicsBallHandle>((_, ref) => {
     },
     setBlack(black: boolean) {
       for (const ball of balls.current) {
-        ball.inner.style.background = black ? "#000000" : ball.gradient;
+        ball.black = black;
+        ball.inner.style.background = black ? "#000000" : PALETTE_GRADIENTS[0];
+        ball.paletteLayers.forEach(layer => {
+          layer.style.display = black ? "none" : "";
+        });
       }
     },
   }));
@@ -147,6 +164,21 @@ const PhysicsBall = forwardRef<PhysicsBallHandle>((_, ref) => {
       const containerRect = container.getBoundingClientRect();
       const surfaces = document.querySelectorAll("[data-ball-surface]");
       const titleEls = document.querySelectorAll<HTMLElement>("[data-ball-title]");
+
+      const paletteRects = new Map<number, { left: number; top: number; right: number; bottom: number }[]>();
+      document.querySelectorAll<HTMLElement>("[data-palette]").forEach(el => {
+        const p = parseInt(el.dataset.palette ?? "0");
+        if (p === 0) return;
+        const sr = el.getBoundingClientRect();
+        const rect = {
+          left: sr.left - containerRect.left,
+          top: sr.top - containerRect.top,
+          right: sr.right - containerRect.left,
+          bottom: sr.bottom - containerRect.top,
+        };
+        if (!paletteRects.has(p)) paletteRects.set(p, []);
+        paletteRects.get(p)!.push(rect);
+      });
 
       for (const ball of balls.current) {
         if (ball.jumpTarget) {
@@ -255,6 +287,34 @@ const PhysicsBall = forwardRef<PhysicsBallHandle>((_, ref) => {
         ball.outer.style.left = (ball.x - RADIUS) + "px";
         ball.outer.style.top = (ball.y - RADIUS) + "px";
         ball.rotator.style.transform = `rotate(${ball.rotation}deg)`;
+
+        if (!ball.black) {
+          const bL = ball.x - RADIUS;
+          const bT = ball.y - RADIUS;
+          const D = RADIUS * 2;
+
+          for (const [p, layer] of ball.paletteLayers) {
+            const rects = paletteRects.get(p) ?? [];
+            let pathData = "";
+
+            for (const r of rects) {
+              const iL = Math.max(bL, r.left);
+              const iT = Math.max(bT, r.top);
+              const iR = Math.min(bL + D, r.right);
+              const iB = Math.min(bT + D, r.bottom);
+              if (iL >= iR || iT >= iB) continue;
+              const lL = iL - bL;
+              const lT = iT - bT;
+              const lR = iR - bL;
+              const lB = iB - bT;
+              pathData += `M ${lL} ${lT} H ${lR} V ${lB} H ${lL} Z `;
+            }
+
+            layer.style.clipPath = pathData
+              ? `path('${pathData.trim()}')`
+              : "inset(0 200% 0 0)";
+          }
+        }
 
         if (sx !== 1 || sy !== 1) {
           gsap.killTweensOf(ball.inner);
