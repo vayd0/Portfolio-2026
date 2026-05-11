@@ -6,7 +6,7 @@ import ProjectMockup from "@/components/ProjectMockup";
 import SlimeImage from "@/components/SlimeImage";
 import ProjectTitle from "@/components/ProjectTitle";
 import ParallaxShape from "@/components/ParallaxShape";
-import { Circle, Triangle, Arrow, ArrowDraw, drawCircle, type Palette } from "@/components/shapes";
+import { Circle, Triangle, Arrow, ArrowDraw, drawCircle, PALETTE_GRADIENTS, type Palette } from "@/components/shapes";
 import styles from "@/app/page.module.css";
 
 interface Props {
@@ -131,6 +131,7 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
     const bl = blackLayerRef.current;
     if (!el) { setOpen(true); return; }
     openCallRef.current?.kill();
+    el.style.background = PALETTE_GRADIENTS[palette];
     el.style.clipPath = `circle(8vmax at ${CC_OPEN})`;
     if (bl) bl.style.clipPath = `circle(8vmax at ${CC_OPEN})`;
     gsap.set(el, { display: "block", opacity: 1, zIndex: 1 });
