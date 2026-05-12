@@ -337,7 +337,7 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
         className={titlePosition === "top-right"
           ? "absolute top-4 right-4 md:top-8 md:right-12"
           : "absolute top-4 right-4 md:top-auto md:right-auto md:bottom-8 md:left-12"}
-        style={{ zIndex: 4 }}
+        style={{ zIndex: 4, cursor: "pointer" }}
         onClick={open ? closePanel : openWithTransition}
       >
         <ProjectTitle title={project.title} className={styles.projectTitle} />

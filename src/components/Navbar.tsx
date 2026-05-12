@@ -51,7 +51,7 @@ function ProjetsLink() {
     <>
       <a
         ref={linkRef}
-        href="#projets"
+        href="/projets"
         style={{
           ...FONT_STYLE,
           textDecoration: "none",
@@ -168,22 +168,68 @@ function ContactButton() {
 }
 
 function LogoLink() {
-  const ref = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const blendRef = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = useState(false);
+  const [rect, setRect] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+    const measure = () => {
+      if (!containerRef.current) return;
+      const r = containerRef.current.getBoundingClientRect();
+      setRect({ top: r.top, left: r.left, width: r.width, height: r.height });
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, []);
 
   const onEnter = () => {
-    gsap.killTweensOf(ref.current);
-    gsap.to(ref.current, { rotate: -8, scale: 1.1, duration: 0.5, ease: "elastic.out(1, 0.4)" });
+    gsap.killTweensOf(blendRef.current);
+    gsap.to(blendRef.current, { rotate: -8, scale: 1.1, duration: 0.5, ease: "elastic.out(1, 0.4)" });
   };
 
   const onLeave = () => {
-    gsap.killTweensOf(ref.current);
-    gsap.to(ref.current, { rotate: 0, scale: 1, duration: 0.6, ease: "elastic.out(1, 0.35)" });
+    gsap.killTweensOf(blendRef.current);
+    gsap.to(blendRef.current, { rotate: 0, scale: 1, duration: 0.6, ease: "elastic.out(1, 0.35)" });
   };
 
   return (
-    <div ref={ref} style={{ pointerEvents: "auto", display: "inline-flex" }} onMouseEnter={onEnter} onMouseLeave={onLeave}>
-      <Image src="/logo.png" alt="Théo Heck" width={72} height={66} style={{ objectFit: "contain" }} />
-    </div>
+    <>
+      <div
+        ref={containerRef}
+        style={{ pointerEvents: "auto", display: "inline-flex", cursor: "pointer" }}
+        onMouseEnter={onEnter}
+        onMouseLeave={onLeave}
+      >
+        <Image src="/logo.png" alt="Théo Heck" width={72} height={66} style={{ objectFit: "contain", opacity: 0 }} />
+      </div>
+      {mounted && rect && createPortal(
+        <div
+          ref={blendRef}
+          aria-hidden
+          style={{
+            position: "fixed",
+            top: rect.top,
+            left: rect.left,
+            width: rect.width,
+            height: rect.height,
+            pointerEvents: "none",
+            mixBlendMode: "difference",
+            zIndex: 101,
+            transformOrigin: "center center",
+          }}
+        >
+          <img
+            src="/logo-blend.svg"
+            alt=""
+            style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
+          />
+        </div>,
+        document.body
+      )}
+    </>
   );
 }
 
