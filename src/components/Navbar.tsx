@@ -106,6 +106,11 @@ function ContactButton() {
   const btnRef = useRef<HTMLAnchorElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
 
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    window.dispatchEvent(new CustomEvent('contact:open'));
+  };
+
   const onEnter = () => {
     gsap.killTweensOf(btnRef.current);
     gsap.to(btnRef.current, { scale: 1.08, duration: 0.6, ease: "elastic.out(1, 0.4)" });
@@ -120,6 +125,7 @@ function ContactButton() {
     <a
       ref={btnRef}
       href="mailto:hello@theoheck.fr"
+      onClick={handleClick}
       style={{
         position: "relative",
         display: "inline-flex",
