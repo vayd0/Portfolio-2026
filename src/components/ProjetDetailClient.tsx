@@ -3,8 +3,11 @@
 import { useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import gsap from "gsap";
+import { Draggable } from "gsap/Draggable";
 import { type Palette } from "./shapes";
 import BrowserFrame from "./BrowserFrame";
+
+gsap.registerPlugin(Draggable);
 
 type Project = {
   _id: string;
@@ -21,7 +24,11 @@ interface Props {
   palette: Palette;
 }
 
-const GALLERY_ROTATIONS = [-8, 5, -4];
+const SCATTER = [
+  { rx: 0.52, ry: 0.05, rot: -7 },
+  { rx: 0.67, ry: 0.42, rot: 5 },
+  { rx: 0.56, ry: 0.25, rot: -3 },
+];
 const imgSrc = (url: string) => `/api/img?url=${encodeURIComponent(url)}`;
 
 export default function ProjetDetailClient({ project, palette }: Props) {
@@ -44,20 +51,44 @@ export default function ProjetDetailClient({ project, palette }: Props) {
       onUpdate: () => { el.style.clipPath = `circle(${proxy.r}vmax at 50% 50%)`; },
       onComplete: () => {
         el.style.clipPath = "none";
+        const w = el.offsetWidth;
+        const h = el.offsetHeight;
         const gallery = galleryRefs.current.filter(Boolean);
+
         gsap.set(titleRef.current, { y: 80, opacity: 0 });
         gsap.set(imgRef.current, { scale: 0.93, opacity: 0 });
-        gsap.set(gallery, { y: -window.innerHeight * 0.5, opacity: 0, rotation: 0 });
         gsap.set(descRef.current, { y: 28, opacity: 0 });
         gsap.set(linksRef.current, { y: 28, opacity: 0 });
         gsap.set(annotationRef.current, { opacity: 0, scale: 0.85 });
+        gsap.set(gallery, {
+          x: (i: number) => (SCATTER[i % SCATTER.length].rx) * w,
+          y: (i: number) => (SCATTER[i % SCATTER.length].ry) * h - h * 0.6,
+          opacity: 0,
+          rotation: 0,
+        });
+
         const tl = gsap.timeline();
         tl.to(titleRef.current, { y: 0, opacity: 1, duration: 0.85, ease: "elastic.out(1, 0.45)" })
           .to(imgRef.current, { scale: 1, opacity: 1, duration: 0.65, ease: "power3.out" }, 0.1)
-          .to(gallery, { y: 0, opacity: 1, rotation: (i: number) => GALLERY_ROTATIONS[i % 3], stagger: 0.1, duration: 0.95, ease: "elastic.out(1, 0.45)" }, 0.15)
+          .to(gallery, {
+            x: (i: number) => (SCATTER[i % SCATTER.length].rx) * w,
+            y: (i: number) => (SCATTER[i % SCATTER.length].ry) * h,
+            opacity: 1,
+            rotation: (i: number) => SCATTER[i % SCATTER.length].rot,
+            stagger: 0.12,
+            duration: 0.95,
+            ease: "elastic.out(1, 0.45)",
+          }, 0.15)
           .to(descRef.current, { y: 0, opacity: 1, duration: 0.55, ease: "power3.out" }, 0.3)
           .to(linksRef.current, { y: 0, opacity: 1, duration: 0.75, ease: "elastic.out(1, 0.5)" }, 0.4)
-          .to(annotationRef.current, { opacity: 1, scale: 1, duration: 0.6, ease: "elastic.out(1, 0.5)" }, 0.55);
+          .to(annotationRef.current, { opacity: 1, scale: 1, duration: 0.6, ease: "elastic.out(1, 0.5)" }, 0.55)
+          .call(() => {
+            Draggable.create(gallery, {
+              type: "x,y",
+              onPress() { gsap.to(this.target, { scale: 1.04, zIndex: 20, duration: 0.2, ease: "power2.out" }); },
+              onRelease() { gsap.to(this.target, { scale: 1, duration: 0.4, ease: "elastic.out(1, 0.45)" }); },
+            });
+          });
       },
     });
   }, []);
@@ -77,6 +108,17 @@ export default function ProjetDetailClient({ project, palette }: Props) {
           </p>
         </div>
       )}
+
+      {project.gallery && project.gallery.slice(0, 3).map((src, gi) => (
+        <div
+          key={gi}
+          ref={(el) => { galleryRefs.current[gi] = el; }}
+          className="hidden md:block"
+          style={{ position: "absolute", top: 0, left: 0, width: "clamp(200px, 22vw, 320px)", zIndex: 5, cursor: "grab" }}
+        >
+          <BrowserFrame src={imgSrc(src)} alt={`${project.title} ${gi + 1}`} />
+        </div>
+      ))}
 
       <div
         className="relative md:absolute md:inset-0 md:overflow-hidden overflow-y-auto flex flex-col"
@@ -104,68 +146,61 @@ export default function ProjetDetailClient({ project, palette }: Props) {
           {project.title}
         </div>
 
-        <div className="flex-1 flex flex-col md:flex-row min-h-0" style={{ gap: "clamp(20px, 3vw, 52px)" }}>
-          <div className="flex flex-col md:shrink-0 md:basis-[52%] md:min-h-0" style={{ gap: "clamp(12px, 1.8vh, 24px)" }}>
-            {project.image && (
-              <div ref={imgRef} className="w-full shrink-0">
-                <BrowserFrame src={imgSrc(project.image)} alt={project.title} />
-              </div>
-            )}
-            {project.description && (
-              <p className="shrink-0 md:hidden" style={{ fontFamily: "Dudu, sans-serif", fontSize: "clamp(0.9rem, 1.2vw, 1.3rem)", lineHeight: 1.55, color: "#111", margin: 0 }}>
-                {project.description}
-              </p>
-            )}
-            <div ref={linksRef} className="shrink-0 flex flex-wrap items-center relative" style={{ gap: 12 }}>
-              {project.projectUrl && (
-                <a
-                  href={project.projectUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ fontFamily: "Satoshi, sans-serif", fontWeight: 700, fontSize: "0.95rem", padding: "10px 24px", borderRadius: 100, background: "#000", color: "#fff", textDecoration: "none", letterSpacing: "0.02em", display: "inline-block" }}
-                  onMouseEnter={(e) => gsap.to(e.currentTarget, { scale: 1.08, duration: 0.5, ease: "elastic.out(1, 0.4)" })}
-                  onMouseLeave={(e) => gsap.to(e.currentTarget, { scale: 1, duration: 0.5, ease: "elastic.out(1, 0.4)" })}
-                >
-                  Voir le projet ↗
-                </a>
-              )}
-              {project.github && (
-                <a
-                  href={project.github}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ fontFamily: "Satoshi, sans-serif", fontWeight: 500, fontSize: "0.95rem", color: "#000", textDecoration: "underline", textUnderlineOffset: 3 }}
-                  onMouseEnter={(e) => gsap.to(e.currentTarget, { x: 4, duration: 0.4, ease: "elastic.out(1, 0.4)" })}
-                  onMouseLeave={(e) => gsap.to(e.currentTarget, { x: 0, duration: 0.4, ease: "elastic.out(1, 0.4)" })}
-                >
-                  GitHub ↗
-                </a>
-              )}
-              {project.projectUrl && (
-                <div ref={annotationRef} style={{ position: "absolute", left: -8, top: "calc(100% + 6px)", display: "flex", alignItems: "center", gap: 6, transform: "rotate(5deg)", pointerEvents: "none", userSelect: "none" }}>
-                  <svg width="28" height="24" viewBox="0 0 59 52" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ transform: "rotate(-60deg) scaleX(-1)" }}>
-                    <path d="M55.5568 2.5C55.5407 2.5 52.9056 2.52888 47.5125 3.03353C44.7177 3.29505 41.9197 4.43108 39.6653 5.38834C37.411 6.34561 35.8143 7.31043 34.1679 8.44873C32.5215 9.58703 30.8738 10.8696 28.5491 13.254C26.2244 15.6384 23.2727 19.0858 21.1584 21.9017C19.044 24.7176 17.8565 26.7975 16.5126 29.726C15.1688 32.6545 13.7046 36.3685 12.6701 39.4799C11.6356 42.5913 11.0751 44.9876 10.7732 46.3961C10.4713 47.8047 10.4449 48.1529 10.4194 48.5227" stroke="black" strokeWidth="5" strokeLinecap="round"/>
-                    <path d="M2.5 29.7616C2.52324 30.187 2.71249 31.5564 3.96054 35.1196C5.01472 38.1292 7.13216 43.503 8.22955 46.3453C9.32694 49.1876 9.39351 49.3163 9.49381 49.2462C9.83324 49.0093 10.1496 48.366 13.3893 46.2884C16.3414 44.4676 21.9496 41.0905 24.9457 39.3102C27.9417 37.5299 28.1558 37.4486 28.4467 37.357" stroke="black" strokeWidth="5" strokeLinecap="round"/>
-                  </svg>
-                  <span style={{ fontFamily: "Dudu, sans-serif", fontSize: "clamp(0.8rem, 1vw, 1rem)", color: "#555" }}>c&apos;est par ici !</span>
-                </div>
-              )}
+        <div className="flex-1 flex flex-col min-h-0" style={{ gap: "clamp(12px, 1.8vh, 24px)" }}>
+          {project.image && (
+            <div ref={imgRef} className="shrink-0" style={{ maxWidth: "min(52%, 560px)" }}>
+              <BrowserFrame src={imgSrc(project.image)} alt={project.title} />
             </div>
-          </div>
-
+          )}
+          {project.description && (
+            <p className="shrink-0 md:hidden" style={{ fontFamily: "Dudu, sans-serif", fontSize: "clamp(0.9rem, 1.2vw, 1.3rem)", lineHeight: 1.55, color: "#111", margin: 0 }}>
+              {project.description}
+            </p>
+          )}
           {project.gallery && project.gallery.length > 0 && (
-            <div className="flex flex-col md:flex-1 md:min-h-0" style={{ gap: "clamp(10px, 1.5vh, 20px)" }}>
-              {project.gallery.slice(0, 2).map((src, gi) => (
-                <div
-                  key={gi}
-                  ref={(el) => { galleryRefs.current[gi] = el; }}
-                  className="w-full"
-                >
+            <div className="flex flex-col md:hidden" style={{ gap: "clamp(10px, 1.5vh, 20px)" }}>
+              {project.gallery.slice(0, 3).map((src, gi) => (
+                <div key={gi} className="w-full">
                   <BrowserFrame src={imgSrc(src)} alt={`${project.title} ${gi + 1}`} />
                 </div>
               ))}
             </div>
           )}
+          <div ref={linksRef} className="shrink-0 flex flex-wrap items-center relative" style={{ gap: 12 }}>
+            {project.projectUrl && (
+              <a
+                href={project.projectUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ fontFamily: "Satoshi, sans-serif", fontWeight: 700, fontSize: "0.95rem", padding: "10px 24px", borderRadius: 100, background: "#000", color: "#fff", textDecoration: "none", letterSpacing: "0.02em", display: "inline-block" }}
+                onMouseEnter={(e) => gsap.to(e.currentTarget, { scale: 1.08, duration: 0.5, ease: "elastic.out(1, 0.4)" })}
+                onMouseLeave={(e) => gsap.to(e.currentTarget, { scale: 1, duration: 0.5, ease: "elastic.out(1, 0.4)" })}
+              >
+                Voir le projet ↗
+              </a>
+            )}
+            {project.github && (
+              <a
+                href={project.github}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ fontFamily: "Satoshi, sans-serif", fontWeight: 500, fontSize: "0.95rem", color: "#000", textDecoration: "underline", textUnderlineOffset: 3 }}
+                onMouseEnter={(e) => gsap.to(e.currentTarget, { x: 4, duration: 0.4, ease: "elastic.out(1, 0.4)" })}
+                onMouseLeave={(e) => gsap.to(e.currentTarget, { x: 0, duration: 0.4, ease: "elastic.out(1, 0.4)" })}
+              >
+                GitHub ↗
+              </a>
+            )}
+            {project.projectUrl && (
+              <div ref={annotationRef} style={{ position: "absolute", left: -8, top: "calc(100% + 6px)", display: "flex", alignItems: "center", gap: 6, transform: "rotate(5deg)", pointerEvents: "none", userSelect: "none" }}>
+                <svg width="28" height="24" viewBox="0 0 59 52" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ transform: "rotate(-60deg) scaleX(-1)" }}>
+                  <path d="M55.5568 2.5C55.5407 2.5 52.9056 2.52888 47.5125 3.03353C44.7177 3.29505 41.9197 4.43108 39.6653 5.38834C37.411 6.34561 35.8143 7.31043 34.1679 8.44873C32.5215 9.58703 30.8738 10.8696 28.5491 13.254C26.2244 15.6384 23.2727 19.0858 21.1584 21.9017C19.044 24.7176 17.8565 26.7975 16.5126 29.726C15.1688 32.6545 13.7046 36.3685 12.6701 39.4799C11.6356 42.5913 11.0751 44.9876 10.7732 46.3961C10.4713 47.8047 10.4449 48.1529 10.4194 48.5227" stroke="black" strokeWidth="5" strokeLinecap="round"/>
+                  <path d="M2.5 29.7616C2.52324 30.187 2.71249 31.5564 3.96054 35.1196C5.01472 38.1292 7.13216 43.503 8.22955 46.3453C9.32694 49.1876 9.39351 49.3163 9.49381 49.2462C9.83324 49.0093 10.1496 48.366 13.3893 46.2884C16.3414 44.4676 21.9496 41.0905 24.9457 39.3102C27.9417 37.5299 28.1558 37.4486 28.4467 37.357" stroke="black" strokeWidth="5" strokeLinecap="round"/>
+                </svg>
+                <span style={{ fontFamily: "Dudu, sans-serif", fontSize: "clamp(0.8rem, 1vw, 1rem)", color: "#555" }}>c&apos;est par ici !</span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
