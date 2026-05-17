@@ -1,6 +1,25 @@
 @import "tailwindcss";
 @import url("https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap");
 
+@font-face {
+  font-family: Fat;
+  src: url("/fonts/fat/FFF-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: Fat;
+  src: url("/fonts/fat/FFF-Slanted.otf") format("opentype");
+  font-weight: 400;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: Dudu;
+  src: url("/fonts/dudu/Dudu.ttf") format("truetype");
+}
+
 :root {
   --background: #ffffff;
   --foreground: #000000;
