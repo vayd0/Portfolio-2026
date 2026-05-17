@@ -31,7 +31,7 @@ export default function ProjetDetailClient({ project, palette }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLDivElement>(null);
-  const descRef = useRef<HTMLParagraphElement>(null);
+  const descRef = useRef<HTMLDivElement>(null);
   const linksRef = useRef<HTMLDivElement>(null);
   const galleryRefs = useRef<(HTMLDivElement | null)[]>([]);
   const annotationRef = useRef<HTMLDivElement>(null);
@@ -77,6 +77,19 @@ export default function ProjetDetailClient({ project, palette }: Props) {
         </ParallaxShape>
       </div>
 
+      {project.description && (
+        <div
+          ref={descRef}
+          className="hidden md:block"
+          style={{ position: "absolute", bottom: 0, left: 0, zIndex: 10, background: "#111", maxWidth: "min(42%, 460px)", borderTopRightRadius: 0 }}
+        >
+          <div style={{ position: "absolute", bottom: "100%", right: 0, width: 28, height: 28, background: "#fff", borderBottomLeftRadius: 28, pointerEvents: "none" }} />
+          <p style={{ fontFamily: "Dudu, sans-serif", fontSize: "clamp(0.85rem, 1.1vw, 1.2rem)", lineHeight: 1.6, color: "#fff", margin: 0, padding: "clamp(14px, 2vw, 28px) clamp(18px, 2.5vw, 36px)" }}>
+            {project.description}
+          </p>
+        </div>
+      )}
+
       <div
         className="relative md:absolute md:inset-0 md:overflow-hidden overflow-y-auto flex flex-col"
         style={{ zIndex: 2, padding: "clamp(20px, 3.5vw, 52px) clamp(24px, 4vw, 64px)" }}
@@ -111,7 +124,7 @@ export default function ProjetDetailClient({ project, palette }: Props) {
               </div>
             )}
             {project.description && (
-              <p ref={descRef} className="shrink-0" style={{ fontFamily: "Dudu, sans-serif", fontSize: "clamp(0.9rem, 1.2vw, 1.3rem)", lineHeight: 1.55, color: "#111", margin: 0 }}>
+              <p className="shrink-0 md:hidden" style={{ fontFamily: "Dudu, sans-serif", fontSize: "clamp(0.9rem, 1.2vw, 1.3rem)", lineHeight: 1.55, color: "#111", margin: 0 }}>
                 {project.description}
               </p>
             )}
