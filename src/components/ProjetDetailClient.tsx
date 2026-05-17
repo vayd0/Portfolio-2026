@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import gsap from "gsap";
 import ParallaxShape from "./ParallaxShape";
 import { Circle, Triangle, Arrow, type Palette } from "./shapes";
+import BrowserFrame from "./BrowserFrame";
 
 type Project = {
   _id: string;
@@ -105,8 +106,8 @@ export default function ProjetDetailClient({ project, palette }: Props) {
         <div className="flex-1 flex flex-col md:flex-row min-h-0" style={{ gap: "clamp(20px, 3vw, 52px)" }}>
           <div className="flex flex-col md:shrink-0 md:basis-[52%] md:min-h-0" style={{ gap: "clamp(12px, 1.8vh, 24px)" }}>
             {project.image && (
-              <div ref={imgRef} className="w-full rounded-xl overflow-hidden aspect-video md:aspect-auto md:flex-1 md:min-h-0">
-                <img src={imgSrc(project.image)} alt={project.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+              <div ref={imgRef} className="w-full">
+                <BrowserFrame src={imgSrc(project.image)} alt={project.title} />
               </div>
             )}
             {project.description && (
@@ -157,10 +158,9 @@ export default function ProjetDetailClient({ project, palette }: Props) {
                 <div
                   key={gi}
                   ref={(el) => { galleryRefs.current[gi] = el; }}
-                  className="w-full rounded-lg overflow-hidden aspect-video md:aspect-auto md:flex-1 md:min-h-0"
-                  style={{ boxShadow: "0 6px 24px rgba(0,0,0,0.10)" }}
+                  className="w-full"
                 >
-                  <img src={imgSrc(src)} alt={`${project.title} ${gi + 1}`} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                  <BrowserFrame src={imgSrc(src)} alt={`${project.title} ${gi + 1}`} />
                 </div>
               ))}
             </div>
