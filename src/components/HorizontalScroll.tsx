@@ -113,13 +113,23 @@ export default function HorizontalScroll({ children, loopEvery }: { children: Re
     };
     gsap.ticker.add(velTick);
 
+    const onSnapTo = (e: Event) => {
+      if (window.innerWidth < 768) return;
+      const x = (e as CustomEvent<{ x: number }>).detail.x;
+      gsap.killTweensOf(container);
+      targetX.current = x;
+      gsap.to(container, { scrollLeft: x, duration: 0.5, ease: "power3.out" });
+    };
+
     container.addEventListener("wheel", onWheel, { passive: false });
     container.addEventListener("scroll", onContainerScroll, { passive: true });
     window.addEventListener("resize", onResize);
+    window.addEventListener("scroll:snapTo", onSnapTo);
     return () => {
       container.removeEventListener("wheel", onWheel);
       container.removeEventListener("scroll", onContainerScroll);
       window.removeEventListener("resize", onResize);
+      window.removeEventListener("scroll:snapTo", onSnapTo);
       gsap.ticker.remove(velTick);
       emitVel(0);
       document.documentElement.style.overflow = "";

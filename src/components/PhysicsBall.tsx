@@ -44,25 +44,6 @@ function DebugHitboxes({ containerRef }: { containerRef: React.RefObject<HTMLDiv
       const ctx = canvas.getContext("2d")!;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      document.querySelectorAll<HTMLElement>("[data-ball-surface]").forEach(el => {
-        const r = el.getBoundingClientRect();
-        const x = r.left - containerRect.left;
-        const y = r.top - containerRect.top;
-        ctx.strokeStyle = "rgba(255,0,0,0.7)";
-        ctx.lineWidth = 2;
-        ctx.strokeRect(x, y, r.width, r.height);
-      });
-
-      document.querySelectorAll<HTMLElement>("[data-ball-title]").forEach(el => {
-        const r = el.getBoundingClientRect();
-        const cx = (r.left + r.right) / 2 - containerRect.left;
-        const cy = (r.top + r.bottom) / 2 - containerRect.top;
-        ctx.strokeStyle = "rgba(0,100,255,0.7)";
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(cx, cy, 8, 0, Math.PI * 2);
-        ctx.stroke();
-      });
     };
 
     gsap.ticker.add(draw);

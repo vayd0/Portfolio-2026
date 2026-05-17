@@ -65,6 +65,7 @@ function VisitButton({ href }: { href: string }) {
         gap: 6,
         fontFamily: "Dudu, sans-serif",
         fontSize: "clamp(1rem, 1.3vw, 1.5rem)",
+        pointerEvents: "none",
       }}>
         Visiter <ArrowDraw />
       </span>
@@ -74,6 +75,45 @@ function VisitButton({ href }: { href: string }) {
 
 export default function ProjectExpandedPanel({ project, rotation, shapeConfig, overlayRef, spawnBall, setBallBlack, titlePosition = "bottom-left", palette = 0, mockupOffsetY = 0 }: Props) {
   const [open, setOpen] = useState(false);
+  const [annotationText, setAnnotationText] = useState("CLIQUES ICI");
+  const annotationTextRef = useRef<HTMLSpanElement>(null);
+  const annotationGroupRef = useRef<HTMLDivElement>(null);
+  const leftArrowRef = useRef<SVGSVGElement>(null);
+  const bottomArrowRef = useRef<SVGSVGElement>(null);
+  const rightArrowRef = useRef<SVGSVGElement>(null);
+
+  const handleHoverChange = (hovered: boolean) => {
+    const el = annotationTextRef.current;
+    const group = annotationGroupRef.current;
+
+    if (group) {
+      gsap.killTweensOf(group);
+      gsap.to(group, { y: hovered ? -50 : 0, x: hovered ? 28 : 0, duration: hovered ? 0.6 : 0.7, ease: "elastic.out(1, 0.5)" });
+    }
+
+    [
+      { ref: leftArrowRef.current,   x: hovered ? -60 : 0, y: 0 },
+      { ref: bottomArrowRef.current, x: 0, y: hovered ? 44 : 0 },
+      { ref: rightArrowRef.current,  x: hovered ? 76 : 0,  y: 0 },
+    ].forEach(({ ref, x, y }) => {
+      if (!ref) return;
+      gsap.killTweensOf(ref);
+      gsap.to(ref, { x, y, duration: hovered ? 0.6 : 0.7, ease: "elastic.out(1, 0.5)" });
+    });
+
+    if (!el) return;
+    gsap.killTweensOf(el);
+    gsap.to(el, {
+      scaleX: 0, scaleY: 1.6, rotation: 10, duration: 0.16, ease: "power3.in",
+      onComplete: () => {
+        setAnnotationText(hovered ? "VOIR LES INFOS" : "CLIQUES ICI");
+        gsap.fromTo(el,
+          { scaleX: 0, scaleY: 1.6, rotation: -10, y: -28 },
+          { scaleX: 1, scaleY: 1, rotation: 0, y: -28, duration: 0.85, ease: "elastic.out(1.5, 0.4)" }
+        );
+      },
+    });
+  };
   const panelRef = useRef<HTMLDivElement>(null);
   const leftRef = useRef<HTMLDivElement>(null);
   const rightRef = useRef<HTMLDivElement>(null);
@@ -129,6 +169,15 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
   const openWithTransition = () => {
     const el = overlayRef.current;
     const bl = blackLayerRef.current;
+
+    const scrollContainer = document.querySelector("[data-scroll-container]") as HTMLElement | null;
+    if (scrollContainer && panelRef.current) {
+      const panelRect = panelRef.current.getBoundingClientRect();
+      const containerRect = scrollContainer.getBoundingClientRect();
+      const snapX = Math.round(scrollContainer.scrollLeft + panelRect.left - containerRect.left);
+      window.dispatchEvent(new CustomEvent("scroll:snapTo", { detail: { x: snapX } }));
+    }
+
     if (!el) { setOpen(true); return; }
     openCallRef.current?.kill();
     el.style.background = PALETTE_GRADIENTS[palette];
@@ -328,7 +377,31 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
             onClick={open ? closePanel : openWithTransition}
             style={{ cursor: "pointer" }}
           >
-            <ProjectMockup image={project.image} title={project.title} rotation={rotation} palette={palette} />
+            <ProjectMockup image={project.image} title={project.title} rotation={rotation} palette={palette} onHoverChange={handleHoverChange}>
+              {!open && <>
+                <svg ref={leftArrowRef} width="52" height="46" viewBox="0 0 59 52" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ position: "absolute", left: -80, top: "calc(50% - 23px)", transform: "rotate(-135deg)", pointerEvents: "none" }}>
+                  <path d="M55.5568 2.5C55.5407 2.5 52.9056 2.52888 47.5125 3.03353C44.7177 3.29505 41.9197 4.43108 39.6653 5.38834C37.411 6.34561 35.8143 7.31043 34.1679 8.44873C32.5215 9.58703 30.8738 10.8696 28.5491 13.254C26.2244 15.6384 23.2727 19.0858 21.1584 21.9017C19.044 24.7176 17.8565 26.7975 16.5126 29.726C15.1688 32.6545 13.7046 36.3685 12.6701 39.4799C11.6356 42.5913 11.0751 44.9876 10.7732 46.3961C10.4713 47.8047 10.4449 48.1529 10.4194 48.5227" stroke="black" strokeWidth="5" strokeLinecap="round"/>
+                  <path d="M2.5 29.7616C2.52324 30.187 2.71249 31.5564 3.96054 35.1196C5.01472 38.1292 7.13216 43.503 8.22955 46.3453C9.32694 49.1876 9.39351 49.3163 9.49381 49.2462C9.83324 49.0093 10.1496 48.366 13.3893 46.2884C16.3414 44.4676 21.9496 41.0905 24.9457 39.3102C27.9417 37.5299 28.1558 37.4486 28.4467 37.357" stroke="black" strokeWidth="5" strokeLinecap="round"/>
+                </svg>
+                <svg ref={bottomArrowRef} width="44" height="38" viewBox="0 0 59 52" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ position: "absolute", bottom: -50, left: "calc(50% - 22px)", transform: "rotate(170deg) scaleX(-1)", pointerEvents: "none" }}>
+                  <path d="M55.5568 2.5C55.5407 2.5 52.9056 2.52888 47.5125 3.03353C44.7177 3.29505 41.9197 4.43108 39.6653 5.38834C37.411 6.34561 35.8143 7.31043 34.1679 8.44873C32.5215 9.58703 30.8738 10.8696 28.5491 13.254C26.2244 15.6384 23.2727 19.0858 21.1584 21.9017C19.044 24.7176 17.8565 26.7975 16.5126 29.726C15.1688 32.6545 13.7046 36.3685 12.6701 39.4799C11.6356 42.5913 11.0751 44.9876 10.7732 46.3961C10.4713 47.8047 10.4449 48.1529 10.4194 48.5227" stroke="black" strokeWidth="5" strokeLinecap="round"/>
+                  <path d="M2.5 29.7616C2.52324 30.187 2.71249 31.5564 3.96054 35.1196C5.01472 38.1292 7.13216 43.503 8.22955 46.3453C9.32694 49.1876 9.39351 49.3163 9.49381 49.2462C9.83324 49.0093 10.1496 48.366 13.3893 46.2884C16.3414 44.4676 21.9496 41.0905 24.9457 39.3102C27.9417 37.5299 28.1558 37.4486 28.4467 37.357" stroke="black" strokeWidth="5" strokeLinecap="round"/>
+                </svg>
+                <svg ref={rightArrowRef} width="48" height="42" viewBox="0 0 59 52" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ position: "absolute", right: -72, top: "20%", transform: "rotate(45deg)", pointerEvents: "none" }}>
+                  <path d="M55.5568 2.5C55.5407 2.5 52.9056 2.52888 47.5125 3.03353C44.7177 3.29505 41.9197 4.43108 39.6653 5.38834C37.411 6.34561 35.8143 7.31043 34.1679 8.44873C32.5215 9.58703 30.8738 10.8696 28.5491 13.254C26.2244 15.6384 23.2727 19.0858 21.1584 21.9017C19.044 24.7176 17.8565 26.7975 16.5126 29.726C15.1688 32.6545 13.7046 36.3685 12.6701 39.4799C11.6356 42.5913 11.0751 44.9876 10.7732 46.3961C10.4713 47.8047 10.4449 48.1529 10.4194 48.5227" stroke="black" strokeWidth="5" strokeLinecap="round"/>
+                  <path d="M2.5 29.7616C2.52324 30.187 2.71249 31.5564 3.96054 35.1196C5.01472 38.1292 7.13216 43.503 8.22955 46.3453C9.32694 49.1876 9.39351 49.3163 9.49381 49.2462C9.83324 49.0093 10.1496 48.366 13.3893 46.2884C16.3414 44.4676 21.9496 41.0905 24.9457 39.3102C27.9417 37.5299 28.1558 37.4486 28.4467 37.357" stroke="black" strokeWidth="5" strokeLinecap="round"/>
+                </svg>
+                <div ref={annotationGroupRef} style={{ position: "absolute", bottom: "calc(100% + 48px)", left: "72%", display: "flex", alignItems: "center", gap: 10, pointerEvents: "none", userSelect: "none", transform: "rotate(12deg)", transformOrigin: "left center", whiteSpace: "nowrap" }}>
+                  <svg width="59" height="52" viewBox="0 0 59 52" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0, pointerEvents: "none" }}>
+                    <path d="M55.5568 2.5C55.5407 2.5 52.9056 2.52888 47.5125 3.03353C44.7177 3.29505 41.9197 4.43108 39.6653 5.38834C37.411 6.34561 35.8143 7.31043 34.1679 8.44873C32.5215 9.58703 30.8738 10.8696 28.5491 13.254C26.2244 15.6384 23.2727 19.0858 21.1584 21.9017C19.044 24.7176 17.8565 26.7975 16.5126 29.726C15.1688 32.6545 13.7046 36.3685 12.6701 39.4799C11.6356 42.5913 11.0751 44.9876 10.7732 46.3961C10.4713 47.8047 10.4449 48.1529 10.4194 48.5227" stroke="black" strokeWidth="5" strokeLinecap="round"/>
+                    <path d="M2.5 29.7616C2.52324 30.187 2.71249 31.5564 3.96054 35.1196C5.01472 38.1292 7.13216 43.503 8.22955 46.3453C9.32694 49.1876 9.39351 49.3163 9.49381 49.2462C9.83324 49.0093 10.1496 48.366 13.3893 46.2884C16.3414 44.4676 21.9496 41.0905 24.9457 39.3102C27.9417 37.5299 28.1558 37.4486 28.4467 37.357" stroke="black" strokeWidth="5" strokeLinecap="round"/>
+                  </svg>
+                  <span ref={(el) => { annotationTextRef.current = el; if (el) gsap.set(el, { y: -28 }); }} style={{ fontFamily: "Dudu, sans-serif", fontSize: "clamp(1.8rem, 2.4vw, 2.8rem)", WebkitTextStroke: "2px black", paintOrder: "stroke fill", textTransform: "uppercase", display: "inline-block", pointerEvents: "none" }}>
+                    {annotationText}
+                  </span>
+                </div>
+              </>}
+            </ProjectMockup>
           </div>
         </div>
       </div>
@@ -337,7 +410,7 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
         className={titlePosition === "top-right"
           ? "absolute top-4 right-4 md:top-8 md:right-12"
           : "absolute top-4 right-4 md:top-auto md:right-auto md:bottom-8 md:left-12"}
-        style={{ zIndex: 4, cursor: "pointer" }}
+        style={{ zIndex: 4, cursor: "pointer", outline: "none" }}
         onClick={open ? closePanel : openWithTransition}
       >
         <ProjectTitle title={project.title} className={styles.projectTitle} />
@@ -361,7 +434,7 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
             ))}
           </div>
 
-          <div ref={descRef} style={{ fontFamily: "Dudu, sans-serif", fontSize: "clamp(1.15rem, 1.4vw, 1.6rem)", lineHeight: 1.5, maxWidth: "min(480px, 100%)", marginTop: "clamp(16px, 3vh, 40px)", marginBottom: "clamp(16px, 2.5vh, 32px)", display: "flex", flexWrap: "wrap", gap: "0.28em", alignContent: "flex-start" }}>
+          <div ref={descRef} style={{ fontFamily: "Dudu, sans-serif", fontSize: "clamp(1.15rem, 1.4vw, 1.6rem)", lineHeight: 1.5, maxWidth: "min(480px, 100%)", marginTop: "clamp(16px, 3vh, 40px)", marginBottom: "clamp(16px, 2.5vh, 32px)", display: "flex", flexWrap: "wrap", gap: "0.28em", alignContent: "flex-start", pointerEvents: "none" }}>
             {(project.description ?? "").split(" ").map((word, i) => (
               <span key={i} style={{ display: "inline-block", overflow: "hidden", lineHeight: 1.6 }}>
                 <span

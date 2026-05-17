@@ -76,10 +76,10 @@ export default function ProjectTitle({ title, className }: Props) {
       <div style={{ display: "flex", flexWrap: "wrap", gap: "0.15em" }}>
         {title.split(" ").map((word, wi) => {
           const wordEl = (
-            <span key={wi} style={{ display: "inline-block", overflow: "hidden" }}>
+            <span key={wi} style={{ display: "inline-block", overflow: "hidden", pointerEvents: "none" }}>
               <span
                 ref={(el) => { wordRefs.current[wi] = el; }}
-                style={{ display: "inline-flex" }}
+                style={{ display: "inline-flex", pointerEvents: "none" }}
               >
                 {word.split("").map((char) => {
                   const li = letterIndex++;
@@ -87,7 +87,7 @@ export default function ProjectTitle({ title, className }: Props) {
                     <span
                       key={li}
                       ref={(el) => { letterRefs.current[li] = el; }}
-                      style={{ display: "inline-block" }}
+                      style={{ display: "inline-block", pointerEvents: "none" }}
                     >
                       {char}
                     </span>

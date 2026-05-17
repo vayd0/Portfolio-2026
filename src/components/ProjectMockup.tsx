@@ -11,9 +11,11 @@ interface ProjectMockupProps {
   title: string;
   rotation: number;
   palette?: Palette;
+  children?: React.ReactNode;
+  onHoverChange?: (hovered: boolean) => void;
 }
 
-export default function ProjectMockup({ image, title, rotation, palette = 0 }: ProjectMockupProps) {
+export default function ProjectMockup({ image, title, rotation, palette = 0, children, onHoverChange }: ProjectMockupProps) {
   const ref = useRef<HTMLDivElement>(null);
   const velRef = useRef<HTMLDivElement>(null);
 
@@ -63,15 +65,18 @@ export default function ProjectMockup({ image, title, rotation, palette = 0 }: P
   const onEnter = () => {
     gsap.killTweensOf(ref.current);
     gsap.to(ref.current, { scale: 1.22, duration: 1.2, ease: "elastic.out(1.2, 0.3)" });
+    onHoverChange?.(true);
   };
 
   const onLeave = () => {
     gsap.killTweensOf(ref.current);
     gsap.to(ref.current, { scale: 1, duration: 1.4, ease: "elastic.out(1, 0.35)" });
+    onHoverChange?.(false);
   };
 
   return (
-    <div ref={velRef}>
+    <div ref={velRef} style={{ position: "relative" }}>
+      {children}
       <div
         ref={ref}
         className="relative z-10"
