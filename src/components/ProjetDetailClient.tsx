@@ -122,7 +122,7 @@ export default function ProjetDetailClient({ project, palette }: Props) {
 
       <div
         className="relative md:absolute md:inset-0 md:overflow-hidden overflow-y-auto flex flex-col"
-        style={{ zIndex: 2, paddingTop: "clamp(90px, 9vw, 130px)", paddingBottom: "clamp(20px, 3.5vw, 52px)", paddingLeft: "clamp(24px, 4vw, 64px)", paddingRight: "clamp(24px, 4vw, 64px)" }}
+        style={{ zIndex: 2, paddingTop: "clamp(110px, 12vw, 160px)", paddingBottom: "clamp(20px, 3.5vw, 52px)", paddingLeft: "clamp(24px, 4vw, 64px)", paddingRight: "clamp(24px, 4vw, 64px)" }}
       >
         <button
           onClick={() => router.back()}
