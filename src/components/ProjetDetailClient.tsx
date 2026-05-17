@@ -72,8 +72,8 @@ export default function ProjetDetailClient({ project, palette }: Props) {
           className="hidden md:block"
           style={{ position: "absolute", bottom: 0, left: 0, zIndex: 10, background: "#111", maxWidth: "min(42%, 460px)", borderTopRightRadius: 20 }}
         >
-          <div style={{ position: "absolute", width: 0, height: 0, bottom: "100%", left: 0, borderTop: "18px solid #111", borderRight: "18px solid #111", borderLeft: "18px solid transparent", borderBottom: "18px solid transparent", pointerEvents: "none" }} />
-          <div style={{ position: "absolute", width: 0, height: 0, left: "100%", bottom: 0, borderTop: "18px solid #111", borderRight: "18px solid #111", borderLeft: "18px solid transparent", borderBottom: "18px solid transparent", pointerEvents: "none" }} />
+          <div style={{ position: "absolute", width: 0, height: 0, bottom: "100%", left: 0, borderTop: "18px solid #111", borderRight: "18px solid #111", borderLeft: "18px solid transparent", borderBottom: "18px solid transparent", pointerEvents: "none", transform: "rotate(45deg)", transformOrigin: "center" }} />
+          <div style={{ position: "absolute", width: 0, height: 0, left: "100%", bottom: 0, borderTop: "18px solid #111", borderRight: "18px solid #111", borderLeft: "18px solid transparent", borderBottom: "18px solid transparent", pointerEvents: "none", transform: "rotate(-45deg)", transformOrigin: "center" }} />
           <p style={{ fontFamily: "Dudu, sans-serif", fontSize: "clamp(0.85rem, 1.1vw, 1.2rem)", lineHeight: 1.6, color: "#fff", margin: 0, padding: "clamp(14px, 2vw, 28px) clamp(18px, 2.5vw, 36px)" }}>
             {project.description}
           </p>
