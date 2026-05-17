@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import gsap from "gsap";
 import { Draggable } from "gsap/Draggable";
@@ -41,10 +41,29 @@ export default function ProjetDetailClient({ project, palette }: Props) {
   const linksRef = useRef<HTMLDivElement>(null);
   const galleryRefs = useRef<(HTMLDivElement | null)[]>([]);
   const annotationRef = useRef<HTMLDivElement>(null);
+  const isExiting = useRef(false);
+
+  const handleBack = useCallback(() => {
+    if (isExiting.current) return;
+    isExiting.current = true;
+    const el = containerRef.current;
+    if (!el) { router.back(); return; }
+
+    gsap.killTweensOf(galleryRefs.current.filter(Boolean));
+    gsap.killTweensOf(imgRef.current);
+
+    const proxy = { r: 200 };
+    gsap.to(proxy, {
+      r: 0, duration: 0.65, ease: "power3.inOut",
+      onUpdate: () => { el.style.clipPath = `circle(${proxy.r}vmax at 50% 50%)`; },
+      onComplete: () => router.back(),
+    });
+  }, [router]);
 
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
+
     const proxy = { r: 0 };
     gsap.to(proxy, {
       r: 200, duration: 0.8, ease: "power3.inOut",
@@ -61,8 +80,8 @@ export default function ProjetDetailClient({ project, palette }: Props) {
         gsap.set(linksRef.current, { y: 28, opacity: 0 });
         gsap.set(annotationRef.current, { opacity: 0, scale: 0.85 });
         gsap.set(gallery, {
-          x: (i: number) => (SCATTER[i % SCATTER.length].rx) * w,
-          y: (i: number) => (SCATTER[i % SCATTER.length].ry) * h - h * 0.6,
+          x: (i: number) => SCATTER[i % SCATTER.length].rx * w,
+          y: (i: number) => SCATTER[i % SCATTER.length].ry * h - h * 0.6,
           opacity: 0,
           rotation: 0,
         });
@@ -71,8 +90,8 @@ export default function ProjetDetailClient({ project, palette }: Props) {
         tl.to(titleRef.current, { y: 0, opacity: 1, duration: 0.85, ease: "elastic.out(1, 0.45)" })
           .to(imgRef.current, { scale: 1, opacity: 1, duration: 0.65, ease: "power3.out" }, 0.1)
           .to(gallery, {
-            x: (i: number) => (SCATTER[i % SCATTER.length].rx) * w,
-            y: (i: number) => (SCATTER[i % SCATTER.length].ry) * h,
+            x: (i: number) => SCATTER[i % SCATTER.length].rx * w,
+            y: (i: number) => SCATTER[i % SCATTER.length].ry * h,
             opacity: 1,
             rotation: (i: number) => SCATTER[i % SCATTER.length].rot,
             stagger: 0.12,
@@ -88,9 +107,33 @@ export default function ProjetDetailClient({ project, palette }: Props) {
               onPress() { gsap.to(this.target, { scale: 1.04, zIndex: 20, duration: 0.2, ease: "power2.out" }); },
               onRelease() { gsap.to(this.target, { scale: 1, duration: 0.4, ease: "elastic.out(1, 0.45)" }); },
             });
+
+            gallery.forEach((img, i) => {
+              const base = SCATTER[i % SCATTER.length].rot;
+              gsap.fromTo(img,
+                { rotation: base - 2.5 },
+                { rotation: base + 2.5, duration: 2.4 + i * 0.5, ease: "sine.inOut", yoyo: true, repeat: -1, delay: i * 0.35 }
+              );
+            });
           });
       },
     });
+
+    const imgEl = imgRef.current;
+    const qx = gsap.quickTo(imgEl, "x", { duration: 1.2, ease: "power2.out" });
+    const qy = gsap.quickTo(imgEl, "y", { duration: 1.2, ease: "power2.out" });
+
+    const handleMove = (e: MouseEvent) => {
+      if (isExiting.current) return;
+      const rect = el.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      qx((e.clientX - cx) * 0.012);
+      qy((e.clientY - cy) * 0.008);
+    };
+
+    el.addEventListener("mousemove", handleMove);
+    return () => el.removeEventListener("mousemove", handleMove);
   }, []);
 
   return (
@@ -125,7 +168,7 @@ export default function ProjetDetailClient({ project, palette }: Props) {
         style={{ zIndex: 2, paddingTop: "clamp(110px, 12vw, 160px)", paddingBottom: "clamp(20px, 3.5vw, 52px)", paddingLeft: "clamp(24px, 4vw, 64px)", paddingRight: "clamp(24px, 4vw, 64px)" }}
       >
         <button
-          onClick={() => router.back()}
+          onClick={handleBack}
           className="self-start flex items-center shrink-0"
           style={{ background: "none", border: "none", fontFamily: "Fat, sans-serif", fontSize: "clamp(1rem, 1.5vw, 1.6rem)", cursor: "pointer", color: "#000", marginBottom: "clamp(12px, 2vh, 28px)", padding: 0, gap: 10 }}
           onMouseEnter={(e) => gsap.to(e.currentTarget, { x: -10, duration: 0.5, ease: "elastic.out(1, 0.4)" })}
