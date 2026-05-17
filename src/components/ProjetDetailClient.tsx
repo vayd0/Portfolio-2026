@@ -3,8 +3,7 @@
 import { useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import gsap from "gsap";
-import ParallaxShape from "./ParallaxShape";
-import { Circle, Triangle, Arrow, type Palette } from "./shapes";
+import { type Palette } from "./shapes";
 import BrowserFrame from "./BrowserFrame";
 
 type Project = {
@@ -65,17 +64,7 @@ export default function ProjetDetailClient({ project, palette }: Props) {
 
   return (
     <div ref={containerRef} className="relative md:h-full md:overflow-hidden" style={{ background: "#fff" }}>
-      <div className="absolute inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 1 }}>
-        <ParallaxShape depthX={0.06} depthY={0.05} className="absolute" style={{ top: "-8%", right: "-10%", width: "clamp(240px, 30vw, 480px)" }}>
-          <Circle palette={palette} />
-        </ParallaxShape>
-        <ParallaxShape depthX={0.04} depthY={0.06} className="absolute" style={{ bottom: "-12%", left: "-6%", width: "clamp(200px, 25vw, 380px)" }}>
-          <Triangle palette={palette} />
-        </ParallaxShape>
-        <ParallaxShape depthX={0.07} depthY={0.03} className="absolute" style={{ top: "35%", right: "2%", width: "clamp(160px, 18vw, 300px)" }}>
-          <div style={{ transform: "scaleY(-1)" }}><Arrow palette={palette} /></div>
-        </ParallaxShape>
-      </div>
+      <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 1, backgroundImage: "radial-gradient(circle, #bbb 1px, transparent 1px)", backgroundSize: "28px 28px" }} />
 
       {project.description && (
         <div
