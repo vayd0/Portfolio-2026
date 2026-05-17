@@ -136,8 +136,17 @@ export default function ProjetDetailClient({ project, palette }: Props) {
     el.addEventListener("mousemove", handleMove);
     return () => {
       el.removeEventListener("mousemove", handleMove);
-      ctx.revert();
       draggableInstances.forEach((d) => d.kill());
+      gsap.killTweensOf([
+        el,
+        titleRef.current,
+        imgRef.current,
+        descRef.current,
+        linksRef.current,
+        annotationRef.current,
+        ...galleryRefs.current,
+      ].filter(Boolean));
+      ctx.kill();
     };
   }, []);
 
