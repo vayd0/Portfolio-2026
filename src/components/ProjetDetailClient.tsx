@@ -185,7 +185,7 @@ export default function ProjetDetailClient({ project, palette }: Props) {
                 >
                   Voir le projet ↗
                 </a>
-                <div ref={annotationRef} style={{ position: "absolute", right: -8, bottom: "calc(100% + 6px)", display: "flex", alignItems: "center", gap: 6, transform: "rotate(-5deg)", pointerEvents: "none", userSelect: "none" }}>
+                <div ref={annotationRef} style={{ position: "absolute", right: -8, top: "calc(100% + 6px)", display: "flex", alignItems: "center", gap: 6, transform: "rotate(-5deg)", pointerEvents: "none", userSelect: "none" }}>
                   <svg width="28" height="24" viewBox="0 0 59 52" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ transform: "rotate(180deg) scaleX(-1) scaleY(-1)" }}>
                     <path d="M55.5568 2.5C55.5407 2.5 52.9056 2.52888 47.5125 3.03353C44.7177 3.29505 41.9197 4.43108 39.6653 5.38834C37.411 6.34561 35.8143 7.31043 34.1679 8.44873C32.5215 9.58703 30.8738 10.8696 28.5491 13.254C26.2244 15.6384 23.2727 19.0858 21.1584 21.9017C19.044 24.7176 17.8565 26.7975 16.5126 29.726C15.1688 32.6545 13.7046 36.3685 12.6701 39.4799C11.6356 42.5913 11.0751 44.9876 10.7732 46.3961C10.4713 47.8047 10.4449 48.1529 10.4194 48.5227" stroke="black" strokeWidth="5" strokeLinecap="round"/>
                     <path d="M2.5 29.7616C2.52324 30.187 2.71249 31.5564 3.96054 35.1196C5.01472 38.1292 7.13216 43.503 8.22955 46.3453C9.32694 49.1876 9.39351 49.3163 9.49381 49.2462C9.83324 49.0093 10.1496 48.366 13.3893 46.2884C16.3414 44.4676 21.9496 41.0905 24.9457 39.3102C27.9417 37.5299 28.1558 37.4486 28.4467 37.357" stroke="black" strokeWidth="5" strokeLinecap="round"/>
