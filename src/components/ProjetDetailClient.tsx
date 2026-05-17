@@ -190,7 +190,7 @@ export default function ProjetDetailClient({ project, palette }: Props) {
                     <path d="M55.5568 2.5C55.5407 2.5 52.9056 2.52888 47.5125 3.03353C44.7177 3.29505 41.9197 4.43108 39.6653 5.38834C37.411 6.34561 35.8143 7.31043 34.1679 8.44873C32.5215 9.58703 30.8738 10.8696 28.5491 13.254C26.2244 15.6384 23.2727 19.0858 21.1584 21.9017C19.044 24.7176 17.8565 26.7975 16.5126 29.726C15.1688 32.6545 13.7046 36.3685 12.6701 39.4799C11.6356 42.5913 11.0751 44.9876 10.7732 46.3961C10.4713 47.8047 10.4449 48.1529 10.4194 48.5227" stroke="black" strokeWidth="5" strokeLinecap="round"/>
                     <path d="M2.5 29.7616C2.52324 30.187 2.71249 31.5564 3.96054 35.1196C5.01472 38.1292 7.13216 43.503 8.22955 46.3453C9.32694 49.1876 9.39351 49.3163 9.49381 49.2462C9.83324 49.0093 10.1496 48.366 13.3893 46.2884C16.3414 44.4676 21.9496 41.0905 24.9457 39.3102C27.9417 37.5299 28.1558 37.4486 28.4467 37.357" stroke="black" strokeWidth="5" strokeLinecap="round"/>
                   </svg>
-                  <span style={{ fontFamily: "Dudu, sans-serif", fontSize: "clamp(1rem, 1.3vw, 1.3rem)", color: "#555", marginTop: 4, marginLeft: -6, display: "inline-block", transform: "rotate(28deg)", WebkitTextStroke: "0.5px #333" }}>c&apos;est par ici !</span>
+                  <span style={{ fontFamily: "Dudu, sans-serif", fontSize: "clamp(1rem, 1.3vw, 1.3rem)", color: "#555", marginTop: 12, marginLeft: -6, display: "inline-block", transform: "rotate(28deg)", WebkitTextStroke: "0.5px #333" }}>c&apos;est par ici !</span>
                 </div>
               </div>
             )}
