@@ -72,13 +72,7 @@ export default function ProjetDetailClient({ project, palette }: Props) {
           className="hidden md:block"
           style={{ position: "absolute", bottom: 0, left: 0, zIndex: 10, background: "#111", maxWidth: "min(42%, 460px)", borderTopRightRadius: 20 }}
         >
-          <div style={{ position: "absolute", top: 0, left: 0, width: 30, height: 30, overflow: "hidden", pointerEvents: "none" }}>
-            <div style={{ position: "absolute", top: 0, left: 0, width: 60, height: 60, borderRadius: "100%", boxShadow: "-30px -30px 0 100px #fff" }} />
-          </div>
-          <div style={{ position: "absolute", bottom: 0, right: 0, width: 30, height: 30, overflow: "hidden", pointerEvents: "none" }}>
-            <div style={{ position: "absolute", top: -30, left: -30, width: 60, height: 60, borderRadius: "100%", boxShadow: "30px 30px 0 100px #fff" }} />
-          </div>
-          <p style={{ position: "relative", fontFamily: "Dudu, sans-serif", fontSize: "clamp(0.85rem, 1.1vw, 1.2rem)", lineHeight: 1.6, color: "#fff", margin: 0, padding: "clamp(14px, 2vw, 28px) clamp(18px, 2.5vw, 36px)" }}>
+          <p style={{ fontFamily: "Dudu, sans-serif", fontSize: "clamp(0.85rem, 1.1vw, 1.2rem)", lineHeight: 1.6, color: "#fff", margin: 0, padding: "clamp(14px, 2vw, 28px) clamp(18px, 2.5vw, 36px)" }}>
             {project.description}
           </p>
         </div>
