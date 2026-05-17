@@ -64,32 +64,34 @@ export default function ProjetDetailClient({ project, palette }: Props) {
     const el = containerRef.current;
     if (!el) return;
 
-    const proxy = { r: 0 };
-    gsap.to(proxy, {
-      r: 200, duration: 0.8, ease: "power3.inOut",
-      onUpdate: () => { el.style.clipPath = `circle(${proxy.r}vmax at 50% 50%)`; },
-      onComplete: () => {
-        el.style.clipPath = "none";
-        const w = el.offsetWidth;
-        const h = el.offsetHeight;
-        const gallery = galleryRefs.current.filter(Boolean);
+    let draggableInstances: Draggable[] = [];
+    const ctx = gsap.context(() => {
+      const proxy = { r: 0 };
+      gsap.to(proxy, {
+        r: 200, duration: 0.8, ease: "power3.inOut",
+        onUpdate: () => { el.style.clipPath = `circle(${proxy.r}vmax at 50% 50%)`; },
+        onComplete: () => {
+          el.style.clipPath = "none";
+          const w = el.offsetWidth;
+          const h = el.offsetHeight;
+          const gallery = galleryRefs.current.filter((x): x is HTMLDivElement => x !== null);
 
-        gsap.set(titleRef.current, { y: 80, opacity: 0 });
-        gsap.set(imgRef.current, { scale: 0.93, opacity: 0 });
-        gsap.set(descRef.current, { y: 28, opacity: 0 });
-        gsap.set(linksRef.current, { y: 28, opacity: 0 });
-        gsap.set(annotationRef.current, { opacity: 0, scale: 0.85 });
-        gsap.set(gallery, {
-          x: (i: number) => SCATTER[i % SCATTER.length].rx * w,
-          y: (i: number) => SCATTER[i % SCATTER.length].ry * h - h * 0.6,
-          opacity: 0,
-          rotation: 0,
-        });
+          if (titleRef.current) gsap.set(titleRef.current, { y: 80, opacity: 0 });
+          if (imgRef.current) gsap.set(imgRef.current, { scale: 0.93, opacity: 0 });
+          if (descRef.current) gsap.set(descRef.current, { y: 28, opacity: 0 });
+          if (linksRef.current) gsap.set(linksRef.current, { y: 28, opacity: 0 });
+          if (annotationRef.current) gsap.set(annotationRef.current, { opacity: 0, scale: 0.85 });
+          if (gallery.length) gsap.set(gallery, {
+            x: (i: number) => SCATTER[i % SCATTER.length].rx * w,
+            y: (i: number) => SCATTER[i % SCATTER.length].ry * h - h * 0.6,
+            opacity: 0,
+            rotation: 0,
+          });
 
-        const tl = gsap.timeline();
-        tl.to(titleRef.current, { y: 0, opacity: 1, duration: 0.85, ease: "elastic.out(1, 0.45)" })
-          .to(imgRef.current, { scale: 1, opacity: 1, duration: 0.65, ease: "power3.out" }, 0.1)
-          .to(gallery, {
+          const tl = gsap.timeline();
+          if (titleRef.current) tl.to(titleRef.current, { y: 0, opacity: 1, duration: 0.85, ease: "elastic.out(1, 0.45)" });
+          if (imgRef.current) tl.to(imgRef.current, { scale: 1, opacity: 1, duration: 0.65, ease: "power3.out" }, 0.1);
+          if (gallery.length) tl.to(gallery, {
             x: (i: number) => SCATTER[i % SCATTER.length].rx * w,
             y: (i: number) => SCATTER[i % SCATTER.length].ry * h,
             opacity: 1,
@@ -97,17 +99,18 @@ export default function ProjetDetailClient({ project, palette }: Props) {
             stagger: 0.12,
             duration: 0.95,
             ease: "elastic.out(1, 0.45)",
-          }, 0.15)
-          .to(descRef.current, { y: 0, opacity: 1, duration: 0.55, ease: "power3.out" }, 0.3)
-          .to(linksRef.current, { y: 0, opacity: 1, duration: 0.75, ease: "elastic.out(1, 0.5)" }, 0.4)
-          .to(annotationRef.current, { opacity: 1, scale: 1, duration: 0.6, ease: "elastic.out(1, 0.5)" }, 0.55)
-          .call(() => {
-            Draggable.create(gallery, {
+          }, 0.15);
+          if (descRef.current) tl.to(descRef.current, { y: 0, opacity: 1, duration: 0.55, ease: "power3.out" }, 0.3);
+          if (linksRef.current) tl.to(linksRef.current, { y: 0, opacity: 1, duration: 0.75, ease: "elastic.out(1, 0.5)" }, 0.4);
+          if (annotationRef.current) tl.to(annotationRef.current, { opacity: 1, scale: 1, duration: 0.6, ease: "elastic.out(1, 0.5)" }, 0.55);
+
+          tl.call(() => {
+            if (!gallery.length) return;
+            draggableInstances = Draggable.create(gallery, {
               type: "x,y",
-              onPress() { gsap.to(this.target, { scale: 1.04, zIndex: 20, duration: 0.2, ease: "power2.out" }); },
+              onPress() { gsap.to(this.target, { scale: 1.04, duration: 0.2, ease: "power2.out" }); },
               onRelease() { gsap.to(this.target, { scale: 1, duration: 0.4, ease: "elastic.out(1, 0.45)" }); },
             });
-
             gallery.forEach((img, i) => {
               const base = SCATTER[i % SCATTER.length].rot;
               gsap.fromTo(img,
@@ -116,15 +119,20 @@ export default function ProjetDetailClient({ project, palette }: Props) {
               );
             });
           });
-      },
-    });
+        },
+      });
+    }, el);
 
     const imgEl = imgRef.current;
-    const qx = gsap.quickTo(imgEl, "x", { duration: 1.2, ease: "power2.out" });
-    const qy = gsap.quickTo(imgEl, "y", { duration: 1.2, ease: "power2.out" });
+    let qx: ReturnType<typeof gsap.quickTo> | null = null;
+    let qy: ReturnType<typeof gsap.quickTo> | null = null;
+    if (imgEl) {
+      qx = gsap.quickTo(imgEl, "x", { duration: 1.2, ease: "power2.out" });
+      qy = gsap.quickTo(imgEl, "y", { duration: 1.2, ease: "power2.out" });
+    }
 
     const handleMove = (e: MouseEvent) => {
-      if (isExiting.current) return;
+      if (isExiting.current || !qx || !qy) return;
       const rect = el.getBoundingClientRect();
       const cx = rect.left + rect.width / 2;
       const cy = rect.top + rect.height / 2;
@@ -133,7 +141,11 @@ export default function ProjetDetailClient({ project, palette }: Props) {
     };
 
     el.addEventListener("mousemove", handleMove);
-    return () => el.removeEventListener("mousemove", handleMove);
+    return () => {
+      el.removeEventListener("mousemove", handleMove);
+      ctx.revert();
+      draggableInstances.forEach((d) => d.kill());
+    };
   }, []);
 
   return (
