@@ -188,6 +188,7 @@ export default function ProjetsClient({ projects }: { projects: Project[] }) {
                   ref={titleRef}
                   style={{
                     fontFamily: "Fat, sans-serif",
+                    fontStyle: "italic",
                     fontSize: "clamp(5rem, 14vw, 18rem)",
                     lineHeight: 0.88,
                     fontWeight: 400,
