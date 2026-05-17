@@ -103,7 +103,7 @@ export default function ProjetDetailClient({ project, palette }: Props) {
           className="hidden md:block"
           style={{ position: "absolute", bottom: 10, left: 10, zIndex: 10, background: "#000", maxWidth: "min(55%, 600px)", borderRadius: 20 }}
         >
-          <p style={{ fontFamily: "Dudu, sans-serif", fontSize: "clamp(1rem, 1.4vw, 1.5rem)", lineHeight: 1.6, color: "#fff", margin: 0, padding: "clamp(14px, 2vw, 28px) clamp(18px, 2.5vw, 36px)" }}>
+          <p style={{ fontFamily: "Satoshi, sans-serif", fontWeight: 500, fontSize: "clamp(1rem, 1.4vw, 1.5rem)", lineHeight: 1.6, color: "#fff", margin: 0, padding: "clamp(14px, 2vw, 28px) clamp(18px, 2.5vw, 36px)" }}>
             {project.description}
           </p>
         </div>
@@ -122,7 +122,7 @@ export default function ProjetDetailClient({ project, palette }: Props) {
 
       <div
         className="relative md:absolute md:inset-0 md:overflow-hidden overflow-y-auto flex flex-col"
-        style={{ zIndex: 2, padding: "clamp(20px, 3.5vw, 52px) clamp(24px, 4vw, 64px)" }}
+        style={{ zIndex: 2, paddingTop: "clamp(90px, 9vw, 130px)", paddingBottom: "clamp(20px, 3.5vw, 52px)", paddingLeft: "clamp(24px, 4vw, 64px)", paddingRight: "clamp(24px, 4vw, 64px)" }}
       >
         <button
           onClick={() => router.back()}
