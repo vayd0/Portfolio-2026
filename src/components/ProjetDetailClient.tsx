@@ -106,7 +106,7 @@ export default function ProjetDetailClient({ project, palette }: Props) {
         <div className="flex-1 flex flex-col md:flex-row min-h-0" style={{ gap: "clamp(20px, 3vw, 52px)" }}>
           <div className="flex flex-col md:shrink-0 md:basis-[52%] md:min-h-0" style={{ gap: "clamp(12px, 1.8vh, 24px)" }}>
             {project.image && (
-              <div ref={imgRef} className="w-full">
+              <div ref={imgRef} className="w-full shrink-0">
                 <BrowserFrame src={imgSrc(project.image)} alt={project.title} />
               </div>
             )}
