@@ -111,13 +111,6 @@ export default function ProjetDetailClient({ project, palette }: Props) {
               onPress() { gsap.to(this.target, { scale: 1.04, duration: 0.2, ease: "power2.out" }); },
               onRelease() { gsap.to(this.target, { scale: 1, duration: 0.4, ease: "elastic.out(1, 0.45)" }); },
             });
-            gallery.forEach((img, i) => {
-              const base = SCATTER[i % SCATTER.length].rot;
-              gsap.fromTo(img,
-                { rotation: base - 2.5 },
-                { rotation: base + 2.5, duration: 2.4 + i * 0.5, ease: "sine.inOut", yoyo: true, repeat: -1, delay: i * 0.35 }
-              );
-            });
           });
         },
       });
