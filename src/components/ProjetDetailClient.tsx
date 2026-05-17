@@ -72,7 +72,7 @@ export default function ProjetDetailClient({ project, palette }: Props) {
           className="hidden md:block"
           style={{ position: "absolute", bottom: 10, left: 10, zIndex: 10, background: "#000", maxWidth: "min(42%, 460px)", borderRadius: 20 }}
         >
-          <p style={{ fontFamily: "Dudu, sans-serif", fontSize: "clamp(0.85rem, 1.1vw, 1.2rem)", lineHeight: 1.6, color: "#fff", margin: 0, padding: "clamp(14px, 2vw, 28px) clamp(18px, 2.5vw, 36px)" }}>
+          <p style={{ fontFamily: "Dudu, sans-serif", fontSize: "clamp(1rem, 1.4vw, 1.5rem)", lineHeight: 1.6, color: "#fff", margin: 0, padding: "clamp(14px, 2vw, 28px) clamp(18px, 2.5vw, 36px)" }}>
             {project.description}
           </p>
         </div>
