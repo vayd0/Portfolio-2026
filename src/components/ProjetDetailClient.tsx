@@ -140,7 +140,13 @@ export default function ProjetDetailClient({ project, palette }: Props) {
 
         <div
           ref={titleRef}
-          className="shrink-0"
+          className="hidden md:block"
+          style={{ position: "absolute", bottom: "clamp(16px, 2.5vh, 36px)", right: "clamp(24px, 4vw, 64px)", zIndex: 3, fontFamily: "Fat, sans-serif", fontStyle: "italic", fontSize: "clamp(3rem, 8vw, 9rem)", lineHeight: 0.88, fontWeight: 400, textTransform: "uppercase", transform: "rotate(-1.5deg)", transformOrigin: "right bottom", userSelect: "none", wordBreak: "break-word", textAlign: "right", pointerEvents: "none" }}
+        >
+          {project.title}
+        </div>
+        <div
+          className="shrink-0 md:hidden"
           style={{ fontFamily: "Fat, sans-serif", fontStyle: "italic", fontSize: "clamp(3rem, 8vw, 9rem)", lineHeight: 0.88, fontWeight: 400, textTransform: "uppercase", transform: "rotate(-1.5deg)", transformOrigin: "left center", userSelect: "none", marginBottom: "clamp(16px, 2.5vh, 36px)", wordBreak: "break-word" }}
         >
           {project.title}
