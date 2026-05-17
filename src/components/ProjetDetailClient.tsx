@@ -78,6 +78,7 @@ export default function ProjetDetailClient({ project, palette }: Props) {
             WebkitMaskImage: "radial-gradient(circle at 0 0, transparent 24px, black 24px), radial-gradient(circle at 100% 100%, transparent 24px, black 24px)",
             WebkitMaskComposite: "source-in",
           }}
+        >
           <p style={{ fontFamily: "Dudu, sans-serif", fontSize: "clamp(0.85rem, 1.1vw, 1.2rem)", lineHeight: 1.6, color: "#fff", margin: 0, padding: "clamp(14px, 2vw, 28px) clamp(18px, 2.5vw, 36px)" }}>
             {project.description}
           </p>
