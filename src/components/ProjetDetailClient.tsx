@@ -44,6 +44,7 @@ export default function ProjetDetailClient({ project, palette }: Props) {
   const isExiting = useRef(false);
   const dragStates = useRef<(DragState)[]>([null, null, null]);
   const [clientMounted, setClientMounted] = useState(false);
+  const [showGallery, setShowGallery] = useState(true);
 
   const handleBack = useCallback(() => {
     if (isExiting.current) return;
@@ -51,6 +52,7 @@ export default function ProjetDetailClient({ project, palette }: Props) {
     const el = containerRef.current;
     if (!el) { router.back(); return; }
 
+    setShowGallery(false);
     gsap.killTweensOf([
       imgRef.current, titleRef.current, descRef.current,
       linksRef.current, annotationRef.current, ...galleryRefs.current,
@@ -182,7 +184,7 @@ export default function ProjetDetailClient({ project, palette }: Props) {
         </div>
       )}
 
-      {clientMounted && containerRef.current && project.gallery && createPortal(
+      {clientMounted && showGallery && containerRef.current && project.gallery && createPortal(
         project.gallery.slice(0, 3).map((src, gi) => (
           <div
             key={gi}
