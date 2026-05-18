@@ -1,10 +1,9 @@
 "use client";
 
-import { useRef, useEffect, useCallback, useState } from "react";
-import { createPortal } from "react-dom";
+import { useRef, useEffect, useLayoutEffect, useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import gsap from "gsap";
-import { type Palette } from "./shapes";
+import { type Palette, PALETTE_GRADIENTS } from "./shapes";
 import BrowserFrame from "./BrowserFrame";
 
 type Project = {
@@ -80,6 +79,13 @@ export default function ProjetDetailClient({ project, palette }: Props) {
     gsap.to(el, { scale: 1, duration: 0.4, ease: "elastic.out(1, 0.45)" });
   }, []);
 
+  useLayoutEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    el.style.background = PALETTE_GRADIENTS[palette];
+    el.style.clipPath = "circle(0vmax at 50% 50%)";
+  }, [palette]);
+
   useEffect(() => { setClientMounted(true); }, []);
 
   useEffect(() => {
@@ -89,42 +95,55 @@ export default function ProjetDetailClient({ project, palette }: Props) {
     const mounted = { current: true };
     let mainTl: gsap.core.Timeline | null = null;
 
-    const openProxy = { r: 0 };
-    const openTween = gsap.to(openProxy, {
-      r: 200, duration: 0.8, ease: "power3.inOut",
-      onUpdate: () => { if (mounted.current) el.style.clipPath = `circle(${openProxy.r}vmax at 50% 50%)`; },
+    gsap.set([titleRef.current, imgRef.current, descRef.current, linksRef.current, annotationRef.current].filter(Boolean), { opacity: 0 });
+
+    el.style.background = PALETTE_GRADIENTS[palette];
+    el.style.clipPath = "circle(0vmax at 50% 50%)";
+    const circleProxy = { r: 0 };
+    const openTween = gsap.to(circleProxy, {
+      r: 200, duration: 0.9, ease: "power3.inOut",
+      onUpdate: () => {
+        if (!mounted.current) return;
+        const r = circleProxy.r;
+        el.style.clipPath = r >= 199 ? "none" : `circle(${r}vmax at 50% 50%)`;
+      },
       onComplete: () => {
         if (!mounted.current) return;
         el.style.clipPath = "none";
-        const w = el.offsetWidth;
-        const h = el.offsetHeight;
-        const gallery = galleryRefs.current.filter((x): x is HTMLDivElement => x !== null);
-
-        if (titleRef.current) gsap.set(titleRef.current, { y: 80, opacity: 0 });
-        if (imgRef.current) gsap.set(imgRef.current, { scale: 0.93, opacity: 0 });
-        if (descRef.current) gsap.set(descRef.current, { y: 28, opacity: 0 });
-        if (linksRef.current) gsap.set(linksRef.current, { y: 28, opacity: 0 });
-        if (annotationRef.current) gsap.set(annotationRef.current, { opacity: 0, scale: 0.85 });
-        if (gallery.length) gsap.set(gallery, {
-          x: (i: number) => SCATTER[i % SCATTER.length].rx * w,
-          y: (i: number) => SCATTER[i % SCATTER.length].ry * h - h * 0.6,
-          opacity: 0, rotation: 0,
-        });
-
-        mainTl = gsap.timeline();
-        if (titleRef.current) mainTl.to(titleRef.current, { y: 0, opacity: 1, duration: 0.85, ease: "elastic.out(1, 0.45)" });
-        if (imgRef.current) mainTl.to(imgRef.current, { scale: 1, opacity: 1, duration: 0.65, ease: "power3.out" }, 0.1);
-        if (gallery.length) mainTl.to(gallery, {
-          x: (i: number) => SCATTER[i % SCATTER.length].rx * w,
-          y: (i: number) => SCATTER[i % SCATTER.length].ry * h,
-          opacity: 1,
-          rotation: (i: number) => SCATTER[i % SCATTER.length].rot,
-          stagger: 0.12, duration: 0.95, ease: "elastic.out(1, 0.45)",
-        }, 0.15);
-        if (descRef.current) mainTl.to(descRef.current, { y: 0, opacity: 1, duration: 0.55, ease: "power3.out" }, 0.3);
-        if (linksRef.current) mainTl.to(linksRef.current, { y: 0, opacity: 1, duration: 0.75, ease: "elastic.out(1, 0.5)" }, 0.4);
-        if (annotationRef.current) mainTl.to(annotationRef.current, { opacity: 1, scale: 1, duration: 0.6, ease: "elastic.out(1, 0.5)" }, 0.55);
       },
+    });
+
+    const contentTimer = gsap.delayedCall(0.35, () => {
+      if (!mounted.current) return;
+      const rect = el.getBoundingClientRect();
+      const w = el.offsetWidth;
+      const h = el.offsetHeight;
+      const gallery = galleryRefs.current.filter((x): x is HTMLDivElement => x !== null);
+
+      if (titleRef.current) gsap.set(titleRef.current, { y: 80, opacity: 0 });
+      if (imgRef.current) gsap.set(imgRef.current, { scale: 0.93, opacity: 0 });
+      if (descRef.current) gsap.set(descRef.current, { y: 28, opacity: 0 });
+      if (linksRef.current) gsap.set(linksRef.current, { y: 28, opacity: 0 });
+      if (annotationRef.current) gsap.set(annotationRef.current, { opacity: 0, scale: 0.85 });
+      if (gallery.length) gsap.set(gallery, {
+        x: (i: number) => rect.left + SCATTER[i % SCATTER.length].rx * w,
+        y: (i: number) => rect.top + SCATTER[i % SCATTER.length].ry * h - h * 0.6,
+        opacity: 0, rotation: 0,
+      });
+
+      mainTl = gsap.timeline();
+      if (titleRef.current) mainTl.to(titleRef.current, { y: 0, opacity: 1, duration: 0.85, ease: "elastic.out(1, 0.45)" });
+      if (imgRef.current) mainTl.to(imgRef.current, { scale: 1, opacity: 1, duration: 0.65, ease: "power3.out" }, 0.1);
+      if (gallery.length) mainTl.to(gallery, {
+        x: (i: number) => rect.left + SCATTER[i % SCATTER.length].rx * w,
+        y: (i: number) => rect.top + SCATTER[i % SCATTER.length].ry * h,
+        opacity: 1,
+        rotation: (i: number) => SCATTER[i % SCATTER.length].rot,
+        stagger: 0.12, duration: 0.95, ease: "elastic.out(1, 0.45)",
+      }, 0.15);
+      if (descRef.current) mainTl.to(descRef.current, { y: 0, opacity: 1, duration: 0.55, ease: "power3.out" }, 0.3);
+      if (linksRef.current) mainTl.to(linksRef.current, { y: 0, opacity: 1, duration: 0.75, ease: "elastic.out(1, 0.5)" }, 0.4);
+      if (annotationRef.current) mainTl.to(annotationRef.current, { opacity: 1, scale: 1, duration: 0.6, ease: "elastic.out(1, 0.5)" }, 0.55);
     });
 
     const imgEl = imgRef.current;
@@ -137,9 +156,9 @@ export default function ProjetDetailClient({ project, palette }: Props) {
 
     const handleMove = (e: MouseEvent) => {
       if (isExiting.current || !qx || !qy) return;
-      const rect = el.getBoundingClientRect();
-      qx((e.clientX - rect.left - rect.width / 2) * 0.012);
-      qy((e.clientY - rect.top - rect.height / 2) * 0.008);
+      const r = el.getBoundingClientRect();
+      qx((e.clientX - r.left - r.width / 2) * 0.012);
+      qy((e.clientY - r.top - r.height / 2) * 0.008);
     };
 
     el.addEventListener("mousemove", handleMove);
@@ -147,6 +166,7 @@ export default function ProjetDetailClient({ project, palette }: Props) {
       mounted.current = false;
       el.removeEventListener("mousemove", handleMove);
       openTween.kill();
+      contentTimer.kill();
       mainTl?.kill();
       gsap.killTweensOf([
         titleRef.current, imgRef.current, descRef.current,
@@ -156,7 +176,8 @@ export default function ProjetDetailClient({ project, palette }: Props) {
   }, []);
 
   return (
-    <div ref={containerRef} className="relative md:h-full md:overflow-hidden" style={{ background: "#fff" }}>
+    <>
+    <div ref={containerRef} className="relative md:h-full md:overflow-hidden">
       <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 1, backgroundImage: "radial-gradient(circle, #bbb 1px, transparent 1px)", backgroundSize: "28px 28px" }} />
 
       {project.description && (
@@ -171,24 +192,6 @@ export default function ProjetDetailClient({ project, palette }: Props) {
         </div>
       )}
 
-      {clientMounted && showGallery && containerRef.current && project.gallery && createPortal(
-        project.gallery.slice(0, 3).map((src, gi) => (
-          <div
-            key={gi}
-            ref={(el) => { galleryRefs.current[gi] = el; }}
-            className="hidden md:block"
-            style={{ position: "absolute", top: 0, left: 0, width: "clamp(200px, 22vw, 320px)", zIndex: 5, cursor: "grab", touchAction: "none" }}
-            onPointerDown={(e) => handlePointerDown(e, gi)}
-            onPointerMove={(e) => handlePointerMove(e, gi)}
-            onPointerUp={(e) => handlePointerUp(e, gi)}
-            onPointerCancel={(e) => handlePointerUp(e, gi)}
-          >
-            <BrowserFrame src={imgSrc(src)} alt={`${project.title} ${gi + 1}`} />
-          </div>
-        )),
-        containerRef.current
-      )}
-
       <div
         className="relative md:absolute md:inset-0 md:overflow-hidden overflow-y-auto flex flex-col"
         style={{ zIndex: 2, paddingTop: "clamp(110px, 12vw, 160px)", paddingBottom: "clamp(20px, 3.5vw, 52px)", paddingLeft: "clamp(24px, 4vw, 64px)", paddingRight: "clamp(24px, 4vw, 64px)" }}
@@ -200,10 +203,6 @@ export default function ProjetDetailClient({ project, palette }: Props) {
           onMouseEnter={(e) => gsap.to(e.currentTarget, { x: -10, duration: 0.5, ease: "elastic.out(1, 0.4)" })}
           onMouseLeave={(e) => gsap.to(e.currentTarget, { x: 0, duration: 0.6, ease: "elastic.out(1, 0.4)" })}
         >
-          <svg width="32" height="26" viewBox="0 0 59 52" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M55.5568 2.5C55.5407 2.5 52.9056 2.52888 47.5125 3.03353C44.7177 3.29505 41.9197 4.43108 39.6653 5.38834C37.411 6.34561 35.8143 7.31043 34.1679 8.44873C32.5215 9.58703 30.8738 10.8696 28.5491 13.254C26.2244 15.6384 23.2727 19.0858 21.1584 21.9017C19.044 24.7176 17.8565 26.7975 16.5126 29.726C15.1688 32.6545 13.7046 36.3685 12.6701 39.4799C11.6356 42.5913 11.0751 44.9876 10.7732 46.3961C10.4713 47.8047 10.4449 48.1529 10.4194 48.5227" stroke="black" strokeWidth="5" strokeLinecap="round"/>
-            <path d="M2.5 29.7616C2.52324 30.187 2.71249 31.5564 3.96054 35.1196C5.01472 38.1292 7.13216 43.503 8.22955 46.3453C9.32694 49.1876 9.39351 49.3163 9.49381 49.2462C9.83324 49.0093 10.1496 48.366 13.3893 46.2884C16.3414 44.4676 21.9496 41.0905 24.9457 39.3102C27.9417 37.5299 28.1558 37.4486 28.4467 37.357" stroke="black" strokeWidth="5" strokeLinecap="round"/>
-          </svg>
           RETOUR
         </button>
 
@@ -279,5 +278,20 @@ export default function ProjetDetailClient({ project, palette }: Props) {
         </div>
       </div>
     </div>
+    {clientMounted && showGallery && project.gallery && project.gallery.slice(0, 3).map((src, gi) => (
+      <div
+        key={gi}
+        ref={(el) => { galleryRefs.current[gi] = el; }}
+        className="hidden md:block"
+        style={{ position: "fixed", top: 0, left: 0, width: "clamp(200px, 22vw, 320px)", zIndex: 5, cursor: "grab", touchAction: "none", opacity: 0 }}
+        onPointerDown={(e) => handlePointerDown(e, gi)}
+        onPointerMove={(e) => handlePointerMove(e, gi)}
+        onPointerUp={(e) => handlePointerUp(e, gi)}
+        onPointerCancel={(e) => handlePointerUp(e, gi)}
+      >
+        <BrowserFrame src={imgSrc(src)} alt={`${project.title} ${gi + 1}`} />
+      </div>
+    ))}
+    </>
   );
 }

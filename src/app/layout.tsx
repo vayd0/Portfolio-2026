@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import LoadingScreen from "@/components/LoadingScreen";
 import Navbar from "@/components/Navbar";
@@ -31,10 +32,8 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: `history.scrollRestoration='manual';window.scrollTo(0,0);` }} />
-      </head>
       <body>
+        <Script id="scroll-restoration" strategy="beforeInteractive">{`history.scrollRestoration='manual';window.scrollTo(0,0);`}</Script>
         <LoadingScreen />
         <Navbar />
         <ContactDrawer />
