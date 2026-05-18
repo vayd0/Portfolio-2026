@@ -222,7 +222,6 @@ function LogoLink() {
             width: rect.width,
             height: rect.height,
             pointerEvents: "none",
-            mixBlendMode: "difference",
             zIndex: 101,
             transformOrigin: "center center",
           }}
