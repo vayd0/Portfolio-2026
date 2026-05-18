@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useEffect, useCallback } from "react";
+import { useRef, useEffect, useCallback, useState } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import gsap from "gsap";
 import { type Palette } from "./shapes";
@@ -42,6 +43,7 @@ export default function ProjetDetailClient({ project, palette }: Props) {
   const annotationRef = useRef<HTMLDivElement>(null);
   const isExiting = useRef(false);
   const dragStates = useRef<(DragState)[]>([null, null, null]);
+  const [clientMounted, setClientMounted] = useState(false);
 
   const handleBack = useCallback(() => {
     if (isExiting.current) return;
@@ -88,6 +90,8 @@ export default function ProjetDetailClient({ project, palette }: Props) {
     if (!el) return;
     gsap.to(el, { scale: 1, duration: 0.4, ease: "elastic.out(1, 0.45)" });
   }, []);
+
+  useEffect(() => { setClientMounted(true); }, []);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -178,20 +182,23 @@ export default function ProjetDetailClient({ project, palette }: Props) {
         </div>
       )}
 
-      {project.gallery && project.gallery.slice(0, 3).map((src, gi) => (
-        <div
-          key={gi}
-          ref={(el) => { galleryRefs.current[gi] = el; }}
-          className="hidden md:block"
-          style={{ position: "absolute", top: 0, left: 0, width: "clamp(200px, 22vw, 320px)", zIndex: 5, cursor: "grab", touchAction: "none" }}
-          onPointerDown={(e) => handlePointerDown(e, gi)}
-          onPointerMove={(e) => handlePointerMove(e, gi)}
-          onPointerUp={(e) => handlePointerUp(e, gi)}
-          onPointerCancel={(e) => handlePointerUp(e, gi)}
-        >
-          <BrowserFrame src={imgSrc(src)} alt={`${project.title} ${gi + 1}`} />
-        </div>
-      ))}
+      {clientMounted && containerRef.current && project.gallery && createPortal(
+        project.gallery.slice(0, 3).map((src, gi) => (
+          <div
+            key={gi}
+            ref={(el) => { galleryRefs.current[gi] = el; }}
+            className="hidden md:block"
+            style={{ position: "absolute", top: 0, left: 0, width: "clamp(200px, 22vw, 320px)", zIndex: 5, cursor: "grab", touchAction: "none" }}
+            onPointerDown={(e) => handlePointerDown(e, gi)}
+            onPointerMove={(e) => handlePointerMove(e, gi)}
+            onPointerUp={(e) => handlePointerUp(e, gi)}
+            onPointerCancel={(e) => handlePointerUp(e, gi)}
+          >
+            <BrowserFrame src={imgSrc(src)} alt={`${project.title} ${gi + 1}`} />
+          </div>
+        )),
+        containerRef.current
+      )}
 
       <div
         className="relative md:absolute md:inset-0 md:overflow-hidden overflow-y-auto flex flex-col"
