@@ -3,11 +3,8 @@
 import { useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import gsap from "gsap";
-import { Draggable } from "gsap/Draggable";
 import { type Palette } from "./shapes";
 import BrowserFrame from "./BrowserFrame";
-
-gsap.registerPlugin(Draggable);
 
 type Project = {
   _id: string;
@@ -31,6 +28,8 @@ const SCATTER = [
 ];
 const imgSrc = (url: string) => `/api/img?url=${encodeURIComponent(url)}`;
 
+type DragState = { startX: number; startY: number; originX: number; originY: number } | null;
+
 export default function ProjetDetailClient({ project, palette }: Props) {
   const router = useRouter();
 
@@ -42,6 +41,7 @@ export default function ProjetDetailClient({ project, palette }: Props) {
   const galleryRefs = useRef<(HTMLDivElement | null)[]>([]);
   const annotationRef = useRef<HTMLDivElement>(null);
   const isExiting = useRef(false);
+  const dragStates = useRef<(DragState)[]>([null, null, null]);
 
   const handleBack = useCallback(() => {
     if (isExiting.current) return;
@@ -50,12 +50,8 @@ export default function ProjetDetailClient({ project, palette }: Props) {
     if (!el) { router.back(); return; }
 
     gsap.killTweensOf([
-      imgRef.current,
-      titleRef.current,
-      descRef.current,
-      linksRef.current,
-      annotationRef.current,
-      ...galleryRefs.current,
+      imgRef.current, titleRef.current, descRef.current,
+      linksRef.current, annotationRef.current, ...galleryRefs.current,
     ].filter(Boolean));
 
     const proxy = { r: 200 };
@@ -66,12 +62,38 @@ export default function ProjetDetailClient({ project, palette }: Props) {
     });
   }, [router]);
 
+  const handlePointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>, gi: number) => {
+    const el = galleryRefs.current[gi];
+    if (!el) return;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    const originX = (gsap.getProperty(el, "x") as number) || 0;
+    const originY = (gsap.getProperty(el, "y") as number) || 0;
+    dragStates.current[gi] = { startX: e.clientX, startY: e.clientY, originX, originY };
+    gsap.to(el, { scale: 1.04, duration: 0.2, ease: "power2.out" });
+  }, []);
+
+  const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>, gi: number) => {
+    const state = dragStates.current[gi];
+    const el = galleryRefs.current[gi];
+    if (!state || !el) return;
+    gsap.set(el, {
+      x: state.originX + e.clientX - state.startX,
+      y: state.originY + e.clientY - state.startY,
+    });
+  }, []);
+
+  const handlePointerUp = useCallback((e: React.PointerEvent<HTMLDivElement>, gi: number) => {
+    dragStates.current[gi] = null;
+    const el = galleryRefs.current[gi];
+    if (!el) return;
+    gsap.to(el, { scale: 1, duration: 0.4, ease: "elastic.out(1, 0.45)" });
+  }, []);
+
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
 
     const mounted = { current: true };
-    let draggableInstances: Draggable[] = [];
     let mainTl: gsap.core.Timeline | null = null;
 
     const openProxy = { r: 0 };
@@ -93,8 +115,7 @@ export default function ProjetDetailClient({ project, palette }: Props) {
         if (gallery.length) gsap.set(gallery, {
           x: (i: number) => SCATTER[i % SCATTER.length].rx * w,
           y: (i: number) => SCATTER[i % SCATTER.length].ry * h - h * 0.6,
-          opacity: 0,
-          rotation: 0,
+          opacity: 0, rotation: 0,
         });
 
         mainTl = gsap.timeline();
@@ -105,22 +126,11 @@ export default function ProjetDetailClient({ project, palette }: Props) {
           y: (i: number) => SCATTER[i % SCATTER.length].ry * h,
           opacity: 1,
           rotation: (i: number) => SCATTER[i % SCATTER.length].rot,
-          stagger: 0.12,
-          duration: 0.95,
-          ease: "elastic.out(1, 0.45)",
+          stagger: 0.12, duration: 0.95, ease: "elastic.out(1, 0.45)",
         }, 0.15);
         if (descRef.current) mainTl.to(descRef.current, { y: 0, opacity: 1, duration: 0.55, ease: "power3.out" }, 0.3);
         if (linksRef.current) mainTl.to(linksRef.current, { y: 0, opacity: 1, duration: 0.75, ease: "elastic.out(1, 0.5)" }, 0.4);
         if (annotationRef.current) mainTl.to(annotationRef.current, { opacity: 1, scale: 1, duration: 0.6, ease: "elastic.out(1, 0.5)" }, 0.55);
-
-        mainTl.call(() => {
-          if (!mounted.current || !gallery.length) return;
-          draggableInstances = Draggable.create(gallery, {
-            type: "x,y",
-            onPress() { gsap.to(this.target, { scale: 1.04, duration: 0.2, ease: "power2.out" }); },
-            onRelease() { gsap.to(this.target, { scale: 1, duration: 0.4, ease: "elastic.out(1, 0.45)" }); },
-          });
-        });
       },
     });
 
@@ -135,10 +145,8 @@ export default function ProjetDetailClient({ project, palette }: Props) {
     const handleMove = (e: MouseEvent) => {
       if (isExiting.current || !qx || !qy) return;
       const rect = el.getBoundingClientRect();
-      const cx = rect.left + rect.width / 2;
-      const cy = rect.top + rect.height / 2;
-      qx((e.clientX - cx) * 0.012);
-      qy((e.clientY - cy) * 0.008);
+      qx((e.clientX - rect.left - rect.width / 2) * 0.012);
+      qy((e.clientY - rect.top - rect.height / 2) * 0.008);
     };
 
     el.addEventListener("mousemove", handleMove);
@@ -147,14 +155,9 @@ export default function ProjetDetailClient({ project, palette }: Props) {
       el.removeEventListener("mousemove", handleMove);
       openTween.kill();
       mainTl?.kill();
-      draggableInstances.forEach((d) => d.kill());
       gsap.killTweensOf([
-        titleRef.current,
-        imgRef.current,
-        descRef.current,
-        linksRef.current,
-        annotationRef.current,
-        ...galleryRefs.current,
+        titleRef.current, imgRef.current, descRef.current,
+        linksRef.current, annotationRef.current, ...galleryRefs.current,
       ].filter(Boolean));
     };
   }, []);
@@ -180,7 +183,11 @@ export default function ProjetDetailClient({ project, palette }: Props) {
           key={gi}
           ref={(el) => { galleryRefs.current[gi] = el; }}
           className="hidden md:block"
-          style={{ position: "absolute", top: 0, left: 0, width: "clamp(200px, 22vw, 320px)", zIndex: 5, cursor: "grab" }}
+          style={{ position: "absolute", top: 0, left: 0, width: "clamp(200px, 22vw, 320px)", zIndex: 5, cursor: "grab", touchAction: "none" }}
+          onPointerDown={(e) => handlePointerDown(e, gi)}
+          onPointerMove={(e) => handlePointerMove(e, gi)}
+          onPointerUp={(e) => handlePointerUp(e, gi)}
+          onPointerCancel={(e) => handlePointerUp(e, gi)}
         >
           <BrowserFrame src={imgSrc(src)} alt={`${project.title} ${gi + 1}`} />
         </div>
@@ -207,7 +214,7 @@ export default function ProjetDetailClient({ project, palette }: Props) {
         <div
           ref={titleRef}
           className="hidden md:block"
-          style={{ position: "absolute", bottom: "clamp(16px, 2.5vh, 36px)", right: "clamp(24px, 4vw, 64px)", zIndex: 3, fontFamily: "Fat, sans-serif", fontStyle: "italic", fontSize: "clamp(3rem, 8vw, 9rem)", lineHeight: 0.88, fontWeight: 400, textTransform: "uppercase", transform: "rotate(-1.5deg)", transformOrigin: "right bottom", userSelect: "none", wordBreak: "break-word", textAlign: "right", pointerEvents: "none" }}
+          style={{ position: "absolute", bottom: "clamp(16px, 2.5vh, 36px)", right: "clamp(24px, 4vw, 64px)", zIndex: 3, fontFamily: "Fat, sans-serif", fontStyle: "italic", fontSize: "clamp(3rem, 8vw, 9rem)", lineHeight: 0.88, fontWeight: 400, textTransform: "uppercase", transformOrigin: "right bottom", userSelect: "none", wordBreak: "break-word", textAlign: "right", pointerEvents: "none" }}
         >
           {project.title}
         </div>
