@@ -49,21 +49,8 @@ export default function ProjetDetailClient({ project, palette }: Props) {
   const handleBack = useCallback(() => {
     if (isExiting.current) return;
     isExiting.current = true;
-    const el = containerRef.current;
-    if (!el) { router.back(); return; }
-
     setShowGallery(false);
-    gsap.killTweensOf([
-      imgRef.current, titleRef.current, descRef.current,
-      linksRef.current, annotationRef.current, ...galleryRefs.current,
-    ].filter(Boolean));
-
-    const proxy = { r: 200 };
-    gsap.to(proxy, {
-      r: 0, duration: 0.65, ease: "power3.inOut",
-      onUpdate: () => { el.style.clipPath = `circle(${proxy.r}vmax at 50% 50%)`; },
-      onComplete: () => router.back(),
-    });
+    router.back();
   }, [router]);
 
   const handlePointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>, gi: number) => {
