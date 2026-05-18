@@ -49,8 +49,14 @@ export default function ProjetDetailClient({ project, palette }: Props) {
     const el = containerRef.current;
     if (!el) { router.back(); return; }
 
-    gsap.killTweensOf(galleryRefs.current.filter(Boolean));
-    gsap.killTweensOf(imgRef.current);
+    gsap.killTweensOf([
+      imgRef.current,
+      titleRef.current,
+      descRef.current,
+      linksRef.current,
+      annotationRef.current,
+      ...galleryRefs.current,
+    ].filter(Boolean));
 
     const proxy = { r: 200 };
     gsap.to(proxy, {
