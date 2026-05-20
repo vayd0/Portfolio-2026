@@ -1,0 +1,72 @@
+.introCard {
+  position: relative;
+  min-width: 100dvw;
+  height: 100dvh;
+  z-index: 1;
+}
+
+@media (min-width: 768px) {
+  .introCard {
+    height: 100%;
+  }
+}
+
+.bigText {
+  font-size: clamp(2rem, 40vw, 70rem);
+  line-height: 80%;
+  font-family: "Fat", sans-serif;
+}
+
+.introGroup {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100vw;
+  padding:1vw 2.5vw;
+}
+
+
+.projectTitle {
+  font-family: "Fat", sans-serif;
+  font-style: normal;
+  font-size: clamp(3.5rem, 11vw, 14rem);
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.introText {
+  font-family: "Dudu";
+  display: flex;
+  align-items: center;
+  margin: 0;
+  position: relative;
+  z-index: 1;
+
+  &:first-child {
+    margin-bottom: -1.2em;
+  }
+
+  font-size: clamp(1.1rem, 5vw, 30rem);
+  svg {
+    width: clamp(22px, 4dvw, 60px);
+    line-height: 0;
+    margin-left: clamp(8px, 2vw, 32px);
+  }
+}
+
+@media (max-width: 767px) {
+  .introGroup {
+    padding: 4vw 5vw;
+  }
+  .introText {
+    font-size: clamp(1.2rem, 6vw, 4rem);
+  }
+  .bigText {
+    font-size: clamp(4rem, 37vw, 70rem);
+    line-height: 90%;
+  }
+  .projectTitle {
+    font-size: clamp(4rem, 14vw, 9rem);
+  }
+}
