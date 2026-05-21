@@ -30,7 +30,7 @@ function idleBreathe(char: Element, i: number) {
 }
 
 export default function AnimatedTitle({ children, className, wheelStretch, gradient, stroke }: Props) {
-  const ref = useRef<HTMLHeadingElement>(null);
+  const ref = useRef<HTMLSpanElement>(null);
   const lastCharRef = useRef<Element | null>(null);
   const mobileReadyRef = useRef(false);
 
@@ -231,8 +231,8 @@ export default function AnimatedTitle({ children, className, wheelStretch, gradi
   }, [wheelStretch]);
 
   return (
-    <h1 ref={ref} className={`${className ?? ""} whitespace-nowrap`} data-vel>
+    <span ref={ref} className={`${className ?? ""} whitespace-nowrap`} data-vel>
       {children}
-    </h1>
+    </span>
   );
 }

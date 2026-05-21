@@ -1,0 +1,10 @@
+{
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "theoheck.fr" }],
+      "destination": "https://www.theoheck.fr/$1",
+      "permanent": true
+    }
+  ]
+}

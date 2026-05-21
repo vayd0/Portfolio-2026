@@ -33,7 +33,7 @@ function IntroMascotte() {
           { xPercent: 110, yPercent: -50, rotation: 12, scaleX: 1, scaleY: 0.7 },
           { xPercent: 0, yPercent: -50, rotation: 0, scaleX: 1, scaleY: 1, duration: 1.6, ease: "elastic.out(1, 0.38)" }
         );
-      } else if (onIntro && t >= 0.25 && state.current === 1) {
+      } else if (onIntro && t >= (window.innerWidth < 768 ? 0.45 : 0.25) && state.current === 1) {
         state.current = 2;
         gsap.killTweensOf(el);
         mascotteRef.current?.exitLook();
@@ -51,25 +51,45 @@ function IntroMascotte() {
     const onContactOpen = () => gsap.to(el, { autoAlpha: 0, duration: 0.25, ease: "power2.out" });
     const onContactClose = () => gsap.to(el, { autoAlpha: 1, duration: 0.35, ease: "power2.out" });
 
+    const onProjectOpen = () => {
+      if (state.current !== 1) return;
+      state.current = 2;
+      gsap.killTweensOf(el);
+      mascotteRef.current?.exitLook();
+      gsap.timeline()
+        .to(el, { scaleX: 1.3, scaleY: 0.6, xPercent: 4, duration: 0.12, ease: "power3.in" })
+        .to(el, { xPercent: 130, scaleX: 0.6, scaleY: 1.4, rotation: 25, duration: 0.45, ease: "power3.in" })
+        .call(() => { state.current = 0; });
+    };
+    const onProjectClose = () => {
+      if (state.current === 0) return;
+      state.current = 0;
+      gsap.killTweensOf(el);
+      gsap.set(el, { xPercent: 110, yPercent: -50, rotation: 12, scaleX: 1, scaleY: 0.7 });
+    };
+
     window.addEventListener("section:scroll-progress", onProgress);
     window.addEventListener("contact:open", onContactOpen);
     window.addEventListener("contact:close", onContactClose);
+    window.addEventListener("project:open", onProjectOpen);
+    window.addEventListener("project:close", onProjectClose);
     return () => {
       window.removeEventListener("section:scroll-progress", onProgress);
       window.removeEventListener("contact:open", onContactOpen);
       window.removeEventListener("contact:close", onContactClose);
+      window.removeEventListener("project:open", onProjectOpen);
+      window.removeEventListener("project:close", onProjectClose);
     };
   }, []);
 
   return (
     <div
       ref={wrapRef}
-      className="hidden md:block"
       style={{
         position: "fixed",
         right: "-3vw",
         top: "50%",
-        width: "clamp(200px, 28vw, 460px)",
+        width: "clamp(190px, 28vw, 460px)",
         pointerEvents: "none",
         transformOrigin: "right center",
         zIndex: 9998,
@@ -244,7 +264,7 @@ function ProjectMascotte({
         return;
       }
 
-      if (state.current === 1 && t >= 0.25) {
+      if (state.current === 1 && t >= (window.innerWidth < 768 ? 0.45 : 0.25)) {
         state.current = 2;
         gsap.killTweensOf(el);
         doExitRef.current(el, () => { state.current = 0; });
@@ -269,19 +289,37 @@ function ProjectMascotte({
     const onContactOpen = () => gsap.to(el, { autoAlpha: 0, duration: 0.25, ease: "power2.out" });
     const onContactClose = () => { if (state.current === 1) gsap.to(el, { autoAlpha: 1, duration: 0.35, ease: "power2.out" }); };
 
+    const onProjectOpen = () => {
+      if (state.current !== 1) return;
+      state.current = 2;
+      clearSpawnTimer();
+      gsap.killTweensOf(el);
+      doExitRef.current(el, () => { state.current = 0; });
+    };
+    const onProjectClose = () => {
+      if (state.current === 0) return;
+      state.current = 0;
+      gsap.killTweensOf(el);
+      gsap.set(el, fromRef.current);
+    };
+
     window.addEventListener("section:scroll-progress", onProgress);
     window.addEventListener("contact:open", onContactOpen);
     window.addEventListener("contact:close", onContactClose);
+    window.addEventListener("project:open", onProjectOpen);
+    window.addEventListener("project:close", onProjectClose);
     return () => {
       window.removeEventListener("section:scroll-progress", onProgress);
       window.removeEventListener("contact:open", onContactOpen);
       window.removeEventListener("contact:close", onContactClose);
+      window.removeEventListener("project:open", onProjectOpen);
+      window.removeEventListener("project:close", onProjectClose);
       clearSpawnTimer();
     };
   }, [paletteId]);
 
   return (
-    <div ref={wrapRef} className="hidden md:block" style={wrapStyle}>
+    <div ref={wrapRef} style={wrapStyle}>
       <Mascotte style={mascotteStyle} transformMode={transformMode} />
     </div>
   );
@@ -338,9 +376,15 @@ export default function PortfolioClient({ projects }: { projects: Project[] }) {
         fromVars={{ yPercent: 115, scaleX: 1, scaleY: 0.7 }}
         toVars={{ yPercent: 0, scaleX: 1, scaleY: 1 }}
         doExit={(el, done) => {
-          gsap.timeline({ onComplete: done })
-            .to(el, { scaleX: 0.6, scaleY: 1.3, duration: 0.12, ease: "power3.in" })
-            .to(el, { yPercent: 130, scaleX: 1.4, scaleY: 0.6, duration: 0.45, ease: "power3.in" });
+          if (window.innerWidth < 768) {
+            gsap.timeline({ onComplete: done })
+              .to(el, { scaleX: 1.3, scaleY: 0.6, duration: 0.12, ease: "power3.in" })
+              .to(el, { xPercent: 130, scaleX: 0.6, scaleY: 1.4, rotation: 25, duration: 0.45, ease: "power3.in" });
+          } else {
+            gsap.timeline({ onComplete: done })
+              .to(el, { scaleX: 0.6, scaleY: 1.3, duration: 0.12, ease: "power3.in" })
+              .to(el, { yPercent: 130, scaleX: 1.4, scaleY: 0.6, duration: 0.45, ease: "power3.in" });
+          }
         }}
       />
       <ProjectMascotte

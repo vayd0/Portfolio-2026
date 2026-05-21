@@ -88,6 +88,18 @@ export default function ProjetDetailClient({ project, palette }: Props) {
     el.style.clipPath = "path('M 0 0 Z')";
   }, [palette]);
 
+  useEffect(() => {
+    const el = titleRef.current;
+    if (!el) return;
+    const base = parseFloat(getComputedStyle(el).fontSize);
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    const naturalW = range.getBoundingClientRect().width;
+    const maxW = window.innerWidth * 0.92;
+    if (!naturalW || naturalW <= maxW) return;
+    el.style.fontSize = `${base * (maxW / naturalW)}px`;
+  }, [project.title]);
+
   useEffect(() => { setClientMounted(true); }, []);
 
   useEffect(() => {
@@ -196,7 +208,7 @@ export default function ProjetDetailClient({ project, palette }: Props) {
         <div
           ref={descRef}
           className="hidden md:block"
-          style={{ position: "absolute", bottom: 10, left: 10, zIndex: 10, background: "#000", maxWidth: "min(55%, 600px)", borderRadius: 20 }}
+          style={{ position: "absolute", bottom: 10, right: 10, zIndex: 10, background: "#000", maxWidth: "min(55%, 600px)", borderRadius: 20 }}
         >
           <p style={{ fontFamily: "Satoshi, sans-serif", fontWeight: 500, fontSize: "clamp(1rem, 1.4vw, 1.5rem)", lineHeight: 1.6, color: "#fff", margin: 0, padding: "clamp(14px, 2vw, 28px) clamp(18px, 2.5vw, 36px)" }}>
             {project.description}
@@ -206,7 +218,7 @@ export default function ProjetDetailClient({ project, palette }: Props) {
 
       <div
         className="relative md:absolute md:inset-0 md:overflow-y-auto flex flex-col"
-        style={{ zIndex: 2, paddingTop: "clamp(110px, 12vw, 160px)", paddingBottom: "clamp(48px, 8vh, 80px)", paddingLeft: "clamp(20px, 4vw, 64px)", paddingRight: "clamp(20px, 4vw, 64px)" }}
+        style={{ zIndex: 2, paddingTop: "clamp(110px, 12vw, 160px)", paddingBottom: "clamp(100px, 8vh, 120px)", paddingLeft: "clamp(20px, 4vw, 64px)", paddingRight: "clamp(20px, 4vw, 64px)" }}
       >
         <button
           onClick={handleBack}
@@ -221,7 +233,7 @@ export default function ProjetDetailClient({ project, palette }: Props) {
         <div
           ref={titleRef}
           className="hidden md:block"
-          style={{ position: "absolute", bottom: "clamp(16px, 2.5vh, 36px)", right: "clamp(24px, 4vw, 64px)", zIndex: 3, fontFamily: "Fat, sans-serif", fontStyle: "italic", fontSize: "clamp(3rem, 8vw, 9rem)", lineHeight: 0.88, fontWeight: 400, textTransform: "uppercase", transformOrigin: "right bottom", userSelect: "none", wordBreak: "break-word", textAlign: "right", pointerEvents: "none" }}
+          style={{ position: "absolute", bottom: "clamp(16px, 2.5vh, 36px)", left: "clamp(24px, 4vw, 64px)", zIndex: 3, fontFamily: "Fat, sans-serif", fontStyle: "italic", fontSize: "clamp(3rem, 8vw, 9rem)", lineHeight: 0.88, fontWeight: 400, textTransform: "uppercase", transformOrigin: "left bottom", userSelect: "none", wordBreak: "break-word", textAlign: "left", pointerEvents: "none" }}
         >
           {project.title}
         </div>
@@ -264,12 +276,12 @@ export default function ProjetDetailClient({ project, palette }: Props) {
                 >
                   Voir le projet ↗
                 </a>
-                <div ref={annotationRef} style={{ position: "absolute", right: "clamp(-20px, -2vw, -80px)", top: "calc(100% + 6px)", display: "flex", alignItems: "flex-start", gap: 6, transform: "rotate(-5deg)", pointerEvents: "none", userSelect: "none" }}>
+                <div ref={annotationRef} style={{ position: "absolute", right: "clamp(-100px, -10vw, -180px)", top: "calc(100% + 6px)", display: "flex", alignItems: "flex-start", gap: 6, transform: "rotate(-5deg)", pointerEvents: "none", userSelect: "none" }}>
                   <svg width="clamp(40px, 6vw, 28px)" height="clamp(34px, 5vw, 24px)" viewBox="0 0 59 52" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ transform: "rotate(180deg) scaleX(-1)", width: "clamp(40px, 6vw, 50px)", height: "auto", flexShrink: 0 }}>
-                    <path d="M55.5568 2.5C55.5407 2.5 52.9056 2.52888 47.5125 3.03353C44.7177 3.29505 41.9197 4.43108 39.6653 5.38834C37.411 6.34561 35.8143 7.31043 34.1679 8.44873C32.5215 9.58703 30.8738 10.8696 28.5491 13.254C26.2244 15.6384 23.2727 19.0858 21.1584 21.9017C19.044 24.7176 17.8565 26.7975 16.5126 29.726C15.1688 32.6545 13.7046 36.3685 12.6701 39.4799C11.6356 42.5913 11.0751 44.9876 10.7732 46.3961C10.4713 47.8047 10.4449 48.1529 10.4194 48.5227" stroke="rgba(0,0,0,0.25)" strokeWidth="5" strokeLinecap="round"/>
-                    <path d="M2.5 29.7616C2.52324 30.187 2.71249 31.5564 3.96054 35.1196C5.01472 38.1292 7.13216 43.503 8.22955 46.3453C9.32694 49.1876 9.39351 49.3163 9.49381 49.2462C9.83324 49.0093 10.1496 48.366 13.3893 46.2884C16.3414 44.4676 21.9496 41.0905 24.9457 39.3102C27.9417 37.5299 28.1558 37.4486 28.4467 37.357" stroke="rgba(0,0,0,0.25)" strokeWidth="5" strokeLinecap="round"/>
+                    <path d="M55.5568 2.5C55.5407 2.5 52.9056 2.52888 47.5125 3.03353C44.7177 3.29505 41.9197 4.43108 39.6653 5.38834C37.411 6.34561 35.8143 7.31043 34.1679 8.44873C32.5215 9.58703 30.8738 10.8696 28.5491 13.254C26.2244 15.6384 23.2727 19.0858 21.1584 21.9017C19.044 24.7176 17.8565 26.7975 16.5126 29.726C15.1688 32.6545 13.7046 36.3685 12.6701 39.4799C11.6356 42.5913 11.0751 44.9876 10.7732 46.3961C10.4713 47.8047 10.4449 48.1529 10.4194 48.5227" stroke="#000000" strokeWidth="5" strokeLinecap="round"/>
+                    <path d="M2.5 29.7616C2.52324 30.187 2.71249 31.5564 3.96054 35.1196C5.01472 38.1292 7.13216 43.503 8.22955 46.3453C9.32694 49.1876 9.39351 49.3163 9.49381 49.2462C9.83324 49.0093 10.1496 48.366 13.3893 46.2884C16.3414 44.4676 21.9496 41.0905 24.9457 39.3102C27.9417 37.5299 28.1558 37.4486 28.4467 37.357" stroke="#000000" strokeWidth="5" strokeLinecap="round"/>
                   </svg>
-                  <span style={{ fontFamily: "Dudu, sans-serif", fontSize: "clamp(1.1rem, 1.3vw, 1.3rem)", color: "rgba(0,0,0,0.3)", marginTop: 12, marginLeft: -6, display: "inline-block", transform: "rotate(28deg)", WebkitTextStroke: "0.5px rgba(0,0,0,0.2)" }}>c&apos;est par ici !</span>
+                  <span style={{ fontFamily: "Dudu, sans-serif", fontSize: "clamp(1.1rem, 1.3vw, 1.3rem)", color: "#000000", marginTop: 20, marginLeft: -18, display: "inline-block", transform: "rotate(28deg)", WebkitTextStroke: "0.5px #000000" }}>c&apos;est par ici !</span>
                 </div>
               </div>
             )}

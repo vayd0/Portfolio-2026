@@ -6,6 +6,7 @@
   src: url("/fonts/fat/FFF-Regular.otf") format("opentype");
   font-weight: 400;
   font-style: normal;
+  font-display: swap;
 }
 
 @font-face {
@@ -13,11 +14,13 @@
   src: url("/fonts/fat/FFF-Slanted.otf") format("opentype");
   font-weight: 400;
   font-style: italic;
+  font-display: swap;
 }
 
 @font-face {
   font-family: Dudu;
   src: url("/fonts/dudu/Dudu.ttf") format("truetype");
+  font-display: swap;
 }
 
 :root {
@@ -171,11 +174,25 @@ main {
   .annotation-callout-top {
     left: 70% !important;
   }
+  .annotation-callout-bottom {
+    top: calc(100% + 160px) !important;
+    left: 40% !important;
+  }
+}
+
+@media (max-width: 767px) {
+  [data-scroll-container] {
+    height: auto !important;
+  }
+  [data-scroll-container] > * {
+    min-height: 100dvh;
+    box-sizing: border-box;
+  }
 }
 
 @media (min-width: 768px) {
   .visit-btn-wrap {
     top: calc(100% + 0.73 * clamp(3.5rem, 11vw, 14rem) + 10px) !important;
-    justify-content: flex-end !important;
+    justify-content: center !important;
   }
 }

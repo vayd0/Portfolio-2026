@@ -80,6 +80,37 @@ const ProjectTitle = forwardRef<ProjectTitleHandle, Props>(function ProjectTitle
   useEffect(() => () => { hoverTween.current?.kill(); }, []);
 
   let letterIndex = 0;
+  const allWords = title.split(" ");
+  const lines = allWords.length > 1
+    ? [[allWords[0]], allWords.slice(1)]
+    : [[allWords[0]]];
+  let wordIndex = 0;
+
+  const renderWord = (word: string) => {
+    const wi = wordIndex++;
+    const wordEl = (
+      <span key={wi} style={{ display: "inline-block", overflow: "hidden", pointerEvents: "none" }}>
+        <span
+          ref={(el) => { wordRefs.current[wi] = el; }}
+          style={{ display: "inline-flex", pointerEvents: "none" }}
+        >
+          {word.split("").map((char) => {
+            const li = letterIndex++;
+            return (
+              <span
+                key={li}
+                ref={(el) => { letterRefs.current[li] = el; }}
+                style={{ display: "inline-block", pointerEvents: "none" }}
+              >
+                {char}
+              </span>
+            );
+          })}
+        </span>
+      </span>
+    );
+    return wordEl;
+  };
 
   return (
     <div
@@ -93,32 +124,12 @@ const ProjectTitle = forwardRef<ProjectTitleHandle, Props>(function ProjectTitle
       onPointerLeave={reset}
       onMouseDown={reset}
     >
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.15em" }}>
-        {title.split(" ").map((word, wi) => {
-          const wordEl = (
-            <span key={wi} style={{ display: "inline-block", overflow: "hidden", pointerEvents: "none" }}>
-              <span
-                ref={(el) => { wordRefs.current[wi] = el; }}
-                style={{ display: "inline-flex", pointerEvents: "none" }}
-              >
-                {word.split("").map((char) => {
-                  const li = letterIndex++;
-                  return (
-                    <span
-                      key={li}
-                      ref={(el) => { letterRefs.current[li] = el; }}
-                      style={{ display: "inline-block", pointerEvents: "none" }}
-                    >
-                      {char}
-                    </span>
-                  );
-                })}
-              </span>
-            </span>
-          );
-          letterIndex;
-          return wordEl;
-        })}
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", lineHeight: 0.75 }}>
+        {lines.map((lineWords, li) => (
+          <div key={li} style={{ display: "flex", gap: "0.15em" }}>
+            {lineWords.map((word) => renderWord(word))}
+          </div>
+        ))}
       </div>
       <span
         ref={lineRef}

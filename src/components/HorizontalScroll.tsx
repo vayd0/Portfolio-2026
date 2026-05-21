@@ -103,6 +103,17 @@ export default function HorizontalScroll({ children, loopEvery }: { children: Re
       if (window.innerWidth < 768) {
         smoothVel *= 0.85;
         emitVel(smoothVel * 0.15);
+        const ph = window.innerHeight;
+        const numPanels = loopEvery ?? container.children.length;
+        const pos = window.scrollY / ph;
+        const idxA = Math.floor(pos) % numPanels;
+        const idxB = Math.ceil(pos) % numPanels;
+        const t = pos % 1;
+        const childA = container.children[idxA] as HTMLElement | undefined;
+        const childB = container.children[idxB] as HTMLElement | undefined;
+        window.dispatchEvent(new CustomEvent("section:scroll-progress", {
+          detail: { paletteA: childA?.dataset.palette ?? "", paletteB: childB?.dataset.palette ?? "", t },
+        }));
         return;
       }
       const raw = container.scrollLeft - prevScrollLeft;

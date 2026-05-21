@@ -307,6 +307,7 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
   };
 
   const openWithTransition = () => {
+    window.dispatchEvent(new CustomEvent("project:open"));
     const el = overlayRef.current;
     const bl = blackLayerRef.current;
 
@@ -349,6 +350,7 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
 
   const closePanel = () => {
     if (!open) return;
+    window.dispatchEvent(new CustomEvent("project:close"));
     visitBtnRef.current?.triggerClose();
     openCallRef.current?.kill();
     openTlRef.current?.kill();

@@ -41,12 +41,21 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const project = projects.find((p) => slugify(p.title) === slug);
   if (!project) return {};
   return {
-    title: `${project.title} — Théo Heck`,
+    title: project.title,
     description: project.description,
+    alternates: { canonical: `/projets/${slug}` },
     openGraph: {
       title: `${project.title} — Théo Heck`,
       description: project.description,
-      images: project.image ? [{ url: project.image }] : [],
+      url: `https://www.theoheck.fr/projets/${slug}`,
+      locale: "fr_FR",
+      images: project.image ? [{ url: project.image, width: 1200, height: 630 }] : [],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${project.title} — Théo Heck`,
+      description: project.description,
+      images: project.image ? [project.image] : [],
     },
   };
 }
@@ -59,8 +68,24 @@ export default async function ProjetPage({ params }: { params: Promise<{ slug: s
   const project = projects[index];
   const palette = (index % 3) as 0 | 1 | 2;
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "CreativeWork",
+    name: project.title,
+    description: project.description,
+    url: `https://www.theoheck.fr/projets/${slug}`,
+    author: { "@type": "Person", name: "Théo Heck", url: "https://www.theoheck.fr" },
+    ...(project.image ? { image: project.image } : {}),
+  };
+
+  const safeJsonLd = JSON.stringify(jsonLd)
+    .replace(/</g, "\\u003c")
+    .split(" ").join("\\u2028")
+    .split(" ").join("\\u2029");
+
   return (
     <main style={{ height: "100%", overflow: "hidden" }}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd }} />
       <ProjetDetailClient project={project} palette={palette} />
     </main>
   );
