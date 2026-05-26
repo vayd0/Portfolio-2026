@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState, useEffect, useCallback, useImperativeHandle, forwardRef } from "react";
+import React, { useRef, useState, useEffect, useLayoutEffect, useCallback, useImperativeHandle, forwardRef } from "react";
 import { buildBlobPath, BLOB_AMP } from "@/lib/blobPath";
 import gsap from "gsap";
 import { subscribeVel } from "@/lib/velBus";
@@ -34,11 +34,12 @@ interface Props {
   titlePosition?: "bottom-left" | "top-right";
   palette?: Palette;
   mockupOffsetY?: number;
+  mockupOffsetYMobile?: number;
   annotationPosition?: "top" | "bottom";
   annotationOffsetY?: number;
+  panelZIndex?: number;
 }
 
-const CLIP = "polygon(0% 0%, 100% 0%, calc(100% - 24px) 100%, 24px 100%)";
 
 interface VisitButtonHandle { triggerOpen: () => void; triggerClose: () => void; }
 
@@ -82,13 +83,11 @@ const VisitButton = forwardRef<VisitButtonHandle, { href: string; open: boolean 
       tickerRef.current = tick;
     }
     gsap.fromTo(radiusProxy.current, { r: 0 }, { r: maxR, duration: 0.65, ease: "elastic.out(1, 0.45)" });
-    gsap.to(sizeRef.current, { scale: 0.85, duration: 0.5, ease: "power2.out" });
   }, [stopTicker]);
 
   const triggerClose = useCallback(() => {
     gsap.killTweensOf(radiusProxy.current);
     gsap.to(radiusProxy.current, { r: 0, duration: 1, ease: "elastic.in(1, 0.45)", onComplete: stopTicker });
-    gsap.set(sizeRef.current, { scale: 1 });
   }, [stopTicker]);
 
   useImperativeHandle(handle, () => ({ triggerOpen, triggerClose }), [triggerOpen, triggerClose]);
@@ -112,52 +111,50 @@ const VisitButton = forwardRef<VisitButtonHandle, { href: string; open: boolean 
 
   return (
     <div style={{ pointerEvents: open ? "auto" : "none" }}>
-      <div ref={velWrapRef}>
+      <div ref={velWrapRef} style={{ display: "inline-block" }}>
         <div ref={sizeRef} style={{ display: "inline-block" }}>
         <div ref={blobRef} style={{ display: "inline-block", clipPath: "circle(0%)" }}>
-          <div style={{ clipPath: CLIP, background: "white", padding: "4px", display: "inline-block" }}>
-            <a
-              ref={btnRef}
-              href={href}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              onMouseEnter={onMouseEnter}
-              onMouseLeave={onMouseLeave}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: "8px clamp(32px, 3vw, 48px) 12px",
-                background: "black",
-                textDecoration: "none",
-                color: "#fff",
-                cursor: "pointer",
-                clipPath: CLIP,
-              }}
-            >
-              <span style={{ display: "block", pointerEvents: "none" }}>
-                <span
-                  ref={textRef}
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "0.5em",
-                    fontFamily: "Satoshi, sans-serif",
-                    fontWeight: 500,
-                    fontSize: "clamp(1.2rem, 1.6vw, 1.8rem)",
-                    letterSpacing: "0.03em",
-                    pointerEvents: "none",
-                  }}
-                >
-                  Visiter
-                  <svg width="59" height="44" viewBox="0 0 59 44" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: "0.9em", height: "auto", flexShrink: 0 }}>
-                    <path d="M0 21.1107H54M35.5 41.0918L54 21.1107L35.5 2.09177" stroke="white" strokeWidth="5"/>
-                  </svg>
-                </span>
+          <a
+            ref={btnRef}
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            onMouseEnter={onMouseEnter}
+            onMouseLeave={onMouseLeave}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "12px clamp(24px, 3vw, 48px)",
+              background: "#000",
+              border: "none",
+              textDecoration: "none",
+              color: "#fff",
+              cursor: "pointer",
+            }}
+          >
+            <span style={{ display: "block", pointerEvents: "none" }}>
+              <span
+                ref={textRef}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "0.5em",
+                  fontFamily: "Satoshi, sans-serif",
+                  fontWeight: 700,
+                  fontSize: "clamp(1.1rem, 1.8vw, 2rem)",
+                  letterSpacing: "0.04em",
+                  pointerEvents: "none",
+                }}
+              >
+                Visiter
+                <svg width="59" height="44" viewBox="0 0 59 44" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: "0.9em", height: "auto", flexShrink: 0 }}>
+                  <path d="M0 21.1107H54M35.5 41.0918L54 21.1107L35.5 2.09177" stroke="#fff" strokeWidth="5"/>
+                </svg>
               </span>
-            </a>
-          </div>
+            </span>
+          </a>
         </div>
         </div>
       </div>
@@ -165,9 +162,10 @@ const VisitButton = forwardRef<VisitButtonHandle, { href: string; open: boolean 
   );
 });
 
-export default function ProjectExpandedPanel({ project, rotation, shapeConfig, overlayRef, spawnBall, setBallBlack, titlePosition = "bottom-left", palette = 0, mockupOffsetY = 0, annotationPosition = "top", annotationOffsetY = 0 }: Props) {
+export default function ProjectExpandedPanel({ project, rotation, shapeConfig, overlayRef, spawnBall, setBallBlack, titlePosition = "bottom-left", palette = 0, mockupOffsetY = 0, mockupOffsetYMobile, annotationPosition = "top", annotationOffsetY = 0, panelZIndex = 2 }: Props) {
   const [open, setOpen] = useState(false);
   const [annotationText, setAnnotationText] = useState("CLIQUES ICI");
+  const [isMobileState, setIsMobileState] = useState(false);
   const annotationTextRef = useRef<HTMLSpanElement>(null);
   const annotationGroupRef = useRef<HTMLDivElement>(null);
 
@@ -223,6 +221,13 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
   const openCallRef = useRef<gsap.core.Tween | null>(null);
   const openTlRef = useRef<gsap.core.Timeline | null>(null);
   const isMobile = () => window.innerWidth < 768;
+
+  useEffect(() => {
+    const check = () => setIsMobileState(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   const CC_OPEN  = "50% 50%";
   const CC_CLOSE = "50% 50%";
@@ -346,12 +351,14 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
       });
     }
     openCallRef.current = gsap.delayedCall(0.2, () => { setOpen(true); visitBtnRef.current?.triggerOpen(); });
+    mockupRef.current?.expandOpen();
   };
 
   const closePanel = () => {
     if (!open) return;
     window.dispatchEvent(new CustomEvent("project:close"));
     visitBtnRef.current?.triggerClose();
+    mockupRef.current?.expandClose();
     openCallRef.current?.kill();
     openTlRef.current?.kill();
     openTlRef.current = null;
@@ -431,6 +438,13 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
     return () => gsap.ticker.remove(sync);
   }, []);
 
+  useLayoutEffect(() => {
+    if (!open && isMobile()) {
+      const shapes = [circleParallaxRef.current, triangleParallaxRef.current, arrowParallaxRef.current].filter(Boolean);
+      gsap.set(shapes, { autoAlpha: 0, y: 12 });
+    }
+  }, [open]);
+
   useEffect(() => {
     if (!open) {
       gsap.set(leftRef.current, { clearProps: "width,height" });
@@ -440,6 +454,10 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
       const decorRefs = [annotationGroupRef.current].filter(Boolean);
       gsap.set(decorRefs, { scale: 0, rotation: 0 });
       gsap.to(decorRefs, { opacity: 1, scale: 1, rotation: 0, duration: 0.7, ease: "elastic.out(1, 0.4)", stagger: 0.07, delay: 0.1 });
+      if (isMobile()) {
+        const shapes = [circleParallaxRef.current, triangleParallaxRef.current, arrowParallaxRef.current].filter(Boolean);
+        gsap.to(shapes, { autoAlpha: 1, y: 0, duration: 0.5, ease: "power2.out", stagger: 0.08, delay: 0.2 });
+      }
       return;
     }
     const mobile = isMobile();
@@ -502,7 +520,7 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
       className="relative shrink-0 flex flex-col md:flex-row panel-height"
       data-panel-open={open ? "" : undefined}
       data-palette={palette}
-      style={{ width: "100dvw", position: "relative", zIndex: 2 }}
+      style={{ width: "100dvw", position: "relative", zIndex: panelZIndex }}
     >
       <ParallaxShape ref={circleParallaxRef} depthX={shapeConfig.circle.depthX} depthY={shapeConfig.circle.depthY} className={`${open ? "hidden md:block" : "block"} ${shapeConfig.circle.className}`} style={{ zIndex: 1, ...shapeConfig.circle.style }} mobileStyle={shapeConfig.circle.mobileStyle}>
         <Circle palette={palette} />
@@ -536,7 +554,7 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
       </div>
 
       <div ref={leftRef} className="expanded-left" style={{ position: "relative", zIndex: 3 }}>
-        <div style={{ transform: `translateY(${mockupOffsetY - 70}px)` }}>
+        <div style={{ transform: `translateY(${isMobileState ? (mockupOffsetYMobile ?? 0) : mockupOffsetY}px)` }}>
           <div
             ref={mockupWrapRef}
             onClick={open ? closePanel : openWithTransition}
@@ -551,10 +569,9 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
               onHoverChange={handleHoverChange}
               blackBgRef={blackBgRef}
               titleBelow={<ProjectTitle ref={titleRef} title={project.title} className={styles.projectTitle} onHoverChange={(h) => { if (hoverGuard.current) return; hoverGuard.current = true; if (h) mockupRef.current?.enter(); else mockupRef.current?.leave(); hoverGuard.current = false; }} />}
-              visitButton={(project.projectUrl ?? project.url) ? <VisitButton ref={visitBtnRef} href={(project.projectUrl ?? project.url)!} open={open} /> : undefined}
             >
               <>
-                <div ref={annotationGroupRef} className={annotationPosition === "top" ? "annotation-callout-top" : ""} style={{ position: "absolute", ...(annotationPosition === "bottom" ? { top: `calc(100% + ${42 + annotationOffsetY}px)`, left: "70%" } : { bottom: `calc(100% + ${72 - annotationOffsetY}px)`, left: "70%" }), pointerEvents: "none", userSelect: "none", transformOrigin: "left center" }}>
+                <div ref={annotationGroupRef} className={annotationPosition === "top" ? "annotation-callout-top" : "annotation-callout-bottom"} style={{ position: "absolute", ...(annotationPosition === "bottom" ? { top: `calc(100% + ${42 + annotationOffsetY}px)`, left: "70%" } : { bottom: `calc(100% + ${72 - annotationOffsetY}px)`, left: "70%" }), pointerEvents: "none", userSelect: "none", transformOrigin: "left center" }}>
                   <svg viewBox="0 0 59 52" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: "block", width: "clamp(36px, 4.5vw, 59px)", height: "auto", pointerEvents: "none", ...(annotationPosition === "bottom" ? { transform: "scaleY(-1) translateY(40px)" } : {}) }}>
                     <path d="M55.5568 2.5C55.5407 2.5 52.9056 2.52888 47.5125 3.03353C44.7177 3.29505 41.9197 4.43108 39.6653 5.38834C37.411 6.34561 35.8143 7.31043 34.1679 8.44873C32.5215 9.58703 30.8738 10.8696 28.5491 13.254C26.2244 15.6384 23.2727 19.0858 21.1584 21.9017C19.044 24.7176 17.8565 26.7975 16.5126 29.726C15.1688 32.6545 13.7046 36.3685 12.6701 39.4799C11.6356 42.5913 11.0751 44.9876 10.7732 46.3961C10.4713 47.8047 10.4449 48.1529 10.4194 48.5227" stroke="black" strokeWidth="5" strokeLinecap="round"/>
                     <path d="M2.5 29.7616C2.52324 30.187 2.71249 31.5564 3.96054 35.1196C5.01472 38.1292 7.13216 43.503 8.22955 46.3453C9.32694 49.1876 9.39351 49.3163 9.49381 49.2462C9.83324 49.0093 10.1496 48.366 13.3893 46.2884C16.3414 44.4676 21.9496 41.0905 24.9457 39.3102C27.9417 37.5299 28.1558 37.4486 28.4467 37.357" stroke="black" strokeWidth="5" strokeLinecap="round"/>
@@ -575,7 +592,7 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
           className="expanded-right-inner"
           style={{ paddingTop: "clamp(12px, 2vw, 36px)", paddingBottom: "clamp(24px, 4vw, 80px)" }}
         >
-          <div style={{ display: "flex", gap: "clamp(8px, 1vw, 16px)", marginBottom: "clamp(20px, 3vh, 40px)", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: "clamp(8px, 1vw, 16px)", marginBottom: "clamp(20px, 3vh, 40px)", flexWrap: "wrap" }} className="justify-end md:justify-start">
             {(project.gallery ?? []).slice(0, 3).map((src, i) => (
               <div
                 key={src}
@@ -599,6 +616,12 @@ export default function ProjectExpandedPanel({ project, rotation, shapeConfig, o
               </span>
             ))}
           </div>
+
+          {(project.projectUrl ?? project.url) && (
+            <div style={{ marginBottom: "clamp(12px, 2vh, 24px)" }}>
+              <VisitButton ref={visitBtnRef} href={(project.projectUrl ?? project.url)!} open={open} />
+            </div>
+          )}
 
           <div ref={linksRef} style={{ display: "flex", alignItems: "center", gap: 24 }}>
             {project.github && (

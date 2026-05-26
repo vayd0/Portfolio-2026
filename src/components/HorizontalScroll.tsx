@@ -26,9 +26,9 @@ export default function HorizontalScroll({ children, loopEvery }: { children: Re
       const pw = truePanel();
       const nearest = Math.round(container.scrollLeft / pw) * pw;
       const distance = Math.abs(container.scrollLeft - nearest);
-      if (distance > 1 && distance < pw * 0.4) {
+      if (distance > 1 && distance < pw * 0.08) {
         targetX.current = nearest;
-        gsap.to(container, { scrollLeft: nearest, duration: 0.8, ease: "power1.out" });
+        gsap.to(container, { scrollLeft: nearest, duration: 1.2, ease: "power1.out" });
       }
     };
 
@@ -168,6 +168,17 @@ export default function HorizontalScroll({ children, loopEvery }: { children: Re
   useEffect(() => {
     if (!loopEvery) return;
     let ticking = false;
+    let snapTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const proximitySnapMobile = () => {
+      if (window.innerWidth >= 768) return;
+      const ph = window.innerHeight;
+      const nearest = Math.round(window.scrollY / ph) * ph;
+      const distance = Math.abs(window.scrollY - nearest);
+      if (distance > 1 && distance < ph * 0.12) {
+        window.scrollTo({ top: nearest, behavior: "smooth" });
+      }
+    };
 
     const onMobileScroll = () => {
       if (window.innerWidth >= 768 || ticking) return;
@@ -180,10 +191,15 @@ export default function HorizontalScroll({ children, loopEvery }: { children: Re
         }
         ticking = false;
       });
+      if (snapTimer) clearTimeout(snapTimer);
+      snapTimer = setTimeout(proximitySnapMobile, 120);
     };
 
     window.addEventListener("scroll", onMobileScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onMobileScroll);
+    return () => {
+      window.removeEventListener("scroll", onMobileScroll);
+      if (snapTimer) clearTimeout(snapTimer);
+    };
   }, [loopEvery]);
 
   return (

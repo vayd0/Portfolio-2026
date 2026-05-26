@@ -15,36 +15,37 @@ function IntroMascotte() {
   const wrapRef = useRef<HTMLDivElement>(null);
   const mascotteRef = useRef<MascotteHandle>(null);
   const state = useRef<0 | 1 | 2>(0);
+  const projectOpen = useRef(false);
 
   useEffect(() => {
     const el = wrapRef.current;
     if (!el) return;
 
-    gsap.set(el, { xPercent: 110, yPercent: -50, rotation: 12, scaleX: 1, scaleY: 0.7 });
+    gsap.set(el, { xPercent: 120, yPercent: -50, rotation: 12, scaleX: 1, scaleY: 0.7 });
 
     const onProgress = (e: Event) => {
       const { paletteA, t } = (e as CustomEvent).detail;
       const onIntro = paletteA === "";
 
-      if (onIntro && t < 0.06 && state.current === 0) {
+      if (onIntro && t < 0.06 && state.current === 0 && !projectOpen.current) {
         state.current = 1;
         gsap.killTweensOf(el);
         gsap.fromTo(el,
-          { xPercent: 110, yPercent: -50, rotation: 12, scaleX: 1, scaleY: 0.7 },
-          { xPercent: 0, yPercent: -50, rotation: 0, scaleX: 1, scaleY: 1, duration: 1.6, ease: "elastic.out(1, 0.38)" }
+          { xPercent: 120, yPercent: -50, rotation: 12, scaleX: 1, scaleY: 0.7 },
+          { xPercent: 13, yPercent: -50, rotation: 0, scaleX: 1, scaleY: 1, duration: 1.6, ease: "elastic.out(1, 0.38)" }
         );
       } else if (onIntro && t >= (window.innerWidth < 768 ? 0.45 : 0.25) && state.current === 1) {
         state.current = 2;
         gsap.killTweensOf(el);
         mascotteRef.current?.exitLook();
         gsap.timeline()
-          .to(el, { scaleX: 1.3, scaleY: 0.6, xPercent: 4, duration: 0.12, ease: "power3.in" })
+          .to(el, { scaleX: 1.3, scaleY: 0.6, xPercent: 17, duration: 0.12, ease: "power3.in" })
           .to(el, { xPercent: 130, scaleX: 0.6, scaleY: 1.4, rotation: 25, duration: 0.45, ease: "power3.in" })
           .call(() => { state.current = 0; });
       } else if (!onIntro && state.current !== 0) {
         state.current = 0;
         gsap.killTweensOf(el);
-        gsap.set(el, { xPercent: 110, yPercent: -50, rotation: 12, scaleX: 1, scaleY: 0.7 });
+        gsap.set(el, { xPercent: 120, yPercent: -50, rotation: 12, scaleX: 1, scaleY: 0.7 });
       }
     };
 
@@ -52,20 +53,23 @@ function IntroMascotte() {
     const onContactClose = () => gsap.to(el, { autoAlpha: 1, duration: 0.35, ease: "power2.out" });
 
     const onProjectOpen = () => {
+      projectOpen.current = true;
       if (state.current !== 1) return;
       state.current = 2;
       gsap.killTweensOf(el);
       mascotteRef.current?.exitLook();
       gsap.timeline()
-        .to(el, { scaleX: 1.3, scaleY: 0.6, xPercent: 4, duration: 0.12, ease: "power3.in" })
+        .to(el, { scaleX: 1.3, scaleY: 0.6, xPercent: 17, duration: 0.12, ease: "power3.in" })
         .to(el, { xPercent: 130, scaleX: 0.6, scaleY: 1.4, rotation: 25, duration: 0.45, ease: "power3.in" })
         .call(() => { state.current = 0; });
     };
     const onProjectClose = () => {
-      if (state.current === 0) return;
-      state.current = 0;
-      gsap.killTweensOf(el);
-      gsap.set(el, { xPercent: 110, yPercent: -50, rotation: 12, scaleX: 1, scaleY: 0.7 });
+      projectOpen.current = false;
+      if (state.current !== 0) {
+        state.current = 0;
+        gsap.killTweensOf(el);
+        gsap.set(el, { xPercent: 120, yPercent: -50, rotation: 12, scaleX: 1, scaleY: 0.7 });
+      }
     };
 
     window.addEventListener("section:scroll-progress", onProgress);
@@ -87,7 +91,7 @@ function IntroMascotte() {
       ref={wrapRef}
       style={{
         position: "fixed",
-        right: "-3vw",
+        right: 0,
         top: "50%",
         width: "clamp(190px, 28vw, 460px)",
         pointerEvents: "none",
@@ -227,6 +231,7 @@ function ProjectMascotte({
   fromVars,
   toVars,
   doExit,
+  className,
 }: {
   paletteId: string;
   wrapStyle: React.CSSProperties;
@@ -235,12 +240,14 @@ function ProjectMascotte({
   fromVars: gsap.TweenVars;
   toVars: gsap.TweenVars;
   doExit: (el: HTMLDivElement, done: () => void) => void;
+  className?: string;
 }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const state = useRef<0 | 1 | 2>(0);
   const fromRef = useRef(fromVars);
   const toRef = useRef(toVars);
   const doExitRef = useRef(doExit);
+  const projectOpen = useRef(false);
 
   useEffect(() => {
     const el = wrapRef.current;
@@ -271,11 +278,11 @@ function ProjectMascotte({
         return;
       }
 
-      if (state.current === 0 && t < 0.06) {
+      if (state.current === 0 && t < 0.06 && !projectOpen.current) {
         if (!spawnTimer) {
           spawnTimer = setTimeout(() => {
             spawnTimer = null;
-            if (state.current !== 0) return;
+            if (state.current !== 0 || projectOpen.current) return;
             state.current = 1;
             gsap.killTweensOf(el);
             gsap.fromTo(el, fromRef.current, { ...toRef.current, duration: 0.85, ease: "expo.out" });
@@ -290,17 +297,20 @@ function ProjectMascotte({
     const onContactClose = () => { if (state.current === 1) gsap.to(el, { autoAlpha: 1, duration: 0.35, ease: "power2.out" }); };
 
     const onProjectOpen = () => {
+      projectOpen.current = true;
+      clearSpawnTimer();
       if (state.current !== 1) return;
       state.current = 2;
-      clearSpawnTimer();
       gsap.killTweensOf(el);
       doExitRef.current(el, () => { state.current = 0; });
     };
     const onProjectClose = () => {
-      if (state.current === 0) return;
-      state.current = 0;
-      gsap.killTweensOf(el);
-      gsap.set(el, fromRef.current);
+      projectOpen.current = false;
+      if (state.current !== 0) {
+        state.current = 0;
+        gsap.killTweensOf(el);
+        gsap.set(el, fromRef.current);
+      }
     };
 
     window.addEventListener("section:scroll-progress", onProgress);
@@ -319,7 +329,7 @@ function ProjectMascotte({
   }, [paletteId]);
 
   return (
-    <div ref={wrapRef} style={wrapStyle}>
+    <div ref={wrapRef} style={wrapStyle} className={className}>
       <Mascotte style={mascotteStyle} transformMode={transformMode} />
     </div>
   );
@@ -371,6 +381,7 @@ export default function PortfolioClient({ projects }: { projects: Project[] }) {
       <ProjectMascotte
         paletteId="0"
         transformMode="flipX"
+        className="hidden md:block"
         wrapStyle={{ position: "fixed", bottom: 0, right: "5vw", width: "clamp(140px, 20vw, 320px)", pointerEvents: "none", transformOrigin: "bottom right", zIndex: 9998 }}
         mascotteStyle={{ width: "100%", height: "auto", transform: "scaleX(-1)" }}
         fromVars={{ yPercent: 115, scaleX: 1, scaleY: 0.7 }}
@@ -389,27 +400,27 @@ export default function PortfolioClient({ projects }: { projects: Project[] }) {
       />
       <ProjectMascotte
         paletteId="1"
-        transformMode="rotate90flip"
-        wrapStyle={{ position: "fixed", right: "-3vw", top: "50%", width: "clamp(200px, 28vw, 460px)", pointerEvents: "none", transformOrigin: "right center", zIndex: 9998 }}
-        mascotteStyle={{ width: "100%", height: "auto", transform: "scaleX(-1) rotate(90deg)" }}
-        fromVars={{ xPercent: 110, yPercent: -50, rotation: 12, scaleX: 1, scaleY: 0.7 }}
-        toVars={{ xPercent: 0, yPercent: -50, rotation: 0, scaleX: 1, scaleY: 1 }}
+        transformMode="rotate90"
+        wrapStyle={{ position: "fixed", left: 0, bottom: "5vh", width: "clamp(200px, 28vw, 460px)", pointerEvents: "none", transformOrigin: "left bottom", zIndex: 9998 }}
+        mascotteStyle={{ width: "100%", height: "auto", transform: "rotate(90deg)" }}
+        fromVars={{ xPercent: -120, rotation: -12, scaleX: 1, scaleY: 0.7 }}
+        toVars={{ xPercent: -13, rotation: 0, scaleX: 1, scaleY: 1 }}
         doExit={(el, done) => {
           gsap.timeline({ onComplete: done })
-            .to(el, { scaleX: 1.3, scaleY: 0.6, xPercent: 4, duration: 0.12, ease: "power3.in" })
-            .to(el, { xPercent: 130, scaleX: 0.6, scaleY: 1.4, rotation: 25, duration: 0.45, ease: "power3.in" });
+            .to(el, { scaleX: 1.3, scaleY: 0.6, xPercent: -17, duration: 0.12, ease: "power3.in" })
+            .to(el, { xPercent: -130, scaleX: 0.6, scaleY: 1.4, rotation: -25, duration: 0.45, ease: "power3.in" });
         }}
       />
       <ProjectMascotte
         paletteId="2"
         transformMode="rotate90"
-        wrapStyle={{ position: "fixed", left: "-3vw", top: "50%", width: "clamp(200px, 28vw, 460px)", pointerEvents: "none", transformOrigin: "left center", zIndex: 9998 }}
+        wrapStyle={{ position: "fixed", left: 0, top: "50%", width: "clamp(110px, 28vw, 460px)", pointerEvents: "none", transformOrigin: "left center", zIndex: 9998 }}
         mascotteStyle={{ width: "100%", height: "auto", transform: "rotate(90deg)" }}
-        fromVars={{ xPercent: -110, yPercent: -50, rotation: -12, scaleX: 1, scaleY: 0.7 }}
-        toVars={{ xPercent: 0, yPercent: -50, rotation: 0, scaleX: 1, scaleY: 1 }}
+        fromVars={{ xPercent: -120, yPercent: -50, rotation: -12, scaleX: 1, scaleY: 0.7 }}
+        toVars={{ xPercent: -13, yPercent: -50, rotation: 0, scaleX: 1, scaleY: 1 }}
         doExit={(el, done) => {
           gsap.timeline({ onComplete: done })
-            .to(el, { scaleX: 1.3, scaleY: 0.6, xPercent: -4, duration: 0.12, ease: "power3.in" })
+            .to(el, { scaleX: 1.3, scaleY: 0.6, xPercent: -17, duration: 0.12, ease: "power3.in" })
             .to(el, { xPercent: -130, scaleX: 0.6, scaleY: 1.4, rotation: -25, duration: 0.45, ease: "power3.in" });
         }}
       />
@@ -458,9 +469,11 @@ export default function PortfolioClient({ projects }: { projects: Project[] }) {
               setBallBlack={setBallBlack}
               titlePosition={i === 1 ? "top-right" : "bottom-left"}
               palette={i % 3 as 0 | 1 | 2}
-              mockupOffsetY={i === 1 ? 40 : 0}
+              mockupOffsetY={i === 1 ? -80 : 0}
+              mockupOffsetYMobile={i === 1 ? -40 : 0}
               annotationPosition={i === 1 ? "bottom" : "top"}
               annotationOffsetY={i === 1 ? 170 : 0}
+              panelZIndex={projects.length - i + 1}
             />
           )),
         ])}

@@ -78,9 +78,6 @@ main {
     overflow: visible;
     border-radius: 0;
   }
-  .panel-height {
-    overflow: clip;
-  }
   .panel-height[data-panel-open] {
     overflow: visible;
   }

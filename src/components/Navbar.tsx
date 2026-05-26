@@ -145,7 +145,7 @@ function ContactButton() {
         textDecoration: "none",
         background: "white",
         border: "1px solid rgba(0,0,0,0.2)",
-        boxShadow: " 0 1.5px 5px rgba(0,0,0,0.3)",
+        boxShadow: " 0 2px 8px rgba(0,0,0,0.25)",
         borderRadius: "9999px",
         padding: "5px clamp(16px, 2vw, 28px)",
         ...FONT_STYLE,

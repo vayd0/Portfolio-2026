@@ -114,12 +114,6 @@ export default function Card({ title, image, index, color = "#e8e8e8", noSquish 
           <div className="absolute inset-0 bg-[#d4d4d4]" />
         )}
 
-        <div className="absolute bottom-0 left-0 right-0 p-4" style={{ zIndex: 1 }}>
-          <span className="text-sm font-medium tracking-tight" style={{ color: "#000000" }}>
-            {title}
-          </span>
-        </div>
-
         <div
           ref={blobRef}
           style={{
@@ -133,15 +127,12 @@ export default function Card({ title, image, index, color = "#e8e8e8", noSquish 
 
         <div
           ref={contentRef}
-          className="absolute flex flex-col items-start justify-end p-5"
+          className="absolute flex flex-col items-center justify-center"
           style={{ inset: 0, zIndex: 3, pointerEvents: "none" }}
         >
-          <div className="flex items-center gap-3">
-            <span className="text-4xl font-bold" style={{ color: "#000000" }}>→</span>
-            <span className="text-xl font-bold italic leading-tight" style={{ color: "#000000" }}>
-              {title}
-            </span>
-          </div>
+          <span className="leading-tight text-center px-4 whitespace-nowrap" style={{ color: "#000000", fontFamily: "Fat, sans-serif", fontSize: "clamp(1.8rem, 4vw, 3.5rem)", WebkitTextStroke: "2px #92FF33", paintOrder: "stroke fill" }}>
+            {title}
+          </span>
         </div>
       </div>
     </div>
