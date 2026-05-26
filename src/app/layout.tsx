@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     default: "Théo Heck — Designer & Développeur",
     template: "%s — Théo Heck",
   },
-  description: "Portfolio de Théo Heck, designer & développeur freelance basé en France. Projets interactifs, design et expériences digitales.",
+  description: "Portfolio de Théo Heck, designer & développeur web freelance basé en France. Projets interactifs, design et expériences digitales.",
   alternates: { canonical: "/" },
   openGraph: {
     type: "website",
@@ -30,13 +30,13 @@ export const metadata: Metadata = {
     url: "https://www.theoheck.fr",
     siteName: "Théo Heck",
     title: "Théo Heck — Designer & Développeur",
-    description: "Portfolio de Théo Heck, designer & développeur freelance basé en France.",
+    description: "Portfolio de Théo Heck, designer & développeur web freelance basé en France.",
     images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Théo Heck" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Théo Heck — Designer & Développeur",
-    description: "Portfolio de Théo Heck, designer & développeur freelance basé en France.",
+    description: "Portfolio de Théo Heck, designer & développeur web freelance basé en France.",
     images: ["/og-image.png"],
   },
 };
